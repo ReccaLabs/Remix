@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "siteName": "ReMix",
+    "titleTemplate": "%s · ReMix",
+    "defaultTitle": "ReMix — Run your whole class, online and in the hall",
+    "defaultDescription": "Your own website, fees and bank slips, protected video lessons, Zoom with name lock and attendance, built for Sri Lankan tuition. From LKR 45 per active student."
+  },
+  "a11y": {
+    "skipToContent": "Skip to content",
+    "home": "ReMix home",
+    "mainNav": "Main",
+    "footerNav": "Footer",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "language": "Language",
+    "comingSoon": "coming soon",
+    "sampleData": "Sample data"
+  },
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "teachers": "For teachers",
+    "institutes": "For institutes",
+    "guides": "Guides",
+    "about": "About",
+    "findClass": "Find your class",
+    "startFree": "Start free"
+  },
+  "cta": {
+    "startTrial": "Start free trial",
+    "bookDemo": "Book a demo",
+    "whatsapp": "Chat on WhatsApp",
+    "whatsappPrefill": "Hi ReMix, I'd like to know more about ReMix for my class."
+  },
+  "footer": {
+    "tagline": "Built in Colombo for Sri Lankan tuition, not adapted from abroad.",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "aboutCompany": "About Recca Labs",
+    "whatsapp": "WhatsApp",
+    "privacy": "Privacy policy",
+    "terms": "Terms of service",
+    "dataProtection": "Data protection",
+    "copyright": "© {year} Recca Labs · Colombo, Sri Lanka"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you're looking for doesn't exist or has moved.",
+    "back": "Go to the home page"
+  }
+}

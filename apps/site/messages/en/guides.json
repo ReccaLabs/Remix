@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "title": "Guides for tuition teachers",
+    "description": "Practical guides for running a tuition class in Sri Lanka: starting online, protecting lessons, collecting fees and running hall and Zoom classes together."
+  },
+  "hero": {
+    "eyebrow": "Guides",
+    "title": "Practical guides for running a tuition class.",
+    "intro": "Written for Sri Lankan teachers and institute owners. Free to read, whether you use ReMix or not."
+  },
+  "featured": "Featured",
+  "readingTime": "{minutes} min read",
+  "language": "English",
+  "filterLabel": "Filter guides by topic",
+  "listLabel": "All guides",
+  "categories": {
+    "all": "All",
+    "gettingStarted": "Getting started",
+    "onlineClasses": "Online classes",
+    "fees": "Fees",
+    "protectingLessons": "Protecting lessons",
+    "attendance": "Attendance"
+  },
+  "cta": {
+    "title": "Want us to set it up for you?",
+    "body": "We'll move your students and fees over for free.",
+    "whatsapp": "WhatsApp us"
+  },
+  "article": {
+    "breadcrumbLabel": "Breadcrumb",
+    "home": "Home",
+    "guides": "Guides",
+    "published": "Published <time>{date}</time>",
+    "back": "Back to all guides",
+    "more": "More guides"
+  }
+}

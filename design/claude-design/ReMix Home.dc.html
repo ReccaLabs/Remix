@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Noto+Sans+Sinhala:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FBFAF7;font-family:'Geist',system-ui,sans-serif;color:#0E1525;-webkit-font-smoothing:antialiased}
+a{color:#2B4BF2;text-decoration:none}a:hover{text-decoration:underline}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div data-screen-label="B1 Marketing Home" style="background:#FBFAF7; font-size:16px; line-height:24px; min-width:360px;">
+
+  <dc-import name="Site Header" active="home" style="position:sticky; top:0; z-index:20;" hint-size="100%,68px"></dc-import>
+
+  <section id="top" style="max-width:1200px; margin:0 auto; padding:72px 24px 88px; display:flex; flex-wrap:wrap; gap:48px; align-items:center;">
+    <div style="flex:1 1 440px; min-width:0; display:flex; flex-direction:column; gap:24px;">
+      <a href="#" style="align-self:flex-start; display:inline-flex; align-items:center; gap:8px; height:32px; padding:0 12px 0 4px; border:1px solid #E1DDD3; border-radius:999px; background:#fff; font-size:13px; font-weight:500; color:#0E1525; text-decoration:none;"><span style="height:24px; padding:0 8px; display:flex; align-items:center; border-radius:999px; background:#FDF1D8; color:#8A5200; font-weight:600;">New</span>Offline gate attendance with NFC cards<span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+      <sc-if value="{{ headlineA }}" hint-placeholder-val="{{ true }}">
+        <h1 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:66px; line-height:1.0; letter-spacing:-0.035em; text-wrap:balance;">Run your whole class, online and in the <span style="color:#2B4BF2;">hall.</span></h1>
+      </sc-if>
+      <sc-if value="{{ headlineB }}" hint-placeholder-val="{{ false }}">
+        <h1 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:62px; line-height:1.02; letter-spacing:-0.035em; text-wrap:balance;">Your class. Your website. Your students, <span style="color:#2B4BF2;">protected.</span></h1>
+      </sc-if>
+      <p style="margin:0; font-size:18px; line-height:28px; color:#3A4357; max-width:520px; text-wrap:pretty;">Your own website, fees and bank slips, protected video lessons, Zoom with name lock and attendance, built for Sri Lankan tuition. One student counts once, however many classes they join.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <a href="#" style="height:48px; padding:0 22px; display:flex; align-items:center; gap:8px; border-radius:10px; background:#2B4BF2; color:#fff; font-size:16px; font-weight:600; text-decoration:none;" style-hover="background:#2140DB;">Start free trial<span style="width:16px;height:16px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/arrow-right.svg) center/contain no-repeat;"></span></a>
+        <a href="#" style="height:48px; padding:0 22px; display:flex; align-items:center; border-radius:10px; border:1px solid #0E1525; color:#0E1525; font-size:16px; font-weight:600; text-decoration:none;" style-hover="background:#F1EFE9;">Book a demo</a>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px 18px; font-size:14px; color:#5B6478;">
+        <span>From <b style="color:#0E1525; font-weight:600;">LKR 45</b> per active student</span>
+        <span>Free data migration</span>
+        <span>Sinhala, Tamil, English</span>
+      </div>
+    </div>
+
+    <div style="flex:0 0 640px; max-width:100%; position:relative; height:500px;">
+      <div style="position:absolute; left:0; top:12px; width:600px; border-radius:14px; background:#fff; border:1px solid #E1DDD3; box-shadow:0 8px 30px rgba(14,21,37,.08); overflow:hidden;">
+        <div style="height:32px; display:flex; align-items:center; gap:10px; padding:0 12px; border-bottom:1px solid #EEEBE4; background:#F7F5F0;">
+          <div style="display:flex; gap:6px;"><span style="width:9px; height:9px; border-radius:50%; background:#DAD6CC;"></span><span style="width:9px; height:9px; border-radius:50%; background:#DAD6CC;"></span><span style="width:9px; height:9px; border-radius:50%; background:#DAD6CC;"></span></div>
+          <div style="flex:1; max-width:280px; margin:0 auto; height:20px; border-radius:6px; background:#fff; border:1px solid #E7E3DA; font-size:11px; line-height:18px; color:#5B6478; text-align:center; font-family:'Geist Mono',monospace;">kamalphysics.remix.lk/admin</div>
+        </div>
+        <div style="width:600px; height:400px; overflow:hidden; pointer-events:none;">
+          <div style="width:1440px; height:1000px; transform:scale(0.4167); transform-origin:0 0;">
+            <dc-import name="Institute Dashboard" hint-size="1440px,1000px"></dc-import>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:absolute; right:0; top:40px; width:236px; height:460px; border-radius:34px; border:7px solid #0E1525; background:#F6F7FA; overflow:hidden; box-shadow:0 20px 50px rgba(14,21,37,.22); display:flex; flex-direction:column;">
+        <div style="background:#2B4BF2; color:#fff; padding:14px 14px 40px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:10px; line-height:12px; font-weight:600;"><span>9:41</span><span>4G</span></div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:22px; height:22px; border-radius:6px; background:#fff; color:#2B4BF2; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center;">KP</span>
+            <span style="font-size:12px; font-weight:600;">Kamal Physics</span>
+          </div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif; font-size:20px; line-height:24px; font-weight:700; letter-spacing:-0.02em;">Hi Nimali</div>
+        </div>
+        <div style="margin:-30px 10px 0; display:flex; flex-direction:column; gap:8px;">
+          <div style="background:#fff; border-radius:12px; padding:10px 12px; border:1px solid #E4E7EE; display:flex; flex-direction:column; gap:6px;">
+            <span style="display:inline-flex; align-items:center; gap:5px; font-size:9px; line-height:12px; font-weight:700; letter-spacing:0.06em; color:#B42318;"><span style="width:6px; height:6px; border-radius:50%; background:#D92D20;"></span>LIVE NOW</span>
+            <span style="font-size:13px; line-height:16px; font-weight:600;">2027 A/L Physics</span>
+            <span style="font-size:11px; line-height:14px; color:#5B6478;">Theory · Hall A &amp; Zoom</span>
+            <span style="height:32px; border-radius:8px; background:#2B4BF2; color:#fff; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center;">Join class</span>
+          </div>
+          <div style="background:#FFF8EB; border:1px solid #F3D59B; border-radius:12px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <div style="display:flex; flex-direction:column;">
+              <span style="font-size:11px; line-height:14px; color:#8A5200; font-weight:500;">October fee due</span>
+              <span style="font-size:14px; line-height:18px; font-weight:600; font-variant-numeric:tabular-nums;">LKR 2,500</span>
+            </div>
+            <span style="font-size:11px; font-weight:600; color:#0E1525; border-bottom:1px solid #0E1525; line-height:14px;">Pay now</span>
+          </div>
+          <div style="font-size:11px; line-height:14px; font-weight:600; color:#5B6478; padding:4px 2px 0;">New lessons</div>
+          <div style="background:#fff; border:1px solid #E4E7EE; border-radius:12px; display:flex; flex-direction:column;">
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid #EEF0F4;"><span style="width:26px; height:26px; border-radius:7px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:12px;height:12px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/play.svg) center/contain no-repeat;"></span></span><span style="display:flex; flex-direction:column; font-size:11px; line-height:14px;"><b style="font-weight:600;">Electromagnetism · Part 3</b><span style="color:#5B6478;">48 min</span></span></div>
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 10px;"><span style="width:26px; height:26px; border-radius:7px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:12px;height:12px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/file-text.svg) center/contain no-repeat;"></span></span><span style="display:flex; flex-direction:column; font-size:11px; line-height:14px;"><b style="font-weight:600;">Paper 12 · Tute PDF</b><span style="color:#5B6478;">2.1 MB</span></span></div>
+          </div>
+        </div>
+        <div style="margin-top:auto; height:46px; border-top:1px solid #E4E7EE; background:#fff; display:flex; align-items:center; justify-content:space-around; font-size:9px; color:#5B6478;">
+          <span style="display:flex; flex-direction:column; align-items:center; gap:2px; color:#2B4BF2; font-weight:600;"><span style="width:15px;height:15px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/home.svg) center/contain no-repeat;"></span>Home</span>
+          <span style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:15px;height:15px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/book-open.svg) center/contain no-repeat;"></span>Classes</span>
+          <span style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:15px;height:15px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wallet.svg) center/contain no-repeat;"></span>Pay</span>
+          <span style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:15px;height:15px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/video.svg) center/contain no-repeat;"></span>Live</span>
+          <span style="display:flex; flex-direction:column; align-items:center; gap:2px;"><span style="width:15px;height:15px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/user.svg) center/contain no-repeat;"></span>Me</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#0E1525; color:#fff;">
+    <div style="max-width:1200px; margin:0 auto; padding:88px 24px; display:flex; flex-direction:column; gap:48px;">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:24px;">
+        <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em; max-width:640px; text-wrap:balance;">The three leaks every tuition class knows.</h2>
+        <p style="margin:0; max-width:360px; color:#B5BCCB;">Each one costs you money every month. ReMix closes all three from day one.</p>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+        <div style="border:1px solid #262D3D; border-radius:16px; padding:28px; display:flex; flex-direction:column; gap:16px; background:#121A2B;">
+          <span style="font-family:'Geist Mono',monospace; font-size:13px; color:#F7B940;">01</span>
+          <h3 style="margin:0; font-size:22px; line-height:28px; font-weight:600; letter-spacing:-0.01em;">Lessons leaked to Telegram</h3>
+          <p style="margin:0; color:#B5BCCB; text-wrap:pretty;">Encrypted streaming with a moving student-ID watermark. If a clip leaks, you know exactly whose account it came from.</p>
+        </div>
+        <div style="border:1px solid #262D3D; border-radius:16px; padding:28px; display:flex; flex-direction:column; gap:16px; background:#121A2B;">
+          <span style="font-family:'Geist Mono',monospace; font-size:13px; color:#F7B940;">02</span>
+          <h3 style="margin:0; font-size:22px; line-height:28px; font-weight:600; letter-spacing:-0.01em;">One account, ten students</h3>
+          <p style="margin:0; color:#B5BCCB; text-wrap:pretty;">Two devices per student, and Zoom locks every join to the student's registered name. Shared logins stop working.</p>
+        </div>
+        <div style="border:1px solid #262D3D; border-radius:16px; padding:28px; display:flex; flex-direction:column; gap:16px; background:#121A2B;">
+          <span style="font-family:'Geist Mono',monospace; font-size:13px; color:#F7B940;">03</span>
+          <h3 style="margin:0; font-size:22px; line-height:28px; font-weight:600; letter-spacing:-0.01em;">Chasing fees and bank slips</h3>
+          <p style="margin:0; color:#B5BCCB; text-wrap:pretty;">Students pay by card or upload the slip from their phone. Your cashier approves each one with a single key.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" style="max-width:1200px; margin:0 auto; padding:96px 24px; display:flex; flex-direction:column; gap:48px;">
+    <div style="display:flex; flex-direction:column; gap:12px; max-width:680px;">
+      <span style="font-size:14px; font-weight:600; color:#2B4BF2;">Everything in one place</span>
+      <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em; text-wrap:balance;">One system for the hall, the Zoom room and the fee counter.</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); border-top:1px solid #E1DDD3; border-left:1px solid #E1DDD3;">
+      <div style="padding:32px; border-right:1px solid #E1DDD3; border-bottom:1px solid #E1DDD3; display:flex; flex-direction:column; gap:14px;">
+        <span style="width:44px; height:44px; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/globe.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Your own website</h3>
+        <p style="margin:0; color:#5B6478; text-wrap:pretty;">A class website on your own domain, with your timetable, fees and results. Build it from blocks, no developer needed.</p>
+      </div>
+      <div style="padding:32px; border-right:1px solid #E1DDD3; border-bottom:1px solid #E1DDD3; display:flex; flex-direction:column; gap:14px;">
+        <span style="width:44px; height:44px; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/receipt.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Fees and bank slips</h3>
+        <p style="margin:0; color:#5B6478; text-wrap:pretty;">PayHere card payments, bank slip uploads and a cash counter for your cashier. See who has paid for October at a glance.</p>
+      </div>
+      <div style="padding:32px; border-right:1px solid #E1DDD3; border-bottom:1px solid #E1DDD3; display:flex; flex-direction:column; gap:14px;">
+        <span style="width:44px; height:44px; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/shield-check.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Protected video</h3>
+        <p style="margin:0; color:#5B6478; text-wrap:pretty;">Encrypted streaming with each student's ID moving across the screen. Only paid months unlock.</p>
+      </div>
+      <div style="padding:32px; border-right:1px solid #E1DDD3; border-bottom:1px solid #E1DDD3; display:flex; flex-direction:column; gap:14px;">
+        <span style="width:44px; height:44px; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/video.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Zoom with name lock</h3>
+        <p style="margin:0; color:#5B6478; text-wrap:pretty;">Students join from the portal under their registered name. Zoom attendance lands in ReMix automatically.</p>
+      </div>
+      <div style="padding:32px; border-right:1px solid #E1DDD3; border-bottom:1px solid #E1DDD3; display:flex; flex-direction:column; gap:14px;">
+        <span style="width:44px; height:44px; border-radius:10px; background:#FDF1D8; color:#8A5200; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/scan-line.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600; display:flex; align-items:center; gap:8px;">Offline gate attendance <span style="font-size:11px; line-height:18px; padding:0 6px; border-radius:6px; background:#FDF1D8; color:#8A5200; font-weight:600;">New</span></h3>
+        <p style="margin:0; color:#5B6478; text-wrap:pretty;">QR or NFC cards at the hall door. The gate app checks fees and keeps scanning when the internet drops.</p>
+      </div>
+      <div style="padding:32px; border-right:1px solid #E1DDD3; border-bottom:1px solid #E1DDD3; display:flex; flex-direction:column; gap:14px;">
+        <span style="width:44px; height:44px; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/bell-ring.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Parents in the loop</h3>
+        <p style="margin:0; color:#5B6478; text-wrap:pretty;">An SMS when their child is absent or a fee is due. Parents see attendance and payments in one place.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" style="padding:0 24px 96px;">
+    <div style="max-width:1200px; margin:0 auto; background:#EEF1FF; border-radius:24px; padding:56px; display:flex; flex-wrap:wrap; gap:48px; align-items:center;">
+      <div style="flex:1 1 420px; display:flex; flex-direction:column; gap:20px;">
+        <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em; text-wrap:balance;">Pay per student, not per class card.</h2>
+        <p style="margin:0; color:#3A4357; max-width:460px; text-wrap:pretty;">A student in three of your classes counts once. Students who don't pay or log in during the month are free.</p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <span style="font-size:14px; font-weight:600;">How many active students do you have?</span>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <button onClick="{{ pick0 }}" style="height:44px; min-width:88px; padding:0 18px; border-radius:999px; border:1px solid {{ p0.border }}; background:{{ p0.bg }}; color:{{ p0.fg }}; font:inherit; font-weight:600; font-variant-numeric:tabular-nums; cursor:pointer;">100</button>
+            <button onClick="{{ pick1 }}" style="height:44px; min-width:88px; padding:0 18px; border-radius:999px; border:1px solid {{ p1.border }}; background:{{ p1.bg }}; color:{{ p1.fg }}; font:inherit; font-weight:600; font-variant-numeric:tabular-nums; cursor:pointer;">300</button>
+            <button onClick="{{ pick2 }}" style="height:44px; min-width:88px; padding:0 18px; border-radius:999px; border:1px solid {{ p2.border }}; background:{{ p2.bg }}; color:{{ p2.fg }}; font:inherit; font-weight:600; font-variant-numeric:tabular-nums; cursor:pointer;">1,000</button>
+            <button onClick="{{ pick3 }}" style="height:44px; min-width:88px; padding:0 18px; border-radius:999px; border:1px solid {{ p3.border }}; background:{{ p3.bg }}; color:{{ p3.fg }}; font:inherit; font-weight:600; font-variant-numeric:tabular-nums; cursor:pointer;">2,500</button>
+          </div>
+        </div>
+        <p style="margin:0; font-size:13px; line-height:20px; color:#5B6478;">Assumes 1.5 classes per student and LKR 150 per class card. <a href="Pricing.dc.html" style="font-weight:500;">See full pricing</a></p>
+      </div>
+      <div style="flex:1 1 400px; max-width:480px; background:#fff; border-radius:16px; box-shadow:0 8px 30px rgba(14,21,37,.08); padding:28px; display:flex; flex-direction:column; gap:20px; font-variant-numeric:tabular-nums;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="height:26px; padding:0 10px; display:flex; align-items:center; border-radius:6px; background:#0E1525; color:#fff; font-size:13px; font-weight:600;">{{ planName }}</span>
+          <span style="font-size:13px; color:#5B6478;">{{ planFormula }}</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="font-size:14px; color:#5B6478;">ReMix per month</span>
+          <span style="font-family:'Bricolage Grotesque',sans-serif; font-size:44px; line-height:48px; font-weight:700; letter-spacing:-0.02em;">{{ remixPrice }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; padding:14px 0; border-top:1px solid #E4E7EE; border-bottom:1px solid #E4E7EE;">
+          <span style="color:#5B6478;">Per-class-card pricing</span>
+          <span style="text-decoration:line-through; color:#5B6478; font-weight:500;">{{ cardPrice }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-radius:10px; background:#E8F6EE; color:#0B7A3B; font-weight:600;">
+          <span style="display:flex; align-items:center; gap:8px;"><span style="width:18px;height:18px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/trending-down.svg) center/contain no-repeat;"></span>You save each month</span>
+          <span>{{ savePrice }}</span>
+        </div>
+        <a href="#" style="height:48px; display:flex; align-items:center; justify-content:center; border-radius:10px; background:#2B4BF2; color:#fff; font-weight:600; text-decoration:none;" style-hover="background:#2140DB;">Start free for 30 days</a>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1200px; margin:0 auto; padding:0 24px 96px; display:flex; flex-direction:column; gap:32px;">
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:24px;">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <span style="font-size:14px; font-weight:600; color:#2B4BF2;">Screens tour</span>
+        <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em;">See it before you sign up.</h2>
+      </div>
+      <div style="display:flex; gap:4px; padding:4px; border-radius:12px; background:#F1EFE9; border:1px solid #E1DDD3;">
+        <button onClick="{{ tab0 }}" style="height:40px; padding:0 20px; border:0; border-radius:8px; background:{{ t0.bg }}; color:{{ t0.fg }}; box-shadow:{{ t0.shadow }}; font:inherit; font-weight:600; cursor:pointer;">Admin</button>
+        <button onClick="{{ tab1 }}" style="height:40px; padding:0 20px; border:0; border-radius:8px; background:{{ t1.bg }}; color:{{ t1.fg }}; box-shadow:{{ t1.shadow }}; font:inherit; font-weight:600; cursor:pointer;">Student</button>
+        <button onClick="{{ tab2 }}" style="height:40px; padding:0 20px; border:0; border-radius:8px; background:{{ t2.bg }}; color:{{ t2.fg }}; box-shadow:{{ t2.shadow }}; font:inherit; font-weight:600; cursor:pointer;">Parent</button>
+      </div>
+    </div>
+    <div style="border-radius:16px; border:1px solid #E1DDD3; background:#fff; overflow:hidden; box-shadow:0 8px 30px rgba(14,21,37,.08);">
+      <sc-if value="{{ showAdmin }}" hint-placeholder-val="{{ true }}">
+        <div style="height:600px; overflow:hidden; pointer-events:none;">
+          <div style="width:1440px; height:1000px; transform:scale(0.8); transform-origin:0 0;">
+            <dc-import name="Institute Dashboard" hint-size="1440px,1000px"></dc-import>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showStudent }}" hint-placeholder-val="{{ false }}">
+        <div style="height:600px; display:flex; align-items:center; justify-content:center; background:repeating-linear-gradient(135deg,#F4F2ED 0 10px,#F9F8F4 10px 20px);">
+          <span style="font-family:'Geist Mono',monospace; font-size:14px; color:#5B6478; background:#fff; padding:6px 12px; border-radius:6px; border:1px solid #E1DDD3;">student portal screenshots · Home, Class, Lesson player, Pay</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showParent }}" hint-placeholder-val="{{ false }}">
+        <div style="height:600px; display:flex; align-items:center; justify-content:center; background:repeating-linear-gradient(135deg,#F4F2ED 0 10px,#F9F8F4 10px 20px);">
+          <span style="font-family:'Geist Mono',monospace; font-size:14px; color:#5B6478; background:#fff; padding:6px 12px; border-radius:6px; border:1px solid #E1DDD3;">parent view screenshots · attendance alerts, fees</span>
+        </div>
+      </sc-if>
+    </div>
+  </section>
+
+  <section id="faq" style="border-top:1px solid #E1DDD3;">
+    <div style="max-width:1200px; margin:0 auto; padding:96px 24px; display:flex; flex-wrap:wrap; gap:48px;">
+      <div style="flex:1 1 320px; display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em;">Questions institutes ask us</h2>
+        <p style="margin:0; color:#5B6478;">Something else? <a href="#" style="font-weight:500;">Ask us on WhatsApp</a>, we reply in Sinhala, Tamil or English.</p>
+      </div>
+      <div style="flex:2 1 560px; display:flex; flex-direction:column; border-top:1px solid #E1DDD3;">
+        <div style="border-bottom:1px solid #E1DDD3;">
+          <button onClick="{{ faq0 }}" style="width:100%; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border:0; background:none; font:inherit; font-size:18px; font-weight:600; color:#0E1525; text-align:left; cursor:pointer;">Is our student data safe?<span style="width:20px;height:20px;flex:none;background:currentColor;transform:rotate({{ f0.rot }});transition:transform .2s;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/plus.svg) center/contain no-repeat;"></span></button>
+          <sc-if value="{{ f0.open }}" hint-placeholder-val="{{ true }}"><p style="margin:0; padding:0 48px 20px 0; color:#3A4357; text-wrap:pretty;">Each institute's data is kept separate from every other institute. Connections are encrypted and backups run every night. Recca Labs staff can only open your account through a recorded support session, and you see a banner while it runs.</p></sc-if>
+        </div>
+        <div style="border-bottom:1px solid #E1DDD3;">
+          <button onClick="{{ faq1 }}" style="width:100%; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border:0; background:none; font:inherit; font-size:18px; font-weight:600; color:#0E1525; text-align:left; cursor:pointer;">Can you move our students from another system?<span style="width:20px;height:20px;flex:none;background:currentColor;transform:rotate({{ f1.rot }});transition:transform .2s;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/plus.svg) center/contain no-repeat;"></span></button>
+          <sc-if value="{{ f1.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0; padding:0 48px 20px 0; color:#3A4357; text-wrap:pretty;">Yes, for free. Send us an Excel or CSV export, or your current student list, and we import students, classes and fee history before your first month starts.</p></sc-if>
+        </div>
+        <div style="border-bottom:1px solid #E1DDD3;">
+          <button onClick="{{ faq2 }}" style="width:100%; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border:0; background:none; font:inherit; font-size:18px; font-weight:600; color:#0E1525; text-align:left; cursor:pointer;">Which payment methods work?<span style="width:20px;height:20px;flex:none;background:currentColor;transform:rotate({{ f2.rot }});transition:transform .2s;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/plus.svg) center/contain no-repeat;"></span></button>
+          <sc-if value="{{ f2.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0; padding:0 48px 20px 0; color:#3A4357; text-wrap:pretty;">Card payments through PayHere, bank transfers with a slip upload, and cash at your counter. All three land in the same fee records, so a student is never marked unpaid by mistake.</p></sc-if>
+        </div>
+        <div style="border-bottom:1px solid #E1DDD3;">
+          <button onClick="{{ faq3 }}" style="width:100%; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border:0; background:none; font:inherit; font-size:18px; font-weight:600; color:#0E1525; text-align:left; cursor:pointer;">Does it work in Sinhala and Tamil?<span style="width:20px;height:20px;flex:none;background:currentColor;transform:rotate({{ f3.rot }});transition:transform .2s;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/plus.svg) center/contain no-repeat;"></span></button>
+          <sc-if value="{{ f3.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0; padding:0 48px 20px 0; color:#3A4357; text-wrap:pretty;">Yes. The student portal, your website and the admin area all switch between Sinhala, Tamil and English. Each person picks their own language.</p></sc-if>
+        </div>
+        <div style="border-bottom:1px solid #E1DDD3;">
+          <button onClick="{{ faq4 }}" style="width:100%; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border:0; background:none; font:inherit; font-size:18px; font-weight:600; color:#0E1525; text-align:left; cursor:pointer;">What happens if the internet goes down at the hall?<span style="width:20px;height:20px;flex:none;background:currentColor;transform:rotate({{ f4.rot }});transition:transform .2s;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/plus.svg) center/contain no-repeat;"></span></button>
+          <sc-if value="{{ f4.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0; padding:0 48px 20px 0; color:#3A4357; text-wrap:pretty;">The ReMix+ gate app keeps scanning offline using the fee list it synced that morning. Scans upload as soon as the connection comes back.</p></sc-if>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:0 24px 96px;">
+    <div style="max-width:1200px; margin:0 auto; border-radius:24px; background:#fff; border:1px solid #E1DDD3; padding:72px 56px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:24px;">
+      <dc-import name="ReMix Logo" variant="mark" size="56" hint-size="56px,56px"></dc-import>
+      <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:52px; line-height:1.04; letter-spacing:-0.035em; max-width:780px; text-wrap:balance;">Move your class to ReMix this month. We move your students for you.</h2>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+        <a href="#" style="height:52px; padding:0 24px; display:flex; align-items:center; border-radius:10px; background:#2B4BF2; color:#fff; font-weight:600; text-decoration:none;" style-hover="background:#2140DB;">Start free trial</a>
+        <a href="#" style="height:52px; padding:0 24px; display:flex; align-items:center; gap:8px; border-radius:10px; border:1px solid #0E1525; color:#0E1525; font-weight:600; text-decoration:none;" style-hover="background:#F1EFE9;"><span style="width:18px;height:18px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/message-circle.svg) center/contain no-repeat;"></span>Chat on WhatsApp</a>
+      </div>
+      <span style="font-size:14px; color:#5B6478;">30-day free trial · No card needed · Cancel any time</span>
+    </div>
+  </section>
+
+  <dc-import name="Site Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;headline&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;A&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;],&quot;tsType&quot;:&quot;'A' | 'B'&quot;,&quot;section&quot;:&quot;Hero&quot;}}">
+class Component extends DCLogic {
+  state = { n: 1, tab: 0, faq: 0, w: window.innerWidth };
+  componentDidMount() { this.onR = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); }
+  renderVals() {
+    const counts = [100, 300, 1000, 2500];
+    const s = counts[this.state.n];
+    const plan = s <= 150 ? ['Tutor', 3000, 50] : s <= 1500 ? ['Institute', 9900, 45] : ['Enterprise', 25000, 35];
+    const remix = plan[1] + plan[2] * s;
+    const cards = s * 1.5 * 150;
+    const f = v => 'LKR ' + Math.round(v).toLocaleString('en-US');
+    const pill = i => i === this.state.n
+      ? { bg: '#0E1525', fg: '#FFFFFF', border: '#0E1525' }
+      : { bg: '#FFFFFF', fg: '#0E1525', border: '#C9D1F5' };
+    const tab = i => i === this.state.tab
+      ? { bg: '#FFFFFF', fg: '#0E1525', shadow: '0 1px 2px rgba(14,21,37,.12)' }
+      : { bg: 'transparent', fg: '#5B6478', shadow: 'none' };
+    const fq = i => ({ open: this.state.faq === i, rot: this.state.faq === i ? '45deg' : '0deg' });
+    const toggle = i => () => this.setState(st => ({ faq: st.faq === i ? -1 : i }));
+    const v = {
+      wideNav: this.state.w >= 1100,
+      headlineA: (this.props.headline ?? 'A') === 'A',
+      headlineB: this.props.headline === 'B',
+      planName: plan[0],
+      planFormula: f(plan[1]) + ' + ' + s.toLocaleString('en-US') + ' × LKR ' + plan[2],
+      remixPrice: f(remix),
+      cardPrice: f(cards),
+      savePrice: f(cards - remix),
+      showAdmin: this.state.tab === 0, showStudent: this.state.tab === 1, showParent: this.state.tab === 2,
+    };
+    for (let i = 0; i < 4; i++) { v['p' + i] = pill(i); v['pick' + i] = () => this.setState({ n: i }); }
+    for (let i = 0; i < 3; i++) { v['t' + i] = tab(i); v['tab' + i] = () => this.setState({ tab: i }); }
+    for (let i = 0; i < 5; i++) { v['f' + i] = fq(i); v['faq' + i] = toggle(i); }
+    return v;
+  }
+}
+</script>
+</body>
+</html>

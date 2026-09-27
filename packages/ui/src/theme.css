@@ -1,0 +1,165 @@
+/*
+ * ReMix design tokens — Tailwind CSS v4.
+ * Source of truth: design/claude-design/ReMix Brand.dc.html + uploads/recca-labs-design-system_1.md
+ * Every colour/radius/shadow used in any app comes from here. Never write hex values in components.
+ *
+ * Import AFTER `@import "tailwindcss";` in each app's globals.css.
+ * Tenants (institutes) may override ONLY --color-brand* (and optionally --color-accent) at runtime.
+ */
+
+@theme {
+  /* ---------- Brand ---------- */
+  --color-brand: #2b4bf2; /* actions, links, active nav */
+  --color-brand-hover: #2140db;
+  --color-brand-soft: #eef1ff; /* selected rows, soft badges, icon tiles, pricing band */
+  --color-brand-line: #c9d1f5; /* borders on brand-soft surfaces */
+  --color-brand-on-dark: #6f86ff; /* brand blue on ink backgrounds */
+
+  --color-accent: #f2a516; /* the amber stroke of the X; highlights, used sparingly */
+  --color-accent-on-dark: #f7b940;
+  --color-accent-soft: #fdf1d8; /* "New" badges */
+  --color-accent-tint: #fff8eb; /* fee-due banners */
+  --color-accent-line: #f3d59b;
+  --color-accent-ink: #8a5200; /* text on accent-soft (AA contrast) */
+
+  /* ---------- Neutrals ---------- */
+  --color-ink: #0e1525; /* main text; dark bands; footer */
+  --color-ink-2: #3a4357; /* body copy on marketing, nav links */
+  --color-muted: #5b6478; /* secondary text */
+  --color-line: #e4e7ee; /* app borders */
+  --color-line-soft: #eef0f4; /* table row dividers */
+  --color-line-strong: #8a93a6; /* form-control borders (≥ 3:1 against white, WCAG 1.4.11) */
+  --color-surface: #ffffff; /* cards, tables */
+  --color-canvas: #f6f7fa; /* app background */
+
+  /* Warm marketing neutrals (remix.lk only) */
+  --color-paper: #fbfaf7; /* marketing page background */
+  --color-paper-2: #f1efe9; /* outline-button hover, segmented control track */
+  --color-paper-3: #f7f5f0; /* browser chrome in mockups */
+  --color-line-warm: #e1ddd3; /* marketing borders */
+  --color-line-warm-soft: #ece9e2; /* header bottom border */
+
+  /* Night (dark bands, footer, platform-admin sidebar) */
+  --color-night: #0e1525;
+  --color-night-2: #121a2b; /* cards on night */
+  --color-night-line: #262d3d;
+  --color-night-muted: #b5bccb;
+
+  /* ---------- Status (always paired with a word or icon) ---------- */
+  --color-success: #12a150;
+  --color-success-soft: #e8f6ee;
+  --color-success-ink: #0b7a3b;
+  --color-success-on-dark: #3ccb7f; /* check marks on night cards */
+  --color-warning: #d98a00;
+  --color-warning-soft: #fff4e0;
+  --color-danger: #d92d20;
+  --color-danger-ink: #b42318;
+  --color-danger-soft: #fef3f2;
+  --color-info: #0b84d9;
+  --color-info-soft: #e6f3fc;
+
+  /* ---------- Typography ---------- */
+  /* Font families are wired to next/font CSS variables in each app's layout. */
+  --font-display: var(--font-bricolage), 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-sans: var(--font-geist), 'Geist', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), 'Geist Mono', ui-monospace, monospace;
+  --font-sinhala: var(--font-noto-sinhala), 'Noto Sans Sinhala', var(--font-geist), sans-serif;
+  --font-tamil: var(--font-noto-tamil), 'Noto Sans Tamil', var(--font-geist), sans-serif;
+
+  /* Marketing display sizes (from ReMix Home.dc.html) */
+  --text-display-xl: 4.125rem; /* 66px hero */
+  --text-display-xl--line-height: 1;
+  --text-display-xl--letter-spacing: -0.035em;
+  --text-display-lg: 3.25rem; /* 52px final CTA */
+  --text-display-lg--line-height: 1.04;
+  --text-display-lg--letter-spacing: -0.035em;
+  --text-display: 2.875rem; /* 46px section titles */
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.03em;
+
+  /* ---------- Radius ---------- */
+  --radius-xs: 6px; /* inputs, badges */
+  --radius-sm: 8px;
+  --radius-md: 10px; /* buttons, app cards */
+  --radius-lg: 14px; /* mockup frames */
+  --radius-card: 16px; /* marketing cards, modals */
+  --radius-band: 24px; /* marketing bands (pricing, CTA) */
+
+  /* ---------- Shadow ---------- */
+  --shadow-card: 0 8px 30px rgb(14 21 37 / 0.08); /* marketing cards, popovers */
+  --shadow-card-strong: 0 8px 30px rgb(14 21 37 / 0.18); /* highlighted plan card */
+  --shadow-float: 0 20px 50px rgb(14 21 37 / 0.22); /* phone mockup */
+  --shadow-seg: 0 1px 2px rgb(14 21 37 / 0.12); /* active segmented tab */
+
+  /* ---------- Layout ---------- */
+  --container-marketing: 1200px;
+  --container-app: 1440px;
+}
+
+/* Dark mode for the product apps (web). remix.lk ships light-only, matching the design. */
+.dark {
+  --color-brand: #6f86ff;
+  --color-brand-hover: #8a9cff;
+  --color-brand-soft: #1c2254;
+  --color-accent: #f7b940;
+  --color-ink: #eef1f7;
+  --color-ink-2: #c9cfdc;
+  --color-muted: #9aa3b5;
+  --color-line: #262d3d;
+  --color-line-soft: #1d2433;
+  --color-surface: #121826;
+  --color-canvas: #0b0f19;
+  --color-success: #3ccb7f;
+  --color-warning: #f2b233;
+  --color-danger: #f97066;
+  --color-info: #4fb3f5;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Sinhala & Tamil script fonts. Size (+1px) and line-height (+4px) bumps are applied per
+     component with the `si:` / `ta:` variants — never globally, because em-based bumps compound. */
+  :lang(si) {
+    font-family: var(--font-sinhala);
+  }
+  :lang(ta) {
+    font-family: var(--font-tamil);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Script variants: `si:text-[17px] ta:leading-7` */
+@custom-variant si (&:where(:lang(si), :lang(si) *));
+@custom-variant ta (&:where(:lang(ta), :lang(ta) *));
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility text-pretty {
+  text-wrap: pretty;
+}

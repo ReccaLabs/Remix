@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "For tuition institutes",
+    "description": "ReMix for institutes with many teachers and hundreds of students. Owner, teacher, cashier and gatekeeper roles, a bank slip queue, cash counter, halls and timetable, and reports for your accountant."
+  },
+  "hero": {
+    "eyebrow": "For institutes",
+    "title": "Every teacher, hall and cashier on one system.",
+    "subtitle": "For institutes with many teachers and hundreds of students. Each person sees only what their job needs, and you see all of it."
+  },
+  "roles": {
+    "title": "Who sees what",
+    "items": {
+      "owner": {
+        "title": "Owner",
+        "body": "Income by class and month, unpaid students, attendance trends, staff and settings."
+      },
+      "teacher": {
+        "title": "Teacher",
+        "body": "Their own classes, lessons and Zoom sessions. No access to other teachers' income."
+      },
+      "cashier": {
+        "title": "Cashier",
+        "body": "Cash counter and bank slip queue. Search a student, pick the month, print the receipt."
+      },
+      "gatekeeper": {
+        "title": "Gatekeeper",
+        "body": "The ReMix+ gate app only. Scan, see paid or unpaid, let them in."
+      }
+    }
+  },
+  "rush": {
+    "title": "Built for the Saturday rush at the counter.",
+    "items": {
+      "slips": {
+        "title": "Bank slip queue",
+        "body": "Slip image beside the expected amount. Approve with A, reject with R, next slip loads by itself."
+      },
+      "cash": {
+        "title": "Cash counter mode",
+        "body": "Three cashiers at once, each with their own login and end-of-day total."
+      },
+      "halls": {
+        "title": "Halls and timetable",
+        "body": "Hall A, Hall B and Zoom in one weekly view. Expected versus present for every class."
+      },
+      "reports": {
+        "title": "Reports you can hand over",
+        "body": "Income by class and teacher, exported to CSV or PDF for your accountant."
+      }
+    }
+  },
+  "data": {
+    "title": "Your data stays yours.",
+    "items": {
+      "separate": {
+        "title": "Kept separate.",
+        "body": "No other institute can see your students or income."
+      },
+      "support": {
+        "title": "Recorded support.",
+        "body": "If Recca staff open your account, it's logged with a reason and you see a banner."
+      },
+      "audit": {
+        "title": "Audit log.",
+        "body": "See who approved which payment and who changed which fee."
+      },
+      "backups": {
+        "title": "Nightly backups.",
+        "body": "Export everything to CSV whenever you want."
+      }
+    }
+  },
+  "plan": {
+    "label": "Example monthly price for an institute with {students, number} students",
+    "badge": "Institute plan",
+    "example": "Example · {students, number} students",
+    "perMonth": "/month",
+    "base": "Base",
+    "perStudent": "{students, number} students × {perStudent}",
+    "cardModel": "Per-class-card model",
+    "assumption": "Assumes {classes} classes per student at {perCard} per class card.",
+    "enterprise": "Branches or {max, number}+ students? See Enterprise"
+  },
+  "demo": {
+    "title": "Book a demo",
+    "body": "A 30-minute call, at your institute or on Zoom. We'll show ReMix with your own classes and fees.",
+    "cardTitle": "What happens in the demo",
+    "points": {
+      "call": "A 30-minute call with the ReMix team",
+      "place": "At your institute or on Zoom, whichever suits you",
+      "own": "We show ReMix with your own classes and fees"
+    },
+    "cta": "Request a demo",
+    "note": "We reply on WhatsApp, usually within two working hours.",
+    "trial": "Rather try it yourself first? <link>Start a free trial</link>"
+  }
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Noto+Sans+Sinhala:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&display=swap" rel="stylesheet">
+</helmet>
+<header style="background:rgba(251,250,247,0.92); backdrop-filter:blur(10px); border-bottom:1px solid #ECE9E2; font-family:'Geist',system-ui,sans-serif;">
+  <div style="max-width:1200px; margin:0 auto; padding:0 24px; height:68px; display:flex; align-items:center; gap:28px;">
+    <a href="ReMix%20Home.dc.html" style="display:flex; text-decoration:none;"><dc-import name="ReMix Logo" size="26" hint-size="92px,26px"></dc-import></a>
+    <nav style="display:flex; gap:24px; font-size:15px; line-height:20px; font-weight:500; white-space:nowrap; flex:none;">
+      <a href="ReMix%20Home.dc.html#features" style="color:#3A4357; text-decoration:none;" style-hover="color:#0E1525;">Features</a>
+      <a href="Pricing.dc.html" style="color:{{ c.pricing }}; text-decoration:none;" style-hover="color:#0E1525;">Pricing</a>
+      <sc-if value="{{ wideNav }}" hint-placeholder-val="{{ true }}">
+        <a href="For%20Teachers.dc.html" style="color:{{ c.teachers }}; text-decoration:none;" style-hover="color:#0E1525;">For teachers</a>
+        <a href="For%20Institutes.dc.html" style="color:{{ c.institutes }}; text-decoration:none;" style-hover="color:#0E1525;">For institutes</a>
+        <a href="Guides.dc.html" style="color:{{ c.guides }}; text-decoration:none;" style-hover="color:#0E1525;">Guides</a>
+      </sc-if>
+    </nav>
+    <div style="flex:1;"></div>
+    <div style="display:flex; align-items:center; gap:16px; flex:none; white-space:nowrap;">
+      <span style="display:flex; align-items:center; gap:6px; height:30px; padding:0 10px; border:1px solid #E1DDD3; border-radius:999px; font-size:13px; color:#3A4357;"><span style="font-weight:600; color:#0E1525;">EN</span>·<span style="font-family:'Noto Sans Sinhala',sans-serif;">සිං</span>·<span style="font-family:'Noto Sans Tamil',sans-serif;">த</span></span>
+      <a href="#" style="font-size:15px; font-weight:500; color:#0E1525; text-decoration:none;">Find your class</a>
+      <a href="#" style="height:40px; padding:0 16px; display:flex; align-items:center; border-radius:10px; background:#2B4BF2; color:#fff; font-size:15px; font-weight:600; text-decoration:none;" style-hover="background:#2140DB;">Start free</a>
+    </div>
+  </div>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:68},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;home&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;pricing&quot;,&quot;teachers&quot;,&quot;institutes&quot;,&quot;guides&quot;,&quot;about&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { w: window.innerWidth };
+  componentDidMount() { this.onR = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); }
+  renderVals() {
+    const a = this.props.active;
+    const c = {};
+    ['pricing', 'teachers', 'institutes', 'guides'].forEach(k => c[k] = a === k ? '#2B4BF2' : '#3A4357');
+    return { c, wideNav: this.state.w >= 1100 };
+  }
+}
+</script>
+</body>
+</html>

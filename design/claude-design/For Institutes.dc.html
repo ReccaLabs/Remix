@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FBFAF7;font-family:'Geist',system-ui,sans-serif;color:#0E1525;-webkit-font-smoothing:antialiased}
+a{color:#2B4BF2;text-decoration:none}a:hover{text-decoration:underline}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div data-screen-label="For Institutes" style="background:#FBFAF7; font-size:16px; line-height:24px; min-width:360px;">
+  <dc-import name="Site Header" active="institutes" style="position:sticky; top:0; z-index:20;" hint-size="100%,68px"></dc-import>
+
+  <section style="max-width:1200px; margin:0 auto; padding:72px 24px 64px; display:flex; flex-direction:column; gap:24px;">
+    <span style="font-size:14px; font-weight:600; color:#2B4BF2;">For institutes</span>
+    <h1 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:68px; line-height:1.0; letter-spacing:-0.035em; max-width:900px; text-wrap:balance;">Every teacher, hall and cashier on one system.</h1>
+    <p style="margin:0; font-size:18px; line-height:28px; color:#3A4357; max-width:620px; text-wrap:pretty;">For institutes with many teachers and hundreds of students. Each person sees only what their job needs, and you see all of it.</p>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <a href="#demo" style="height:48px; padding:0 22px; display:flex; align-items:center; border-radius:10px; background:#2B4BF2; color:#fff; font-weight:600; text-decoration:none;" style-hover="background:#2140DB;">Book a demo</a>
+      <a href="#" style="height:48px; padding:0 22px; display:flex; align-items:center; border-radius:10px; border:1px solid #0E1525; color:#0E1525; font-weight:600; text-decoration:none;" style-hover="background:#F1EFE9;">Start free trial</a>
+    </div>
+  </section>
+
+  <section style="max-width:1200px; margin:0 auto; padding:0 24px 96px;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); border:1px solid #E1DDD3; border-radius:16px; background:#fff; overflow:hidden;">
+      <div style="padding:28px; border-right:1px solid #E1DDD3; display:flex; flex-direction:column; gap:12px;">
+        <span style="width:40px; height:40px; border-radius:10px; background:#0E1525; color:#fff; display:flex; align-items:center; justify-content:center;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/building-2.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Owner</h3>
+        <p style="margin:0; color:#5B6478;">Income by class and month, unpaid students, attendance trends, staff and settings.</p>
+      </div>
+      <div style="padding:28px; border-right:1px solid #E1DDD3; display:flex; flex-direction:column; gap:12px;">
+        <span style="width:40px; height:40px; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/graduation-cap.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Teacher</h3>
+        <p style="margin:0; color:#5B6478;">Their own classes, lessons and Zoom sessions. No access to other teachers' income.</p>
+      </div>
+      <div style="padding:28px; border-right:1px solid #E1DDD3; display:flex; flex-direction:column; gap:12px;">
+        <span style="width:40px; height:40px; border-radius:10px; background:#FDF1D8; color:#8A5200; display:flex; align-items:center; justify-content:center;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/receipt.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Cashier</h3>
+        <p style="margin:0; color:#5B6478;">Cash counter and bank slip queue. Search a student, pick the month, print the receipt.</p>
+      </div>
+      <div style="padding:28px; display:flex; flex-direction:column; gap:12px;">
+        <span style="width:40px; height:40px; border-radius:10px; background:#E8F6EE; color:#0B7A3B; display:flex; align-items:center; justify-content:center;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/scan-line.svg) center/contain no-repeat;"></span></span>
+        <h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Gatekeeper</h3>
+        <p style="margin:0; color:#5B6478;">The ReMix+ gate app only. Scan, see paid or unpaid, let them in.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#0E1525; color:#fff;">
+    <div style="max-width:1200px; margin:0 auto; padding:88px 24px; display:flex; flex-direction:column; gap:48px;">
+      <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em; max-width:720px; text-wrap:balance;">Built for the Saturday rush at the counter.</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:32px 40px;">
+        <div style="display:flex; flex-direction:column; gap:8px; padding-top:20px; border-top:1px solid #262D3D;"><span style="font-size:18px; font-weight:600;">Bank slip queue</span><span style="color:#B5BCCB;">Slip image beside the expected amount. Approve with A, reject with R, next slip loads by itself.</span></div>
+        <div style="display:flex; flex-direction:column; gap:8px; padding-top:20px; border-top:1px solid #262D3D;"><span style="font-size:18px; font-weight:600;">Cash counter mode</span><span style="color:#B5BCCB;">Three cashiers at once, each with their own login and end-of-day total.</span></div>
+        <div style="display:flex; flex-direction:column; gap:8px; padding-top:20px; border-top:1px solid #262D3D;"><span style="font-size:18px; font-weight:600;">Halls and timetable</span><span style="color:#B5BCCB;">Hall A, Hall B and Zoom in one weekly view. Expected versus present for every class.</span></div>
+        <div style="display:flex; flex-direction:column; gap:8px; padding-top:20px; border-top:1px solid #262D3D;"><span style="font-size:18px; font-weight:600;">Reports you can hand over</span><span style="color:#B5BCCB;">Income by class and teacher, exported to CSV or PDF for your accountant.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1200px; margin:0 auto; padding:96px 24px; display:flex; flex-wrap:wrap; gap:48px; align-items:center;">
+    <div style="flex:1 1 440px; display:flex; flex-direction:column; gap:20px;">
+      <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em; text-wrap:balance;">Your data stays yours.</h2>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:12px;"><span style="width:20px;height:20px;flex:none;margin-top:2px;background:#12A150;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check-circle-2.svg) center/contain no-repeat;"></span><span><b style="font-weight:600;">Kept separate.</b> <span style="color:#3A4357;">No other institute can see your students or income.</span></span></div>
+        <div style="display:flex; gap:12px;"><span style="width:20px;height:20px;flex:none;margin-top:2px;background:#12A150;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check-circle-2.svg) center/contain no-repeat;"></span><span><b style="font-weight:600;">Recorded support.</b> <span style="color:#3A4357;">If Recca staff open your account, it's logged with a reason and you see a banner.</span></span></div>
+        <div style="display:flex; gap:12px;"><span style="width:20px;height:20px;flex:none;margin-top:2px;background:#12A150;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check-circle-2.svg) center/contain no-repeat;"></span><span><b style="font-weight:600;">Audit log.</b> <span style="color:#3A4357;">See who approved which payment and who changed which fee.</span></span></div>
+        <div style="display:flex; gap:12px;"><span style="width:20px;height:20px;flex:none;margin-top:2px;background:#12A150;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check-circle-2.svg) center/contain no-repeat;"></span><span><b style="font-weight:600;">Nightly backups.</b> <span style="color:#3A4357;">Export everything to CSV whenever you want.</span></span></div>
+      </div>
+    </div>
+    <div style="flex:0 1 460px; background:#fff; border:1px solid #E1DDD3; border-radius:16px; box-shadow:0 8px 30px rgba(14,21,37,.08); padding:32px; display:flex; flex-direction:column; gap:20px; font-variant-numeric:tabular-nums;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="height:26px; padding:0 10px; display:flex; align-items:center; border-radius:6px; background:#0E1525; color:#fff; font-size:13px; font-weight:600;">Institute plan</span>
+        <span style="font-size:13px; color:#5B6478;">Example · 800 students</span>
+      </div>
+      <span style="font-family:'Bricolage Grotesque',sans-serif; font-size:48px; line-height:52px; font-weight:700; letter-spacing:-0.02em;">LKR 45,900<span style="font-family:'Geist',sans-serif; font-size:16px; font-weight:500; color:#5B6478; letter-spacing:0;"> /month</span></span>
+      <div style="display:flex; flex-direction:column; gap:10px; padding-top:16px; border-top:1px solid #E4E7EE; font-size:15px;">
+        <div style="display:flex; justify-content:space-between;"><span style="color:#5B6478;">Base</span><span>LKR 9,900</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:#5B6478;">800 students × LKR 45</span><span>LKR 36,000</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:#5B6478;">Per-class-card model</span><span style="text-decoration:line-through; color:#5B6478;">LKR 180,000</span></div>
+      </div>
+      <a href="Pricing.dc.html" style="font-size:14px; font-weight:500;">Branches or 1,500+ students? See Enterprise →</a>
+    </div>
+  </section>
+
+  <section id="demo" style="padding:0 24px 96px;">
+    <div style="max-width:1200px; margin:0 auto; background:#EEF1FF; border-radius:24px; padding:56px; display:flex; flex-wrap:wrap; gap:48px;">
+      <div style="flex:1 1 380px; display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em;">Book a demo</h2>
+        <p style="margin:0; color:#3A4357; max-width:400px;">A 30-minute call, at your institute or on Zoom. We'll show ReMix with your own classes and fees.</p>
+      </div>
+      <div style="flex:1 1 440px; background:#fff; border-radius:16px; padding:28px; display:flex; flex-direction:column; gap:16px;">
+        <sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}">
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:500;">Your name<input placeholder="Kamal Jayasinghe" style="height:44px; padding:0 12px; border:1px solid #D9DDE5; border-radius:6px; font:inherit; font-weight:400; font-size:16px;"></label>
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:500;">Institute name<input placeholder="Kamal Physics" style="height:44px; padding:0 12px; border:1px solid #D9DDE5; border-radius:6px; font:inherit; font-weight:400; font-size:16px;"></label>
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:500;">Phone (WhatsApp)
+            <div style="display:flex; height:44px; border:1px solid #D9DDE5; border-radius:6px; overflow:hidden;"><span style="padding:0 12px; display:flex; align-items:center; background:#F6F7FA; border-right:1px solid #D9DDE5; font-weight:500;">+94</span><input placeholder="77 123 4567" style="flex:1; min-width:0; border:0; padding:0 12px; font:inherit; font-weight:400; font-size:16px; outline:none;"></div>
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:14px; font-weight:500;">Number of students
+            <select style="height:44px; padding:0 10px; border:1px solid #D9DDE5; border-radius:6px; font:inherit; font-weight:400; font-size:16px; background:#fff;"><option>Under 150</option><option selected="">150 – 500</option><option>500 – 1,500</option><option>More than 1,500</option></select>
+          </label>
+          <button onClick="{{ send }}" style="height:48px; border:0; border-radius:10px; background:#2B4BF2; color:#fff; font:inherit; font-weight:600; cursor:pointer;" style-hover="background:#2140DB;">Request a demo</button>
+        </sc-if>
+        <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
+          <div style="min-height:320px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:12px;">
+            <span style="width:44px; height:44px; border-radius:50%; background:#E8F6EE; color:#0B7A3B; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check.svg) center/contain no-repeat;"></span></span>
+            <span style="font-size:22px; line-height:28px; font-weight:600;">Thanks. We'll message you on WhatsApp today.</span>
+            <span style="color:#5B6478;">Usually within two working hours.</span>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </section>
+
+  <dc-import name="Site Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { sent: false };
+  renderVals() {
+    return { sent: this.state.sent, notSent: !this.state.sent, send: () => this.setState({ sent: true }) };
+  }
+}
+</script>
+</body>
+</html>

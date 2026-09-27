@@ -1,0 +1,3 @@
+# Cloudflare Pages redirects. Root → English until language detection is added.
+/      /en/   302
+/en    /en/   301

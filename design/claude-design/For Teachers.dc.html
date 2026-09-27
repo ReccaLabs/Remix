@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FBFAF7;font-family:'Geist',system-ui,sans-serif;color:#0E1525;-webkit-font-smoothing:antialiased}
+a{color:#2B4BF2;text-decoration:none}a:hover{text-decoration:underline}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div data-screen-label="For Teachers" style="background:#FBFAF7; font-size:16px; line-height:24px; min-width:360px;">
+  <dc-import name="Site Header" active="teachers" style="position:sticky; top:0; z-index:20;" hint-size="100%,68px"></dc-import>
+
+  <section style="max-width:1200px; margin:0 auto; padding:72px 24px 88px; display:flex; flex-wrap:wrap; gap:56px; align-items:center;">
+    <div style="flex:1 1 480px; display:flex; flex-direction:column; gap:24px;">
+      <span style="font-size:14px; font-weight:600; color:#2B4BF2;">For teachers</span>
+      <h1 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:64px; line-height:1.0; letter-spacing:-0.035em; text-wrap:balance;">You teach. ReMix runs the class.</h1>
+      <p style="margin:0; font-size:18px; line-height:28px; color:#3A4357; max-width:520px; text-wrap:pretty;">For a teacher with up to 150 students. Your website, fees, Zoom classes and protected lessons in one place, set up for you in a day.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <a href="#" style="height:48px; padding:0 22px; display:flex; align-items:center; border-radius:10px; background:#2B4BF2; color:#fff; font-weight:600; text-decoration:none;" style-hover="background:#2140DB;">Start free trial</a>
+        <a href="Pricing.dc.html" style="height:48px; padding:0 22px; display:flex; align-items:center; border-radius:10px; border:1px solid #0E1525; color:#0E1525; font-weight:600; text-decoration:none;" style-hover="background:#F1EFE9;">See pricing</a>
+      </div>
+    </div>
+    <div style="flex:0 1 440px; background:#fff; border:1px solid #E1DDD3; border-radius:16px; box-shadow:0 8px 30px rgba(14,21,37,.08); padding:32px; display:flex; flex-direction:column; gap:20px; font-variant-numeric:tabular-nums;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="height:26px; padding:0 10px; display:flex; align-items:center; border-radius:6px; background:#0E1525; color:#fff; font-size:13px; font-weight:600;">Tutor plan</span>
+        <span style="font-size:13px; color:#5B6478;">Example · 120 students</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <span style="font-size:14px; color:#5B6478;">You pay ReMix</span>
+        <span style="font-family:'Bricolage Grotesque',sans-serif; font-size:48px; line-height:52px; font-weight:700; letter-spacing:-0.02em;">LKR 9,000<span style="font-family:'Geist',sans-serif; font-size:16px; font-weight:500; color:#5B6478; letter-spacing:0;"> /month</span></span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px; padding-top:16px; border-top:1px solid #E4E7EE; font-size:15px;">
+        <div style="display:flex; justify-content:space-between;"><span style="color:#5B6478;">Base</span><span>LKR 3,000</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:#5B6478;">120 students × LKR 50</span><span>LKR 6,000</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:#5B6478;">Per-class-card model</span><span style="text-decoration:line-through; color:#5B6478;">LKR 27,000</span></div>
+      </div>
+      <span style="font-size:13px; color:#5B6478;">Assumes 1.5 classes per student at LKR 150 per class card.</span>
+    </div>
+  </section>
+
+  <section style="background:#0E1525; color:#fff;">
+    <div style="max-width:1200px; margin:0 auto; padding:88px 24px; display:flex; flex-wrap:wrap; gap:56px;">
+      <div style="flex:1 1 320px; display:flex; flex-direction:column; gap:16px;">
+        <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em; text-wrap:balance;">A Saturday with ReMix.</h2>
+        <p style="margin:0; color:#B5BCCB; max-width:360px;">One teacher, one hall, 180 students in the morning batch. Here's what you no longer do by hand.</p>
+      </div>
+      <div style="flex:2 1 560px; display:flex; flex-direction:column;">
+        <div style="display:grid; grid-template-columns:96px minmax(0,1fr); gap:24px; padding:20px 0; border-top:1px solid #262D3D;"><span style="font-family:'Geist Mono',monospace; font-size:14px; color:#F7B940;">7:40 AM</span><div style="display:flex; flex-direction:column; gap:4px;"><span style="font-size:18px; font-weight:600;">Students scan in at the hall door</span><span style="color:#B5BCCB;">Unpaid students are flagged at the gate, not in the middle of your lesson.</span></div></div>
+        <div style="display:grid; grid-template-columns:96px minmax(0,1fr); gap:24px; padding:20px 0; border-top:1px solid #262D3D;"><span style="font-family:'Geist Mono',monospace; font-size:14px; color:#F7B940;">8:00 AM</span><div style="display:flex; flex-direction:column; gap:4px;"><span style="font-size:18px; font-weight:600;">Zoom students join under their own names</span><span style="color:#B5BCCB;">No shared links. Attendance from Zoom is recorded next to the hall list.</span></div></div>
+        <div style="display:grid; grid-template-columns:96px minmax(0,1fr); gap:24px; padding:20px 0; border-top:1px solid #262D3D;"><span style="font-family:'Geist Mono',monospace; font-size:14px; color:#F7B940;">11:15 AM</span><div style="display:flex; flex-direction:column; gap:4px;"><span style="font-size:18px; font-weight:600;">You upload the recording</span><span style="color:#B5BCCB;">ReMix encrypts it and adds each viewer's student ID as a moving watermark.</span></div></div>
+        <div style="display:grid; grid-template-columns:96px minmax(0,1fr); gap:24px; padding:20px 0; border-top:1px solid #262D3D;"><span style="font-family:'Geist Mono',monospace; font-size:14px; color:#F7B940;">12:30 PM</span><div style="display:flex; flex-direction:column; gap:4px;"><span style="font-size:18px; font-weight:600;">Parents of absent students get an SMS</span><span style="color:#B5BCCB;">Sent automatically, in the parent's language.</span></div></div>
+        <div style="display:grid; grid-template-columns:96px minmax(0,1fr); gap:24px; padding:20px 0; border-top:1px solid #262D3D; border-bottom:1px solid #262D3D;"><span style="font-family:'Geist Mono',monospace; font-size:14px; color:#F7B940;">8:00 PM</span><div style="display:flex; flex-direction:column; gap:4px;"><span style="font-size:18px; font-weight:600;">You approve 12 bank slips from your phone</span><span style="color:#B5BCCB;">Slip on the left, expected amount on the right. Press A to approve.</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1200px; margin:0 auto; padding:96px 24px; display:flex; flex-direction:column; gap:48px;">
+    <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:46px; line-height:1.05; letter-spacing:-0.03em; max-width:640px; text-wrap:balance;">Everything a one-teacher class needs.</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:40px 48px;">
+      <div style="display:flex; gap:16px;"><span style="width:44px; height:44px; flex:none; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/globe.svg) center/contain no-repeat;"></span></span><div style="display:flex; flex-direction:column; gap:6px;"><h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">A website with your name</h3><p style="margin:0; color:#5B6478;">yourname.remix.lk with your photo, classes, timetable and an Enrol button.</p></div></div>
+      <div style="display:flex; gap:16px;"><span style="width:44px; height:44px; flex:none; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wallet.svg) center/contain no-repeat;"></span></span><div style="display:flex; flex-direction:column; gap:6px;"><h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Fees without the notebook</h3><p style="margin:0; color:#5B6478;">Card, bank slip or cash, all in one list. See who hasn't paid for October in one tap.</p></div></div>
+      <div style="display:flex; gap:16px;"><span style="width:44px; height:44px; flex:none; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/shield-check.svg) center/contain no-repeat;"></span></span><div style="display:flex; flex-direction:column; gap:6px;"><h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Lessons only paid students see</h3><p style="margin:0; color:#5B6478;">Each month's recordings unlock when that month is paid. Downloading is turned off.</p></div></div>
+      <div style="display:flex; gap:16px;"><span style="width:44px; height:44px; flex:none; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/smartphone.svg) center/contain no-repeat;"></span></span><div style="display:flex; flex-direction:column; gap:6px;"><h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Two devices per student</h3><p style="margin:0; color:#5B6478;">One login can't be shared around a WhatsApp group. Students sign out old phones themselves.</p></div></div>
+      <div style="display:flex; gap:16px;"><span style="width:44px; height:44px; flex:none; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/file-text.svg) center/contain no-repeat;"></span></span><div style="display:flex; flex-direction:column; gap:6px;"><h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Tutes and papers</h3><p style="margin:0; color:#5B6478;">Share PDFs by class and month. No more printing for students who missed the day.</p></div></div>
+      <div style="display:flex; gap:16px;"><span style="width:44px; height:44px; flex:none; border-radius:10px; background:#EEF1FF; color:#2B4BF2; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/languages.svg) center/contain no-repeat;"></span></span><div style="display:flex; flex-direction:column; gap:6px;"><h3 style="margin:0; font-size:19px; line-height:26px; font-weight:600;">Sinhala, Tamil or English</h3><p style="margin:0; color:#5B6478;">You, your students and their parents each use the language they prefer.</p></div></div>
+    </div>
+  </section>
+
+  <section style="padding:0 24px 96px;">
+    <div style="max-width:1200px; margin:0 auto; display:flex; flex-wrap:wrap; gap:16px;">
+      <div style="flex:1 1 460px; min-height:420px; border-radius:16px; background:repeating-linear-gradient(135deg,#F1EEE7 0 10px,#F7F5F0 10px 20px); border:1px solid #E1DDD3; display:flex; align-items:flex-end; padding:20px;">
+        <span style="font-family:'Geist Mono',monospace; font-size:13px; color:#5B6478; background:#fff; padding:4px 10px; border-radius:6px; border:1px solid #E1DDD3;">photo · teacher in a Sri Lankan tuition hall, warm daylight</span>
+      </div>
+      <div style="flex:1 1 460px; background:#EEF1FF; border-radius:16px; padding:48px; display:flex; flex-direction:column; gap:28px;">
+        <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:38px; line-height:1.08; letter-spacing:-0.025em;">Switch in three steps. We do the heavy lifting.</h2>
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div style="display:flex; gap:16px;"><span style="width:32px; height:32px; flex:none; border-radius:50%; background:#0E1525; color:#fff; font-weight:600; display:flex; align-items:center; justify-content:center; font-size:14px;">1</span><div><div style="font-weight:600;">Send us your student list</div><div style="color:#3A4357;">Excel, CSV, or a photo of your register book.</div></div></div>
+          <div style="display:flex; gap:16px;"><span style="width:32px; height:32px; flex:none; border-radius:50%; background:#0E1525; color:#fff; font-weight:600; display:flex; align-items:center; justify-content:center; font-size:14px;">2</span><div><div style="font-weight:600;">We set up your classes and website</div><div style="color:#3A4357;">Fees, timetable and your site, ready to check.</div></div></div>
+          <div style="display:flex; gap:16px;"><span style="width:32px; height:32px; flex:none; border-radius:50%; background:#0E1525; color:#fff; font-weight:600; display:flex; align-items:center; justify-content:center; font-size:14px;">3</span><div><div style="font-weight:600;">Share one link with your students</div><div style="color:#3A4357;">They sign in with their phone number and pay.</div></div></div>
+        </div>
+        <a href="#" style="align-self:flex-start; height:48px; padding:0 22px; display:flex; align-items:center; gap:8px; border-radius:10px; background:#2B4BF2; color:#fff; font-weight:600; text-decoration:none;" style-hover="background:#2140DB;"><span style="width:18px;height:18px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/message-circle.svg) center/contain no-repeat;"></span>Send your list on WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:0 24px 96px;">
+    <div style="max-width:1200px; margin:0 auto; border-radius:24px; background:#fff; border:1px solid #E1DDD3; padding:64px 56px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:32px;">
+      <div style="display:flex; flex-direction:column; gap:10px; max-width:620px;">
+        <h2 style="margin:0; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:44px; line-height:1.05; letter-spacing:-0.03em; text-wrap:balance;">Run next month's class on ReMix.</h2>
+        <span style="color:#5B6478;">Growing past one teacher? <a href="For%20Institutes.dc.html" style="font-weight:500;">See ReMix for institutes</a></span>
+      </div>
+      <a href="#" style="height:52px; padding:0 24px; display:flex; align-items:center; border-radius:10px; background:#2B4BF2; color:#fff; font-weight:600; text-decoration:none;" style-hover="background:#2140DB;">Start free trial</a>
+    </div>
+  </section>
+
+  <dc-import name="Site Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

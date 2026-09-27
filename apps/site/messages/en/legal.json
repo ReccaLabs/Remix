@@ -1,0 +1,374 @@
+{
+  "common": {
+    "eyebrow": "Legal",
+    "draftTitle": "Draft — pending legal review",
+    "draftBody": "This is a working draft written in plain English. It has not yet been reviewed by a lawyer and may change before ReMix launches.",
+    "lastUpdated": "Last updated <time>25 Sep 2026</time>",
+    "onThisPage": "On this page",
+    "questionsTitle": "Questions",
+    "questions": "Email hello@remix.lk about anything on this page. Report security issues to security@remix.lk.",
+    "relatedTitle": "Related",
+    "related": {
+      "privacy": "Privacy policy",
+      "terms": "Terms of service",
+      "dataProtection": "Data protection"
+    }
+  },
+  "privacy": {
+    "meta": {
+      "title": "Privacy policy",
+      "description": "How Recca Labs collects and uses personal data on remix.lk and in ReMix: what we collect, why, where it is stored, how long we keep it and your rights under Sri Lanka's PDPA."
+    },
+    "title": "Privacy policy",
+    "intro": "This policy explains what personal data Recca Labs collects through remix.lk and the ReMix platform, why we collect it and what you can ask us to do with it. We have tried to keep it short and clear.",
+    "sections": [
+      {
+        "id": "who-we-are",
+        "title": "Who we are",
+        "content": [
+          "ReMix is a platform for Sri Lankan tuition teachers and institutes, built and run by Recca Labs, based in Colombo, Sri Lanka. In this policy, \"we\" and \"us\" mean Recca Labs.",
+          "You can contact us about privacy at hello@remix.lk."
+        ]
+      },
+      {
+        "id": "our-role",
+        "title": "Our two roles",
+        "content": [
+          "The Personal Data Protection Act, No. 9 of 2022 (PDPA) separates the organisation that decides why and how data is used (the controller) from the organisation that handles data on its behalf (the processor). We act in both roles:",
+          [
+            "We are the controller for data we collect for ourselves: demo and trial requests on remix.lk, and the accounts and billing details of the teachers and institutes who use ReMix.",
+            "We are a processor for the data institutes put into ReMix about their students, parents and staff. The institute is the controller of that data and decides how it is used. Our Data protection page explains how we handle it."
+          ],
+          "If you are a student or parent, the privacy notice of your institute applies to your class data. Please contact your institute first; we will help them answer you."
+        ]
+      },
+      {
+        "id": "what-we-collect",
+        "title": "What we collect on remix.lk",
+        "content": [
+          [
+            "Demo and trial requests: your name, mobile number, whether you use WhatsApp on that number, your institute or class name, roughly how many students you have, your city and any message you write.",
+            "Security data: Cloudflare, which hosts remix.lk, processes your IP address and browser details to deliver the site and block attacks. We do not store your IP address with your request; we keep only the country it comes from.",
+            "Spam protection: the form uses Cloudflare Turnstile, which checks your browser to tell people from bots. It does not show image puzzles or set advertising cookies.",
+            "Analytics: we use Cloudflare Web Analytics, which counts page views without cookies and without tracking you across other websites."
+          ],
+          "remix.lk does not use advertising or tracking cookies, so there is no cookie banner."
+        ]
+      },
+      {
+        "id": "how-we-use",
+        "title": "How we use it",
+        "content": [
+          [
+            "To contact you about your demo or trial request, by WhatsApp, phone call or SMS.",
+            "To set up and run your ReMix account if you become a customer, including billing and support.",
+            "To keep remix.lk and ReMix secure and working, and to understand which pages are useful."
+          ],
+          "We do not sell personal data, and we do not use it for advertising."
+        ]
+      },
+      {
+        "id": "legal-basis",
+        "title": "Why we are allowed to use it",
+        "content": [
+          "Under the PDPA we rely on: taking steps you asked for before a contract (answering your demo or trial request); performing our contract with customers; our legitimate interest in keeping our services secure; complying with the law; and your consent where the law requires it. Where we rely on consent you can withdraw it at any time."
+        ]
+      },
+      {
+        "id": "sharing",
+        "title": "Who we share it with",
+        "content": [
+          "We share personal data only with service providers that help us run ReMix, only as much as they need, and under contracts that require them to protect it. For remix.lk these are:",
+          [
+            "Cloudflare: hosting, security, spam protection, the database that stores demo requests, and analytics.",
+            "Our email provider (currently Resend): delivering the notification of your request to our sales team."
+          ],
+          "The providers used by the ReMix platform itself are listed on the Data protection page. We will also disclose data if the law requires it, for example to comply with a court order."
+        ]
+      },
+      {
+        "id": "where-stored",
+        "title": "Where your data is stored",
+        "content": [
+          "The ReMix platform stores its data on servers in the European Union (Germany or Finland). Demo requests from remix.lk are stored in Cloudflare's database service, which we configure to keep the data in Western Europe. Cloudflare delivers the website itself from locations around the world.",
+          "Storing data outside Sri Lanka is a cross-border transfer under the PDPA. We use providers in countries with strong data protection laws and bind them by contract to protect the data."
+        ]
+      },
+      {
+        "id": "retention",
+        "title": "How long we keep it",
+        "content": [
+          [
+            "Demo and trial requests that don't lead to an account: deleted within 24 months.",
+            "Customer account and billing records: kept while the account is active, then for as long as tax and accounting law requires.",
+            "Security logs: kept for a limited period, normally no longer than 12 months."
+          ]
+        ]
+      },
+      {
+        "id": "your-rights",
+        "title": "Your rights",
+        "content": [
+          "Under the PDPA you can ask us to:",
+          [
+            "give you a copy of the personal data we hold about you;",
+            "correct data that is wrong or incomplete;",
+            "delete your data, or stop using it, where we have no good reason to keep it;",
+            "stop using your data where we rely on your consent."
+          ],
+          "Email hello@remix.lk to make a request. We may need to confirm who you are first. We will reply within the time the law allows. If you are unhappy with our answer, you can complain to the Data Protection Authority of Sri Lanka."
+        ]
+      },
+      {
+        "id": "children",
+        "title": "Children",
+        "content": [
+          "The demo form on remix.lk is for teachers and institutes and is not meant for anyone under 18.",
+          "Many students who use ReMix through their institute are under 18. The institute is responsible for getting consent from a parent or guardian where the law requires it, and ReMix gives parents access only to their own children's information."
+        ]
+      },
+      {
+        "id": "security",
+        "title": "Security",
+        "content": [
+          "We use encrypted connections (HTTPS), limit who on our team can access personal data, and protect our systems with the measures described on the Data protection page. No system is perfectly secure, so we cannot promise that data will never be exposed, but we work to prevent it and will tell affected people and institutes if something goes wrong.",
+          "If you find a security problem, please report it to security@remix.lk."
+        ]
+      },
+      {
+        "id": "changes",
+        "title": "Changes to this policy",
+        "content": [
+          "We will update this page when our practices change and show the date of the latest version at the top. If a change significantly affects how we use your data, we will tell customers directly before it takes effect."
+        ]
+      }
+    ]
+  },
+  "terms": {
+    "meta": {
+      "title": "Terms of service",
+      "description": "The terms for teachers and institutes using ReMix: trials, plans and billing, student payments, your content, acceptable use, suspension and data export."
+    },
+    "title": "Terms of service",
+    "intro": "These terms are the agreement between Recca Labs and the teacher or institute that signs up for ReMix. By starting a trial or a paid plan you agree to them on behalf of yourself or your institute.",
+    "sections": [
+      {
+        "id": "definitions",
+        "title": "Who these terms are for",
+        "content": [
+          "\"You\" means the teacher or institute that holds the ReMix account. \"Users\" means the people you invite, such as staff, students and parents. You must be at least 18 and have the authority to agree to these terms for your institute.",
+          "Students and parents use ReMix through your institute. Your institute's own rules and privacy notice apply to them."
+        ]
+      },
+      {
+        "id": "trial",
+        "title": "Free trial",
+        "content": [
+          "You can try ReMix free for the period shown when you sign up. We may limit features or student numbers during a trial. At the end of the trial you can choose a plan; if you don't, we will pause the account and later delete trial data as described below."
+        ]
+      },
+      {
+        "id": "plans",
+        "title": "Plans, fees and billing",
+        "content": [
+          [
+            "Prices are shown in Sri Lankan rupees on the Pricing page and are charged monthly unless we agree otherwise in writing.",
+            "Fees that depend on the number of active students are calculated from the students active in your account during the billing month.",
+            "Taxes are added where the law requires them.",
+            "We will give you at least 30 days' notice before a price change affects your account."
+          ],
+          "If a payment is overdue we will remind you first. If it stays unpaid we may limit or suspend the account until it is paid."
+        ]
+      },
+      {
+        "id": "student-payments",
+        "title": "Fees your students pay you",
+        "content": [
+          "Class fees that students pay online go to your own payment provider account (for example your PayHere merchant account) or your bank account. Recca Labs does not hold that money and is not a party to your arrangement with your students. You are responsible for your fees, refunds and receipts to your students, and for the terms of your payment provider."
+        ]
+      },
+      {
+        "id": "your-content",
+        "title": "Your content and data",
+        "content": [
+          "You own the content and data you put into ReMix, such as lessons, videos, notes, student records and payment records. You give us permission to store, process and display it only as needed to provide ReMix to you and your users.",
+          "You are responsible for having the rights to what you upload, and for having a lawful basis to add students' and parents' data, including parent or guardian consent for students under 18 where the law requires it. Our Data protection page explains how we process this data on your behalf."
+        ]
+      },
+      {
+        "id": "acceptable-use",
+        "title": "Acceptable use",
+        "content": [
+          "You and your users must not:",
+          [
+            "upload content that is illegal, or that you don't have the right to share;",
+            "use ReMix to harass anyone or to send spam, including unsolicited SMS;",
+            "try to access other institutes' data, test our security without permission, or disrupt the service;",
+            "resell or share access to ReMix outside your institute without our written agreement."
+          ],
+          "Please report security problems you find to security@remix.lk rather than testing them further."
+        ]
+      },
+      {
+        "id": "third-party",
+        "title": "Other services you connect",
+        "content": [
+          "ReMix can work with services such as Zoom, YouTube, PayHere and SMS gateways. When you connect one, its own terms apply to your use of it. We are not responsible for those services, but we will help you with problems in the connection."
+        ]
+      },
+      {
+        "id": "availability",
+        "title": "Availability and support",
+        "content": [
+          "We work to keep ReMix available and fast, and we plan maintenance outside busy class times where we can. We can't promise the service will never be interrupted. Any specific service levels will be set out in a separate written agreement with you.",
+          "Support is available by WhatsApp and email during our working hours."
+        ]
+      },
+      {
+        "id": "ending",
+        "title": "Cancelling, suspension and your data",
+        "content": [
+          [
+            "You can cancel at any time. Cancellation takes effect at the end of the current billing month.",
+            "We may suspend or close an account for serious or repeated breaches of these terms, or for unpaid fees after reminders. Except in urgent cases, we will warn you first.",
+            "After an account closes you have 30 days to export your data. After that we delete it from our live systems; copies in backups are deleted as the backups expire."
+          ]
+        ]
+      },
+      {
+        "id": "liability",
+        "title": "Liability",
+        "content": [
+          "ReMix is provided with reasonable care and skill. As far as the law allows, we are not liable for indirect losses such as lost profits, and our total liability to you in any 12-month period is limited to the fees you paid us in the three months before the claim. Nothing in these terms limits liability that cannot be limited by law."
+        ]
+      },
+      {
+        "id": "changes",
+        "title": "Changes to these terms",
+        "content": [
+          "We may update these terms. We will give you at least 30 days' notice of significant changes. If you don't agree, you can cancel before they take effect."
+        ]
+      },
+      {
+        "id": "law",
+        "title": "Governing law",
+        "content": [
+          "These terms are governed by the laws of Sri Lanka. We will first try to resolve any disagreement by talking to you. If that fails, the courts of Colombo will have jurisdiction."
+        ]
+      }
+    ]
+  },
+  "dataProtection": {
+    "meta": {
+      "title": "Data protection",
+      "description": "How ReMix protects student data for institutes: controller and processor roles under the PDPA, EU hosting, sub-processors, security measures, retention and breach notification."
+    },
+    "title": "Data protection",
+    "intro": "Institutes trust ReMix with their students' personal data, much of it about children. This page explains, for institutes and families, how we process that data on the institute's behalf and how we protect it.",
+    "sections": [
+      {
+        "id": "roles",
+        "title": "Who is responsible",
+        "content": [
+          "Each institute is the controller of the data it puts into ReMix about its students, parents and staff. Recca Labs is the processor: we handle that data only to provide ReMix to the institute and only on its instructions.",
+          "For our own website, customer accounts and billing, Recca Labs is the controller. Our Privacy policy covers that data."
+        ]
+      },
+      {
+        "id": "data",
+        "title": "What student data ReMix processes",
+        "content": [
+          "What is stored depends on the features an institute uses. Typically:",
+          [
+            "names, mobile numbers, grade and class enrolments;",
+            "fee invoices, payment records and bank slip images uploaded by students;",
+            "attendance, lesson viewing and live class participation;",
+            "login and device information, used for the two-device limit and to protect accounts;",
+            "parent accounts linked to their own children."
+          ],
+          "ReMix does not need national identity card (NIC) numbers, and we encourage institutes to collect only what they need."
+        ]
+      },
+      {
+        "id": "instructions",
+        "title": "Processing on the institute's instructions",
+        "content": [
+          "We use institute data only to provide and support ReMix for that institute, never for our own marketing and never to sell. Our team accesses an institute's data only when needed to provide support or fix a problem, and that access is recorded.",
+          "A Data Processing Agreement setting out these commitments is available to institutes on request."
+        ]
+      },
+      {
+        "id": "children",
+        "title": "Children and parental consent",
+        "content": [
+          "Many ReMix students are under 18. Institutes are responsible for getting consent from a parent or guardian where the PDPA requires it before adding a child's data. ReMix supports this by letting institutes link parent accounts, and parents can see only their own children's information."
+        ]
+      },
+      {
+        "id": "location",
+        "title": "Where data is stored",
+        "content": [
+          "ReMix platform data is stored on servers in the European Union (Germany or Finland), with encrypted backups kept with a second provider. Uploaded files are kept in private storage and shared only through links that expire within minutes.",
+          "This is a cross-border transfer under the PDPA. We choose providers in countries with strong data protection laws and bind them by contract to protect the data."
+        ]
+      },
+      {
+        "id": "subprocessors",
+        "title": "Sub-processors",
+        "content": [
+          "We use these service providers to run the platform. This list is a draft; we will publish the final list before launch and tell institutes before adding a new sub-processor.",
+          [
+            "Hetzner Online (Germany): application servers and databases in the EU.",
+            "Cloudflare: network security, content delivery and private file storage.",
+            "Bunny.net: protected video storage and delivery.",
+            "An email provider: account and receipt emails.",
+            "SMS providers such as Text.lk, or the institute's own SMS gateway: one-time codes and notifications.",
+            "Services an institute chooses to connect, such as PayHere or Zoom, process data under their own terms."
+          ]
+        ]
+      },
+      {
+        "id": "security",
+        "title": "How we protect it",
+        "content": [
+          [
+            "Each institute's data is kept separate at the database level, and we test that one institute cannot see another's data.",
+            "All connections are encrypted (HTTPS). Payment and integration keys that institutes give us are encrypted at rest.",
+            "Staff logins use two-step verification, and platform staff actions are logged.",
+            "Servers are on a private network with no direct public access to databases.",
+            "Backups are encrypted and stored with a different provider, and we practise restoring them."
+          ],
+          "We describe measures we take, not guarantees. No system is perfectly secure, and we keep improving ours."
+        ]
+      },
+      {
+        "id": "retention",
+        "title": "Retention and deletion",
+        "content": [
+          "We keep institute data while the institute uses ReMix. Institutes can delete individual records at any time. When an institute leaves, it has 30 days to export its data; after that we delete it from live systems, and backup copies are removed as backups expire."
+        ]
+      },
+      {
+        "id": "requests",
+        "title": "Requests from students and parents",
+        "content": [
+          "Students and parents who want to see, correct or delete their data should contact their institute, which decides how to respond. If a request reaches us, we will pass it to the institute and help them answer it within the time the law allows."
+        ]
+      },
+      {
+        "id": "breaches",
+        "title": "If something goes wrong",
+        "content": [
+          "If we become aware of a personal data breach affecting an institute's data, we will tell the institute without undue delay, explain what happened and what we are doing about it, and help them meet their own duties to notify the Data Protection Authority and affected people."
+        ]
+      },
+      {
+        "id": "contact",
+        "title": "Security contact",
+        "content": [
+          "Report security issues to security@remix.lk. Please give us a reasonable chance to fix a problem before sharing it publicly. Questions about data protection can go to hello@remix.lk."
+        ]
+      }
+    ]
+  }
+}

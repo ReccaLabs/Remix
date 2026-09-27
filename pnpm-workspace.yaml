@@ -1,0 +1,22 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+# Dependency install scripts are denied unless listed true here (supply-chain hardening).
+# These three ship prebuilt binaries via optional platform packages, so scripts are not needed.
+allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false
+  unrs-resolver: false
+minimumReleaseAgeExclude:
+  - '@turbo/darwin-64@2.11.4'
+  - '@turbo/darwin-arm64@2.11.4'
+  - '@turbo/linux-64@2.11.4'
+  - '@turbo/linux-arm64@2.11.4'
+  - '@turbo/windows-64@2.11.4'
+  - '@turbo/windows-arm64@2.11.4'
+  - icu-minify@4.14.7
+  - lucide-react@1.48.0
+  - next-intl-swc-plugin-extractor@4.14.7
+  - next-intl@4.14.7
+  - turbo@2.11.4
+  - use-intl@4.14.7

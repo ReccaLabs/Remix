@@ -1,0 +1,4 @@
+{
+  "extends": "@remix/config/tsconfig.library.json",
+  "include": ["src"]
+}

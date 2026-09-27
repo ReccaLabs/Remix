@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "title": "For tuition teachers",
+    "description": "ReMix for a teacher with up to {max, number} students. Your own website, fees and bank slips, Zoom classes and protected lessons in one place, set up for you in a day."
+  },
+  "hero": {
+    "eyebrow": "For teachers",
+    "title": "You teach. ReMix runs the class.",
+    "subtitle": "For a teacher with up to {max, number} students. Your website, fees, Zoom classes and protected lessons in one place, set up for you in a day.",
+    "seePricing": "See pricing"
+  },
+  "plan": {
+    "label": "Example monthly price for a teacher with {students, number} students",
+    "badge": "Tutor plan",
+    "example": "Example · {students, number} students",
+    "youPay": "You pay ReMix",
+    "perMonth": "/month",
+    "base": "Base",
+    "perStudent": "{students, number} students × {perStudent}",
+    "cardModel": "Per-class-card model",
+    "assumption": "Assumes {classes} classes per student at {perCard} per class card."
+  },
+  "saturday": {
+    "title": "A Saturday with ReMix.",
+    "subtitle": "One teacher, one hall, 120 students in the morning batch. Here's what you no longer do by hand.",
+    "items": {
+      "gate": {
+        "time": "7:40 AM",
+        "title": "Students scan in at the hall door",
+        "body": "Unpaid students are flagged at the gate, not in the middle of your lesson."
+      },
+      "zoom": {
+        "time": "8:00 AM",
+        "title": "Zoom students join under their own names",
+        "body": "No shared links. Attendance from Zoom is recorded next to the hall list."
+      },
+      "recording": {
+        "time": "11:15 AM",
+        "title": "You upload the recording",
+        "body": "ReMix encrypts it and adds each viewer's student ID as a moving watermark."
+      },
+      "sms": {
+        "time": "12:30 PM",
+        "title": "Parents of absent students get an SMS",
+        "body": "Sent automatically, in the parent's language."
+      },
+      "slips": {
+        "time": "8:00 PM",
+        "title": "You approve 12 bank slips from your phone",
+        "body": "Slip on the left, expected amount on the right. Press A to approve."
+      }
+    }
+  },
+  "features": {
+    "title": "Everything a one-teacher class needs.",
+    "items": {
+      "website": {
+        "title": "A website with your name",
+        "body": "yourname.remix.lk with your photo, classes, timetable and an Enrol button."
+      },
+      "fees": {
+        "title": "Fees without the notebook",
+        "body": "Card, bank slip or cash, all in one list. See who hasn't paid for October in one tap."
+      },
+      "lessons": {
+        "title": "Lessons only paid students see",
+        "body": "Each month's recordings unlock when that month is paid. Downloading is turned off."
+      },
+      "devices": {
+        "title": "Two devices per student",
+        "body": "One login can't be shared around a WhatsApp group. Students sign out old phones themselves."
+      },
+      "tutes": {
+        "title": "Tutes and papers",
+        "body": "Share PDFs by class and month. No more printing for students who missed the day."
+      },
+      "languages": {
+        "title": "Sinhala, Tamil or English",
+        "body": "You, your students and their parents each use the language they prefer."
+      }
+    }
+  },
+  "switch": {
+    "title": "Switch in three steps. We do the heavy lifting.",
+    "steps": {
+      "list": {
+        "title": "Send us your student list",
+        "body": "Excel, CSV, or a photo of your register book."
+      },
+      "setup": {
+        "title": "We set up your classes and website",
+        "body": "Fees, timetable and your site, ready to check."
+      },
+      "share": {
+        "title": "Share one link with your students",
+        "body": "They sign in with their phone number and pay."
+      }
+    },
+    "whatsapp": "Send your list on WhatsApp",
+    "whatsappPrefill": "Hi ReMix, I'd like to move my class to ReMix. Can I send you my student list?",
+    "mockupLabel": "The student portal on a phone, where your students sign in, pay the fee and join the live class. Sample data."
+  },
+  "finalCta": {
+    "title": "Run next month's class on ReMix.",
+    "institutes": "Growing past one teacher? <link>See ReMix for institutes</link>"
+  }
+}

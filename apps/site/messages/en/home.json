@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "title": "ReMix — Run your whole class, online and in the hall",
+    "description": "Your own website, fees and bank slips, protected video lessons, Zoom with name lock and attendance, built for Sri Lankan tuition. One student counts once, however many classes they join."
+  },
+  "hero": {
+    "pillBadge": "New",
+    "pill": "Offline gate attendance with NFC cards",
+    "title": "Run your whole class, online and in the <accent>hall.</accent>",
+    "subtitle": "Your own website, fees and bank slips, protected video lessons, Zoom with name lock and attendance, built for Sri Lankan tuition. One student counts once, however many classes they join.",
+    "fromPrice": "From <b>LKR 45</b> per active student",
+    "migration": "Free data migration",
+    "languages": "Sinhala, Tamil, English",
+    "mockupLabel": "Preview of the ReMix institute dashboard on a laptop and the student portal on a phone, with sample data."
+  },
+  "problems": {
+    "title": "The three leaks every tuition class knows.",
+    "subtitle": "Each one costs you money every month. ReMix closes all three from day one.",
+    "items": {
+      "leaks": {
+        "title": "Lessons leaked to Telegram",
+        "body": "Encrypted streaming with a moving student-ID watermark. If a clip leaks, you know exactly whose account it came from."
+      },
+      "sharing": {
+        "title": "One account, ten students",
+        "body": "Two devices per student, and Zoom locks every join to the student's registered name. Shared logins stop working."
+      },
+      "fees": {
+        "title": "Chasing fees and bank slips",
+        "body": "Students pay by card or upload the slip from their phone. Your cashier approves each one with a single key."
+      }
+    }
+  },
+  "features": {
+    "eyebrow": "Everything in one place",
+    "title": "One system for the hall, the Zoom room and the fee counter.",
+    "newBadge": "New",
+    "items": {
+      "website": {
+        "title": "Your own website",
+        "body": "A class website on your own domain, with your timetable, fees and results. Build it from blocks, no developer needed."
+      },
+      "fees": {
+        "title": "Fees and bank slips",
+        "body": "PayHere card payments, bank slip uploads and a cash counter for your cashier. See who has paid for October at a glance."
+      },
+      "video": {
+        "title": "Protected video",
+        "body": "Encrypted streaming with each student's ID moving across the screen. Only paid months unlock."
+      },
+      "zoom": {
+        "title": "Zoom with name lock",
+        "body": "Students join from the portal under their registered name. Zoom attendance lands in ReMix automatically."
+      },
+      "gate": {
+        "title": "Offline gate attendance",
+        "body": "QR or NFC cards at the hall door. The gate app checks fees and keeps scanning when the internet drops."
+      },
+      "parents": {
+        "title": "Parents in the loop",
+        "body": "An SMS when their child is absent or a fee is due. Parents see attendance and payments in one place."
+      }
+    }
+  },
+  "pricing": {
+    "title": "Pay per student, not per class card.",
+    "subtitle": "A student in three of your classes counts once. Students who don't pay or log in during the month are free.",
+    "question": "How many active students do you have?",
+    "assumption": "Assumes {classes} classes per student and {perCard} per class card.",
+    "seeFull": "See full pricing",
+    "perMonth": "ReMix per month",
+    "cardPricing": "Per-class-card pricing",
+    "save": "You save each month",
+    "cta": "Start free for 30 days",
+    "formula": "{base} + {students} × {perStudent}",
+    "plans": {
+      "lite": "Lite",
+      "tutor": "Tutor",
+      "institute": "Institute",
+      "enterprise": "Enterprise"
+    }
+  },
+  "tour": {
+    "eyebrow": "Screens tour",
+    "title": "See it before you sign up.",
+    "tabsLabel": "Choose a view",
+    "tabs": {
+      "admin": "Admin",
+      "student": "Student",
+      "parent": "Parent"
+    },
+    "captions": {
+      "admin": "The institute dashboard: today's classes, fees collected and bank slips waiting.",
+      "student": "The student portal on a phone: join the live class, pay the fee, watch new lessons.",
+      "parent": "The parent view: attendance alerts and fees for each child."
+    }
+  },
+  "faq": {
+    "title": "Questions institutes ask us",
+    "contact": "Something else? <link>Ask us on WhatsApp</link>, we reply in Sinhala, Tamil or English.",
+    "items": {
+      "safety": {
+        "q": "Is our student data safe?",
+        "a": "Each institute's data is kept separate from every other institute. Connections are encrypted and backups run every night. Recca Labs staff can only open your account through a recorded support session, and you see a banner while it runs."
+      },
+      "migration": {
+        "q": "Can you move our students from another system?",
+        "a": "Yes, for free. Send us an Excel or CSV export, or your current student list, and we import students, classes and fee history before your first month starts."
+      },
+      "payments": {
+        "q": "Which payment methods work?",
+        "a": "Card payments through PayHere, bank transfers with a slip upload, and cash at your counter. All three land in the same fee records, so a student is never marked unpaid by mistake."
+      },
+      "languages": {
+        "q": "Does it work in Sinhala and Tamil?",
+        "a": "Yes. The student portal, your website and the admin area all switch between Sinhala, Tamil and English. Each person picks their own language."
+      },
+      "offline": {
+        "q": "What happens if the internet goes down at the hall?",
+        "a": "The ReMix+ gate app keeps scanning offline using the fee list it synced that morning. Scans upload as soon as the connection comes back."
+      }
+    }
+  },
+  "finalCta": {
+    "title": "Move your class to ReMix this month. We move your students for you.",
+    "note": "30-day free trial · No card needed · Cancel any time"
+  }
+}

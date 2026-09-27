@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;color:#0E1525;-webkit-font-smoothing:antialiased}
+a{color:#2B4BF2;text-decoration:none}a:hover{text-decoration:underline}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div data-screen-label="B5 Institute Dashboard" style="--brand: {{ brand }}; width:1440px; min-height:1000px; margin:0 auto; display:flex; background:#F6F7FA; font-size:14px; line-height:20px;">
+
+  <aside style="width:248px; flex:none; background:#FFFFFF; border-right:1px solid #E4E7EE; display:flex; flex-direction:column; padding:16px 12px;">
+    <div style="display:flex; align-items:center; gap:10px; padding:4px 8px 16px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:var(--brand,#2B4BF2); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; letter-spacing:-0.02em;">KP</div>
+      <div style="display:flex; flex-direction:column; min-width:0;">
+        <div style="font-weight:600; font-size:14px;">Kamal Physics</div>
+        <div style="font-size:12px; line-height:16px; color:#5B6478;">kamalphysics.remix.lk</div>
+      </div>
+    </div>
+    <nav style="display:flex; flex-direction:column; gap:2px;">
+      <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; background:color-mix(in oklch, var(--brand,#2B4BF2) 9%, white); color:var(--brand,#2B4BF2); font-weight:500; text-decoration:none;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/layout-dashboard.svg) center/contain no-repeat;"></span>Dashboard</a>
+      <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/users.svg) center/contain no-repeat;"></span>Students</a>
+      <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/book-open.svg) center/contain no-repeat;"></span>Classes</a>
+      <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wallet.svg) center/contain no-repeat;"></span><span style="flex:1;">Fees &amp; payments</span><span style="font-size:12px; font-weight:600; line-height:18px; padding:0 6px; border-radius:6px; background:#FFF4E0; color:#8A5200; font-variant-numeric:tabular-nums;">18</span></a>
+      <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+        <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/play-circle.svg) center/contain no-repeat;"></span>Lessons</a>
+        <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/video.svg) center/contain no-repeat;"></span>Live classes</a>
+      </sc-if>
+      <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/qr-code.svg) center/contain no-repeat;"></span>Attendance</a>
+      <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+        <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/globe.svg) center/contain no-repeat;"></span>Website</a>
+        <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/message-square.svg) center/contain no-repeat;"></span>Messages</a>
+        <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/bar-chart-3.svg) center/contain no-repeat;"></span>Reports</a>
+        <a href="#" style="display:flex; align-items:center; gap:10px; height:36px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/settings.svg) center/contain no-repeat;"></span>Settings</a>
+      </sc-if>
+    </nav>
+    <div style="margin-top:auto; display:flex; flex-direction:column; gap:12px;">
+      <div style="border:1px solid #E4E7EE; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; line-height:16px;"><span style="color:#5B6478;">Institute plan</span><span style="font-weight:500; font-variant-numeric:tabular-nums;">468 / 1,500</span></div>
+        <div style="height:4px; border-radius:4px; background:#EEF0F4; overflow:hidden;"><div style="width:31%; height:100%; background:#0E1525;"></div></div>
+        <div style="font-size:12px; line-height:16px; color:#5B6478;">Active students this cycle</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; padding:0 8px; font-size:12px; color:#5B6478;">Powered by <span style="font-weight:700; color:#0E1525; letter-spacing:-0.02em;">Re<span style="color:#D98A00;">M</span>ix</span></div>
+    </div>
+  </aside>
+
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+    <header style="height:60px; flex:none; display:flex; align-items:center; gap:16px; padding:0 32px; background:#FFFFFF; border-bottom:1px solid #E4E7EE;">
+      <div style="flex:1; max-width:440px; height:36px; display:flex; align-items:center; gap:8px; padding:0 10px; border:1px solid #E4E7EE; border-radius:8px; background:#F9FAFB; color:#5B6478;">
+        <span style="width:16px;height:16px;flex:none;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/search.svg) center/contain no-repeat;"></span>
+        <span style="flex:1;">Search students, classes…</span>
+        <span style="font-size:12px; line-height:18px; padding:0 6px; border:1px solid #E4E7EE; border-radius:6px; background:#fff; font-weight:500;">Ctrl K</span>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex; align-items:center; gap:2px; padding:2px; border:1px solid #E4E7EE; border-radius:8px;">
+        <span style="height:28px; min-width:36px; padding:0 8px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#0E1525; color:#fff; font-size:12px; font-weight:600;">EN</span>
+        <span style="height:28px; min-width:36px; padding:0 8px; display:flex; align-items:center; justify-content:center; border-radius:6px; color:#3A4357; font-family:'Noto Sans Sinhala',sans-serif; font-size:13px;">සිං</span>
+        <span style="height:28px; min-width:36px; padding:0 8px; display:flex; align-items:center; justify-content:center; border-radius:6px; color:#3A4357; font-family:'Noto Sans Tamil',sans-serif; font-size:13px;">த</span>
+      </div>
+      <button style="position:relative; width:36px; height:36px; border:1px solid #E4E7EE; border-radius:8px; background:#fff; color:#3A4357; display:flex; align-items:center; justify-content:center; cursor:pointer;" aria-label="Notifications"><span style="width:18px;height:18px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/bell.svg) center/contain no-repeat;"></span><span style="position:absolute; top:7px; right:8px; width:7px; height:7px; border-radius:50%; background:#D92D20; border:1.5px solid #fff;"></span></button>
+      <div style="display:flex; align-items:center; gap:10px; padding-left:8px; border-left:1px solid #E4E7EE;">
+        <div style="width:32px; height:32px; border-radius:50%; background:#E7E9EF; color:#0E1525; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600;">{{ initials }}</div>
+        <div style="display:flex; flex-direction:column;">
+          <span style="font-size:13px; line-height:16px; font-weight:500;">{{ userName }}</span>
+          <span style="font-size:12px; line-height:16px; color:#5B6478;">{{ userRole }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main style="flex:1; padding:28px 32px 40px; display:flex; flex-direction:column; gap:24px;">
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:24px;">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <h1 style="margin:0; font-size:24px; line-height:32px; font-weight:600; letter-spacing:-0.015em;">Good morning, {{ firstName }}</h1>
+          <div style="color:#5B6478;">Sat, 26 Sep 2026 · 5 classes today · 2 in the hall, 1 online, 2 mixed</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button style="height:36px; padding:0 14px; display:flex; align-items:center; gap:8px; border:1px solid #D9DDE5; border-radius:10px; background:#fff; color:#0E1525; font:inherit; font-weight:500; cursor:pointer;" style-hover="background:#F6F7FA;"><span style="width:16px;height:16px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/user-plus.svg) center/contain no-repeat;"></span>Add student</button>
+          <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+            <button style="height:36px; padding:0 14px; display:flex; align-items:center; gap:8px; border:1px solid #D9DDE5; border-radius:10px; background:#fff; color:#0E1525; font:inherit; font-weight:500; cursor:pointer;" style-hover="background:#F6F7FA;"><span style="width:16px;height:16px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/upload.svg) center/contain no-repeat;"></span>Upload lesson</button>
+          </sc-if>
+          <button style="height:36px; padding:0 14px; display:flex; align-items:center; gap:8px; border:1px solid transparent; border-radius:10px; background:var(--brand,#2B4BF2); color:#fff; font:inherit; font-weight:500; cursor:pointer;" style-hover="filter:brightness(0.92);"><span style="width:16px;height:16px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/receipt.svg) center/contain no-repeat;"></span>Record payment</button>
+        </div>
+      </div>
+
+      <section style="display:grid; grid-template-columns:1.35fr 1fr 1fr 1fr; gap:16px;">
+        <div style="background:#fff; border:1px solid #E4E7EE; border-radius:10px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
+          <div style="color:#5B6478; font-weight:500;">Fees collected · Sep 2026</div>
+          <div style="display:flex; align-items:baseline; gap:8px; font-variant-numeric:tabular-nums;">
+            <span style="font-size:26px; line-height:32px; font-weight:600; letter-spacing:-0.02em;">LKR 1,284,500</span>
+            <span style="color:#5B6478;">of 1,560,000</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="flex:1; height:6px; border-radius:6px; background:#EEF0F4; overflow:hidden;"><div style="width:82%; height:100%; border-radius:6px; background:var(--brand,#2B4BF2);"></div></div>
+            <span style="font-size:13px; font-weight:600; font-variant-numeric:tabular-nums;">82%</span>
+          </div>
+          <div style="font-size:13px; color:#5B6478;">LKR 275,500 still to collect · 4 days left</div>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E7EE; border-radius:10px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
+          <div style="color:#5B6478; font-weight:500;">Unpaid students</div>
+          <div style="font-size:26px; line-height:32px; font-weight:600; letter-spacing:-0.02em; font-variant-numeric:tabular-nums;">64</div>
+          <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:#B42318;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/alert-circle.svg) center/contain no-repeat;"></span>Sep 2026 fee not paid</div>
+          <a href="#" style="margin-top:auto; font-size:13px; font-weight:500; color:var(--brand,#2B4BF2);">View list →</a>
+        </div>
+        <div style="background:#FFF8EB; border:1px solid #F3D59B; border-radius:10px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:6px; color:#8A5200; font-weight:500;"><span style="width:16px;height:16px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/clock.svg) center/contain no-repeat;"></span>Bank slips waiting</div>
+          <div style="display:flex; align-items:baseline; gap:8px;">
+            <span style="font-size:26px; line-height:32px; font-weight:600; letter-spacing:-0.02em; font-variant-numeric:tabular-nums;">18</span>
+            <span style="font-size:13px; color:#8A5200;">oldest 2 h ago</span>
+          </div>
+          <button style="margin-top:auto; height:32px; align-self:flex-start; padding:0 12px; border:1px solid #0E1525; border-radius:8px; background:#0E1525; color:#fff; font:inherit; font-size:13px; font-weight:500; cursor:pointer;" style-hover="background:#262F44;">Review now</button>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E7EE; border-radius:10px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
+          <div style="color:#5B6478; font-weight:500;">Present today</div>
+          <div style="display:flex; align-items:baseline; gap:8px; font-variant-numeric:tabular-nums;">
+            <span style="font-size:26px; line-height:32px; font-weight:600; letter-spacing:-0.02em;">412</span>
+            <span style="color:#5B6478;">of 468</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:#0B7A3B;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check-circle-2.svg) center/contain no-repeat;"></span>88% so far · gate + Zoom</div>
+          <a href="#" style="margin-top:auto; font-size:13px; font-weight:500; color:var(--brand,#2B4BF2);">Absent list →</a>
+        </div>
+      </section>
+
+      <section style="display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:16px; align-items:start;">
+        <div style="background:#fff; border:1px solid #E4E7EE; border-radius:10px; overflow:hidden;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #E4E7EE;">
+            <h2 style="margin:0; font-size:15px; line-height:20px; font-weight:600;">Today's classes</h2>
+            <a href="#" style="font-size:13px; font-weight:500; color:var(--brand,#2B4BF2);">Timetable</a>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums;">
+            <thead>
+              <tr style="font-size:12px; line-height:16px; color:#5B6478; text-align:left;">
+                <th style="padding:10px 18px; font-weight:500; border-bottom:1px solid #E4E7EE; width:92px;">Time</th>
+                <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE;">Class</th>
+                <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE;">Place</th>
+                <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE; text-align:right;">Expected</th>
+                <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE; text-align:right;">Present</th>
+                <th style="padding:10px 18px; font-weight:500; border-bottom:1px solid #E4E7EE;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style-hover="background:#FAFBFC;">
+                <td style="padding:12px 18px; border-bottom:1px solid #EEF0F4; color:#5B6478;">6:30 AM</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; font-weight:500;">Grade 11 O/L Science</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; color:#3A4357;">Hall B</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; text-align:right;">72</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; text-align:right;">66</td>
+                <td style="padding:12px 18px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; gap:5px; height:22px; padding:0 8px; border-radius:6px; background:#F1F2F5; color:#3A4357; font-size:12px; font-weight:500;"><span style="width:12px;height:12px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check.svg) center/contain no-repeat;"></span>Finished</span></td>
+              </tr>
+              <tr style="background:color-mix(in oklch, var(--brand,#2B4BF2) 4%, white);">
+                <td style="padding:12px 18px; border-bottom:1px solid #EEF0F4; font-weight:500;">8:00 AM</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; font-weight:500;">2027 A/L Physics Theory</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; color:#3A4357;">Hall A</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; text-align:right;">180</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; text-align:right; font-weight:600;">164</td>
+                <td style="padding:12px 18px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; gap:6px; height:22px; padding:0 8px; border-radius:6px; background:#E8F6EE; color:#0B7A3B; font-size:12px; font-weight:500;"><span style="width:6px; height:6px; border-radius:50%; background:#12A150;"></span>In progress</span></td>
+              </tr>
+              <tr style-hover="background:#FAFBFC;">
+                <td style="padding:12px 18px; border-bottom:1px solid #EEF0F4; color:#5B6478;">10:30 AM</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; font-weight:500;">2026 A/L Revision</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; color:#3A4357;"><span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/video.svg) center/contain no-repeat;"></span>Online</span></td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; text-align:right;">220</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; text-align:right; color:#5B6478;">—</td>
+                <td style="padding:12px 18px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; gap:5px; height:22px; padding:0 8px; border-radius:6px; background:#E6F3FC; color:#0768AD; font-size:12px; font-weight:500;"><span style="width:12px;height:12px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/clock.svg) center/contain no-repeat;"></span>Starts in 40 min</span></td>
+              </tr>
+              <tr style-hover="background:#FAFBFC;">
+                <td style="padding:12px 18px; border-bottom:1px solid #EEF0F4; color:#5B6478;">1:30 PM</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; font-weight:500;">2028 A/L Physics Theory</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; color:#3A4357;">Hall B</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; text-align:right;">150</td>
+                <td style="padding:12px; border-bottom:1px solid #EEF0F4; text-align:right; color:#5B6478;">—</td>
+                <td style="padding:12px 18px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:6px; border:1px solid #E4E7EE; color:#5B6478; font-size:12px; font-weight:500;">Scheduled</span></td>
+              </tr>
+              <tr style-hover="background:#FAFBFC;">
+                <td style="padding:12px 18px; color:#5B6478;">4:00 PM</td>
+                <td style="padding:12px; font-weight:500;">2026 A/L Paper Class</td>
+                <td style="padding:12px; color:#3A4357;">Hall A &amp; Online</td>
+                <td style="padding:12px; text-align:right;">240</td>
+                <td style="padding:12px; text-align:right; color:#5B6478;">—</td>
+                <td style="padding:12px 18px;"><span style="display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:6px; border:1px solid #E4E7EE; color:#5B6478; font-size:12px; font-weight:500;">Scheduled</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="background:#fff; border:1px solid #E4E7EE; border-radius:10px; overflow:hidden;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #E4E7EE;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h2 style="margin:0; font-size:15px; line-height:20px; font-weight:600;">Bank slips waiting</h2>
+              <span style="font-size:12px; font-weight:600; line-height:18px; padding:0 6px; border-radius:6px; background:#FFF4E0; color:#8A5200; font-variant-numeric:tabular-nums;">18</span>
+            </div>
+            <a href="#" style="font-size:13px; font-weight:500; color:var(--brand,#2B4BF2);">Open queue</a>
+          </div>
+          <div style="display:flex; flex-direction:column;">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; padding:12px 18px; border-bottom:1px solid #EEF0F4;" style-hover="background:#FAFBFC;">
+              <span style="font-weight:500;">Nimali Perera</span><span style="text-align:right; font-weight:500; font-variant-numeric:tabular-nums;">LKR 2,500.00</span>
+              <span style="font-size:12px; line-height:16px; color:#5B6478;">2027 A/L Physics Theory · Sep 2026</span><span style="font-size:12px; line-height:16px; color:#5B6478; text-align:right;">12 min ago</span>
+            </div>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; padding:12px 18px; border-bottom:1px solid #EEF0F4;" style-hover="background:#FAFBFC;">
+              <span style="font-weight:500;">Tharindu Silva</span><span style="text-align:right; font-weight:500; font-variant-numeric:tabular-nums;">LKR 5,000.00</span>
+              <span style="font-size:12px; line-height:16px; color:#5B6478;">2026 A/L Revision · Aug + Sep 2026</span><span style="font-size:12px; line-height:16px; color:#5B6478; text-align:right;">26 min ago</span>
+            </div>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; padding:12px 18px; border-bottom:1px solid #EEF0F4;" style-hover="background:#FAFBFC;">
+              <span style="font-weight:500;">Fathima Rizna</span><span style="text-align:right; font-weight:500; font-variant-numeric:tabular-nums;">LKR 2,500.00</span>
+              <span style="font-size:12px; line-height:16px; color:#5B6478;">2027 A/L Physics Theory · Sep 2026</span><span style="font-size:12px; line-height:16px; color:#5B6478; text-align:right;">41 min ago</span>
+            </div>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; padding:12px 18px; border-bottom:1px solid #EEF0F4;" style-hover="background:#FAFBFC;">
+              <span style="font-weight:500;">Kavindu Jayawardena</span><span style="text-align:right; font-weight:500; font-variant-numeric:tabular-nums;">LKR 2,000.00</span>
+              <span style="font-size:12px; line-height:16px; color:#5B6478;">Grade 11 O/L Science · Sep 2026</span><span style="font-size:12px; line-height:16px; color:#5B6478; text-align:right;">1 h ago</span>
+            </div>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; padding:12px 18px;" style-hover="background:#FAFBFC;">
+              <span style="font-weight:500;">Arun Kumar</span><span style="text-align:right; font-weight:500; font-variant-numeric:tabular-nums;">LKR 3,000.00</span>
+              <span style="font-size:12px; line-height:16px; color:#5B6478;">2026 A/L Paper Class · Sep 2026</span><span style="font-size:12px; line-height:16px; color:#5B6478; text-align:right;">2 h ago</span>
+            </div>
+          </div>
+          <div style="padding:12px 18px; border-top:1px solid #E4E7EE; background:#FAFBFC; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:#5B6478;">
+            <span>13 more · LKR 36,500.00 total waiting</span>
+            <span style="display:inline-flex; align-items:center; gap:4px;">Approve with <span style="padding:0 5px; border:1px solid #E4E7EE; border-radius:4px; background:#fff; font-weight:600; color:#0E1525;">A</span></span>
+          </div>
+        </div>
+      </section>
+
+      <section style="background:#fff; border:1px solid #E4E7EE; border-radius:10px; overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #E4E7EE;">
+          <h2 style="margin:0; font-size:15px; line-height:20px; font-weight:600;">Recent payments</h2>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-size:13px; color:#5B6478; font-variant-numeric:tabular-nums;">Today · LKR 84,500.00 from 31 payments</span>
+            <a href="#" style="font-size:13px; font-weight:500; color:var(--brand,#2B4BF2);">All payments</a>
+          </div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums;">
+          <thead>
+            <tr style="font-size:12px; line-height:16px; color:#5B6478; text-align:left;">
+              <th style="padding:10px 18px; font-weight:500; border-bottom:1px solid #E4E7EE;">Student</th>
+              <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE;">Student no.</th>
+              <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE;">Class</th>
+              <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE;">Month</th>
+              <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE;">Method</th>
+              <th style="padding:10px 12px; font-weight:500; border-bottom:1px solid #E4E7EE; text-align:right;">Amount</th>
+              <th style="padding:10px 18px; font-weight:500; border-bottom:1px solid #E4E7EE; text-align:right;">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style-hover="background:#FAFBFC;">
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; font-weight:500;">Sanduni Fernando</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; color:#5B6478;">BR-1187</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">2027 A/L Physics Theory</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">Sep 2026</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; gap:6px; color:#3A4357;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/credit-card.svg) center/contain no-repeat;"></span>Card</span></td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; text-align:right; font-weight:500;">LKR 2,500.00</td>
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; text-align:right; color:#5B6478;">8:14 AM</td>
+            </tr>
+            <tr style-hover="background:#FAFBFC;">
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; font-weight:500;">Ravindu Bandara</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; color:#5B6478;">BR-0934</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">2026 A/L Revision</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">Sep 2026</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; gap:6px; color:#3A4357;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/banknote.svg) center/contain no-repeat;"></span>Cash</span></td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; text-align:right; font-weight:500;">LKR 2,500.00</td>
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; text-align:right; color:#5B6478;">8:02 AM</td>
+            </tr>
+            <tr style-hover="background:#FAFBFC;">
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; font-weight:500;">Ishara Gunasekara</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; color:#5B6478;">BR-1203</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">2027 A/L Physics Theory</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">Sep 2026</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; gap:6px; color:#3A4357;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/landmark.svg) center/contain no-repeat;"></span>Bank slip</span></td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; text-align:right; font-weight:500;">LKR 2,500.00</td>
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; text-align:right; color:#5B6478;">7:55 AM</td>
+            </tr>
+            <tr style-hover="background:#FAFBFC;">
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; font-weight:500;">Mohamed Asfan</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; color:#5B6478;">BR-0871</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">Grade 11 O/L Science</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">Sep 2026</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; gap:6px; color:#3A4357;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/banknote.svg) center/contain no-repeat;"></span>Cash</span></td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; text-align:right; font-weight:500;">LKR 2,000.00</td>
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; text-align:right; color:#5B6478;">6:41 AM</td>
+            </tr>
+            <tr style-hover="background:#FAFBFC;">
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; font-weight:500;">Dulmini Rathnayake</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; color:#5B6478;">BR-1056</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">2026 A/L Paper Class</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;">Sep + Oct 2026</td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4;"><span style="display:inline-flex; align-items:center; gap:6px; color:#3A4357;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/credit-card.svg) center/contain no-repeat;"></span>Card</span></td>
+              <td style="padding:11px 12px; border-bottom:1px solid #EEF0F4; text-align:right; font-weight:500;">LKR 6,000.00</td>
+              <td style="padding:11px 18px; border-bottom:1px solid #EEF0F4; text-align:right; color:#5B6478;">6:20 AM</td>
+            </tr>
+            <tr style-hover="background:#FAFBFC;">
+              <td style="padding:11px 18px; font-weight:500;">Chamodi Wijesinghe</td>
+              <td style="padding:11px 12px; color:#5B6478;">BR-1112</td>
+              <td style="padding:11px 12px;">2028 A/L Physics Theory</td>
+              <td style="padding:11px 12px;">Sep 2026</td>
+              <td style="padding:11px 12px;"><span style="display:inline-flex; align-items:center; gap:6px; color:#3A4357;"><span style="width:14px;height:14px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/landmark.svg) center/contain no-repeat;"></span>Bank slip</span></td>
+              <td style="padding:11px 12px; text-align:right; font-weight:500;">LKR 2,500.00</td>
+              <td style="padding:11px 18px; text-align:right; color:#5B6478;">Fri 9:48 PM</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <div style="font-size:12px; color:#5B6478;">Sample data for design review. Times in Asia/Colombo.</div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1000},&quot;brandColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2B4BF2&quot;,&quot;options&quot;:[&quot;#2B4BF2&quot;,&quot;#0F766E&quot;,&quot;#7C3AED&quot;,&quot;#B42318&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Institute&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Owner&quot;,&quot;options&quot;:[&quot;Owner&quot;,&quot;Cashier&quot;],&quot;tsType&quot;:&quot;'Owner' | 'Cashier'&quot;,&quot;section&quot;:&quot;Institute&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const cashier = this.props.role === 'Cashier';
+    return {
+      brand: this.props.brandColor ?? '#2B4BF2',
+      isOwner: !cashier,
+      firstName: cashier ? 'Dilani' : 'Kamal',
+      userName: cashier ? 'Dilani Wickramasinghe' : 'Kamal Jayasinghe',
+      userRole: cashier ? 'Cashier' : 'Owner',
+      initials: cashier ? 'DW' : 'KJ',
+    };
+  }
+}
+</script>
+</body>
+</html>

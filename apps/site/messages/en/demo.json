@@ -1,0 +1,160 @@
+{
+  "meta": {
+    "title": "Book a demo or start a free trial",
+    "description": "Tell us about your class and we'll contact you on WhatsApp or by phone, usually within one working day. A 30-minute demo at your institute or on Zoom, or a free trial set up with your classes."
+  },
+  "intro": {
+    "eyebrow": "Book a demo · Start free",
+    "title": "See ReMix with your own classes",
+    "body": "Tell us a little about your class. We'll show you ReMix in a 30-minute demo at your institute or on Zoom, or open a free trial with your classes and fees ready to try.",
+    "nextTitle": "What happens next",
+    "steps": {
+      "contact": {
+        "title": "We contact you",
+        "body": "Someone from our Colombo team messages you on WhatsApp or calls, usually within one working day."
+      },
+      "learn": {
+        "title": "We learn how you teach",
+        "body": "Your classes, fees, how students pay and how they join Zoom. It takes about 15 minutes."
+      },
+      "try": {
+        "title": "You see it working",
+        "body": "A live demo, or a trial set up with your own classes, before you decide anything."
+      }
+    },
+    "contactTitle": "Prefer to talk now?",
+    "email": "Email {email}",
+    "student": "Are you a student? <link>Find your class</link> instead. This form is for teachers and institutes."
+  },
+  "form": {
+    "title": "Tell us about your class",
+    "intentLegend": "What would you like?",
+    "intent": {
+      "demo": "Book a demo",
+      "demoHint": "30 minutes, at your institute or on Zoom",
+      "trial": "Start a free trial",
+      "trialHint": "We set it up with your classes"
+    },
+    "name": {
+      "label": "Your name",
+      "placeholder": "Kamal Jayasinghe"
+    },
+    "phone": {
+      "label": "Mobile number",
+      "prefix": "+94",
+      "placeholder": "77 123 4567",
+      "hint": "Sri Lankan mobile number, starting with 7"
+    },
+    "whatsappSame": "I use WhatsApp on this number",
+    "institute": {
+      "label": "Institute or class name",
+      "placeholder": "Kamal Physics"
+    },
+    "students": {
+      "label": "Number of students",
+      "placeholder": "300",
+      "hint": "Roughly, across all your classes"
+    },
+    "city": {
+      "label": "City or town",
+      "placeholder": "Kandy"
+    },
+    "message": {
+      "label": "Anything we should know?",
+      "placeholder": "Subjects, grades, how you run classes today…"
+    },
+    "optional": "optional",
+    "submit": {
+      "demo": "Request a demo",
+      "trial": "Start my free trial"
+    },
+    "submitting": "Sending…",
+    "privacy": "We use this only to contact you about ReMix. <link>Privacy policy</link>",
+    "turnstile": {
+      "devNotice": "Spam protection isn't configured here (NEXT_PUBLIC_TURNSTILE_SITE_KEY is empty), so sending will fail. That's expected in local development.",
+      "unavailable": "The spam check couldn't load. Turn off content blockers for this page and reload, or contact us on WhatsApp."
+    },
+    "summaryTitle": "Please check {count, plural, one {# field} other {# fields}}",
+    "errors": {
+      "name": {
+        "required": "Enter your name",
+        "invalid": "Enter your name using 2 to 80 characters"
+      },
+      "phone": {
+        "required": "Enter your mobile number",
+        "invalid": "Enter a Sri Lankan mobile number, like 77 123 4567"
+      },
+      "institute": {
+        "required": "Enter your institute or class name",
+        "invalid": "Enter your institute or class name using 2 to 120 characters"
+      },
+      "students": {
+        "required": "Enter the number of students",
+        "invalid": "Enter a whole number from 1 to 100,000"
+      },
+      "city": {
+        "required": "Enter your city or town",
+        "invalid": "Enter your city or town using 2 to 60 characters"
+      },
+      "message": {
+        "required": "Enter a message",
+        "invalid": "Keep your message under 1,000 characters"
+      },
+      "turnstileToken": {
+        "required": "Wait for the spam check below to finish, then send again",
+        "invalid": "The spam check expired. Please send again"
+      }
+    },
+    "failure": {
+      "title": "Your request wasn't sent",
+      "whatsapp": "Something went wrong on our side. Please try again in a minute, or <link>message us on WhatsApp</link>.",
+      "email": "Something went wrong on our side. Please try again in a minute, or email <link>{email}</link>."
+    },
+    "verification": {
+      "title": "We couldn't verify your request",
+      "body": "The spam check didn't pass. Please send again. If it keeps happening, contact us on WhatsApp or by email."
+    }
+  },
+  "success": {
+    "title": "Thanks, we've got your request",
+    "body": "We'll contact you on {phone} {channel, select, whatsapp {on WhatsApp} other {by phone}}, usually within one working day.",
+    "note": "There's nothing else you need to do. If it's urgent, email {email}.",
+    "back": "Back to the home page"
+  },
+  "findClass": {
+    "meta": {
+      "title": "Find your class",
+      "description": "Your class has its own ReMix website. Type its address to go there, or ask your teacher for your class link."
+    },
+    "eyebrow": "For students",
+    "title": "Find your class",
+    "body": "Your teacher's class has its own website on ReMix. Type its address and we'll take you there.",
+    "label": "Your class's web address",
+    "hint": "For example kamalphysics or kamalphysics.remix.lk",
+    "placeholder": "kamalphysics",
+    "suffix": ".remix.lk",
+    "submit": "Go to my class",
+    "preview": "You'll go to {url}",
+    "errors": {
+      "empty": "Type your class's web address",
+      "invalid": "That doesn't look like a class address. Use letters, numbers and hyphens, like kamalphysics",
+      "reserved": "That address belongs to ReMix, not a class. Check the link your teacher sent you",
+      "otherDomain": "That's a full website address. Type it straight into your browser's address bar instead"
+    },
+    "help": {
+      "ask": {
+        "title": "Ask your teacher for your class link",
+        "body": "If you don't know the address, ask your teacher or institute. It's usually shared in the class WhatsApp group, on your fee card or on the notice board."
+      },
+      "ownDomain": {
+        "title": "Some classes have their own domain",
+        "body": "Institutes with their own web address, like www.kamalphysics.lk, are reached directly. Type that address into your browser; you don't need remix.lk."
+      },
+      "login": {
+        "title": "Logging in happens on your class's site",
+        "body": "remix.lk is the website of ReMix, the company that runs the platform. There's no student login here; your login is on your class's own site."
+      }
+    },
+    "teacher": "Are you a teacher? <link>See ReMix for teachers</link>"
+  }
+}

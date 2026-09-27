@@ -1,0 +1,6 @@
+design/
+pnpm-lock.yaml
+.next/
+out/
+node_modules/
+*.md

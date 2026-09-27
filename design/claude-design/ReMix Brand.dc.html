@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FBFAF7;font-family:'Geist',sans-serif;color:#0E1525}a{color:#2B4BF2}a:hover{color:#2140DB}*{box-sizing:border-box}</style>
+</helmet>
+<div data-screen-label="Brand · Logo" style="max-width:1200px; margin:0 auto; padding:56px 24px; display:flex; flex-direction:column; gap:24px;">
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    <span style="font-family:'Geist Mono',monospace; font-size:13px; color:#5B6478;">ReMix · logo</span>
+    <p style="margin:0; max-width:620px; color:#3A4357; line-height:24px;">The X is two crossing strokes: blue for online, amber for the hall. Wordmark in Bricolage Grotesque ExtraBold. The mark works on its own as the favicon and app icon.</p>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:16px;">
+    <div style="height:260px; border-radius:16px; background:#FFFFFF; border:1px solid #E1DDD3; display:flex; align-items:center; justify-content:center;"><dc-import name="ReMix Logo" size="84" hint-size="300px,84px"></dc-import></div>
+    <div style="height:260px; border-radius:16px; background:#0E1525; display:flex; align-items:center; justify-content:center;"><dc-import name="ReMix Logo" size="84" tone="dark" hint-size="300px,84px"></dc-import></div>
+    <div style="height:220px; border-radius:16px; background:#FFFFFF; border:1px solid #E1DDD3; display:flex; align-items:center; justify-content:center;"><dc-import name="ReMix Logo" size="56" variant="lockup" hint-size="200px,76px"></dc-import></div>
+    <div style="height:220px; border-radius:16px; background:#EEF1FF; display:flex; align-items:center; justify-content:center; gap:28px;">
+      <dc-import name="ReMix Logo" variant="mark" size="96" hint-size="96px,96px"></dc-import>
+      <dc-import name="ReMix Logo" variant="mark" size="48" hint-size="48px,48px"></dc-import>
+      <dc-import name="ReMix Logo" variant="mark" size="24" hint-size="24px,24px"></dc-import>
+      <dc-import name="ReMix Logo" variant="mark" size="16" hint-size="16px,16px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

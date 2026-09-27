@@ -1,0 +1,5 @@
+Contact: mailto:security@remix.lk
+Expires: 2027-09-30T00:00:00.000Z
+Preferred-Languages: en, si, ta
+Canonical: https://remix.lk/.well-known/security.txt
+Policy: https://remix.lk/en/data-protection/

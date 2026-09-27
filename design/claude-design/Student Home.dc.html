@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>body{margin:0;font-family:'Geist',system-ui,sans-serif;color:#0E1525;-webkit-font-smoothing:antialiased}a{color:#2B4BF2;text-decoration:none}a:hover{text-decoration:underline}*{box-sizing:border-box}</style>
+</helmet>
+<div style="--brand: {{ brand }}; min-height:100vh; background:#EDEEF2; padding:48px; display:flex; flex-direction:column; gap:32px; font-size:15px; line-height:22px;">
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    <span style="font-family:'Geist Mono',monospace; font-size:13px; color:#5B6478;">kamalphysics.remix.lk/home · Student area · P2</span>
+    <h1 style="margin:0; font-size:28px; line-height:36px; font-weight:600; letter-spacing:-0.02em;">Student home</h1>
+  </div>
+  <section style="display:flex; flex-wrap:wrap; gap:48px; align-items:flex-start;">
+
+    <div id="2a" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3A4357; font-weight:500;"><span style="font-family:'Geist Mono',monospace; font-size:12px; padding:1px 6px; border-radius:6px; background:#0E1525; color:#fff;">2a</span>Mobile · scrolls inside frame</div>
+      <div data-screen-label="2a Student home mobile" style="width:390px; height:844px; border-radius:44px; background:#F6F7FA; box-shadow:0 0 0 1px #D9DDE5, 0 24px 60px -24px rgba(14,21,37,.28); overflow:hidden; display:flex; flex-direction:column; position:relative;">
+        <div style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column;">
+          <div style="background:var(--brand,#2B4BF2); color:#fff; padding-bottom:56px;">
+            <div style="height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 30px; font-size:15px; font-weight:600;"><span>8:12</span><span style="display:flex; gap:5px;"><span style="width:17px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/signal.svg) center/contain no-repeat;"></span><span style="width:17px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wifi.svg) center/contain no-repeat;"></span><span style="width:20px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/battery-full.svg) center/contain no-repeat;"></span></span></div>
+            <div style="display:flex; align-items:center; gap:10px; padding:6px 20px 0;">
+              <div style="width:32px; height:32px; border-radius:9px; background:#fff; color:var(--brand,#2B4BF2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">KP</div>
+              <span style="flex:1; font-weight:600;">Kamal Physics</span>
+              <button aria-label="Notifications" style="position:relative; width:44px; height:44px; border:0; background:none; display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:#fff;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/bell.svg) center/contain no-repeat;"></span><span style="position:absolute; top:10px; right:11px; width:8px; height:8px; border-radius:50%; background:#FDB022;"></span></button>
+            </div>
+            <div style="padding:14px 20px 0; display:flex; flex-direction:column; gap:2px;">
+              <h2 style="margin:0; font-size:28px; line-height:34px; font-weight:600; letter-spacing:-0.02em;">Hi Nimali</h2>
+              <span style="font-size:14px; opacity:.85;">Sat, 26 Sep · BR-1042</span>
+            </div>
+          </div>
+          <div style="margin-top:-40px; padding:0 16px 24px; display:flex; flex-direction:column; gap:16px;">
+            <div style="background:#0E1525; color:#fff; border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; letter-spacing:0.04em;"><span style="width:8px; height:8px; border-radius:50%; background:#F04438; box-shadow:0 0 0 4px rgba(240,68,56,.25);"></span>LIVE NOW</div>
+              <div style="display:flex; flex-direction:column;">
+                <span style="font-size:18px; line-height:24px; font-weight:600;">2027 A/L Physics Theory</span>
+                <span style="font-size:14px; color:#B8BECB;">Started 8:00 AM · Hall A &amp; Zoom</span>
+              </div>
+              <button style="height:48px; border:0; border-radius:12px; background:#fff; color:#0E1525; font:inherit; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px;"><span style="width:18px;height:18px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/video.svg) center/contain no-repeat;"></span>Join class</button>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:14px; background:#FFF8EB; border:1px solid #F3D59B;">
+              <div style="flex:1; display:flex; flex-direction:column;">
+                <span style="font-weight:600; color:#8A5200;">October 2026 fee due</span>
+                <span style="font-size:14px; font-variant-numeric:tabular-nums;">LKR 2,500 · Physics Theory</span>
+              </div>
+              <button style="height:40px; padding:0 16px; border:0; border-radius:10px; background:#0E1525; color:#fff; font:inherit; font-size:14px; font-weight:600;">Pay now</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <h3 style="margin:0; font-size:16px; font-weight:600;">Continue watching</h3>
+              <div style="background:#fff; border:1px solid #E4E7EE; border-radius:14px; overflow:hidden;">
+                <div style="height:120px; background:repeating-linear-gradient(135deg,#E7E9EF 0 10px,#EEF0F4 10px 20px); display:flex; align-items:center; justify-content:center; position:relative;">
+                  <span style="width:48px; height:48px; border-radius:50%; background:rgba(14,21,37,.8); display:flex; align-items:center; justify-content:center;"><span style="width:20px;height:20px;background:#fff;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/play.svg) center/contain no-repeat;"></span></span>
+                  <span style="position:absolute; left:10px; bottom:8px; font-family:'Geist Mono',monospace; font-size:11px; color:#5B6478;">lesson thumbnail</span>
+                </div>
+                <div style="height:4px; background:#E4E7EE;"><div style="width:35%; height:100%; background:var(--brand,#2B4BF2);"></div></div>
+                <div style="padding:12px 14px; display:flex; flex-direction:column;">
+                  <span style="font-weight:600;">Lesson 14 · Waves</span>
+                  <span style="font-size:13px; color:#5B6478; font-variant-numeric:tabular-nums;">18 of 52 min · Physics Theory · Sep</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <h3 style="margin:0; font-size:16px; font-weight:600;">Today</h3>
+              <div style="background:#fff; border:1px solid #E4E7EE; border-radius:14px;">
+                <div style="display:flex; gap:12px; padding:12px 14px; border-bottom:1px solid #EEF0F4;">
+                  <span style="width:64px; flex:none; font-weight:600; font-variant-numeric:tabular-nums;">8:00 AM</span>
+                  <div style="flex:1; display:flex; flex-direction:column;"><span style="font-weight:500;">Physics Theory</span><span style="font-size:13px; color:#5B6478;">Hall A · also on Zoom</span></div>
+                  <span style="align-self:center; font-size:12px; font-weight:600; color:#0B7A3B; background:#E8F6EE; padding:0 8px; border-radius:6px; line-height:22px;">Now</span>
+                </div>
+                <div style="display:flex; gap:12px; padding:12px 14px;">
+                  <span style="width:64px; flex:none; font-weight:600; font-variant-numeric:tabular-nums;">7:00 PM</span>
+                  <div style="flex:1; display:flex; flex-direction:column;"><span style="font-weight:500;">A/L Revision</span><span style="font-size:13px; color:#5B6478;">Zoom</span></div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline;"><h3 style="margin:0; font-size:16px; font-weight:600;">New this week</h3><a href="#" style="font-size:14px; color:var(--brand,#2B4BF2); font-weight:500;">All</a></div>
+              <div style="background:#fff; border:1px solid #E4E7EE; border-radius:14px;">
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid #EEF0F4;">
+                  <span style="width:36px; height:36px; flex:none; border-radius:10px; background:color-mix(in oklch, var(--brand,#2B4BF2) 10%, white); display:flex; align-items:center; justify-content:center;"><span style="width:18px;height:18px;background:var(--brand,#2B4BF2);mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/play-circle.svg) center/contain no-repeat;"></span></span>
+                  <div style="flex:1; display:flex; flex-direction:column;"><span style="font-weight:500;">Lesson 15 · Standing waves</span><span style="font-size:13px; color:#5B6478;">48 min · Thu</span></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid #EEF0F4;">
+                  <span style="width:36px; height:36px; flex:none; border-radius:10px; background:color-mix(in oklch, var(--brand,#2B4BF2) 10%, white); display:flex; align-items:center; justify-content:center;"><span style="width:18px;height:18px;background:var(--brand,#2B4BF2);mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/play-circle.svg) center/contain no-repeat;"></span></span>
+                  <div style="flex:1; display:flex; flex-direction:column;"><span style="font-weight:500;">Revision · 2023 paper Q1–Q10</span><span style="font-size:13px; color:#5B6478;">1 h 05 min · Wed</span></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px;">
+                  <span style="width:36px; height:36px; flex:none; border-radius:10px; background:#FFF4E0; display:flex; align-items:center; justify-content:center;"><span style="width:18px;height:18px;background:#8A5200;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/file-text.svg) center/contain no-repeat;"></span></span>
+                  <div style="flex:1; display:flex; flex-direction:column;"><span style="font-weight:500;">Tute 07 · Waves</span><span style="font-size:13px; color:#5B6478;">PDF · 2.4 MB · Tue</span></div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <h3 style="margin:0; font-size:16px; font-weight:600;">From Kamal sir</h3>
+              <div style="background:#fff; border:1px solid #E4E7EE; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:13px; color:#5B6478;">Yesterday · 6:30 PM</span>
+                <span style="text-wrap:pretty;">Next Saturday's class moves to Hall B. Bring Tute 07 and a calculator.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <nav style="flex:none; height:84px; padding:8px 8px 26px; background:#fff; border-top:1px solid #E4E7EE; display:grid; grid-template-columns:repeat(5,1fr); font-size:11px; font-weight:500;">
+          <a href="#" style="display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--brand,#2B4BF2); text-decoration:none;"><span style="width:24px;height:24px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/home.svg) center/contain no-repeat;"></span>Home</a>
+          <a href="#" style="display:flex; flex-direction:column; align-items:center; gap:3px; color:#5B6478; text-decoration:none;"><span style="width:24px;height:24px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/book-open.svg) center/contain no-repeat;"></span>Classes</a>
+          <a href="#" style="display:flex; flex-direction:column; align-items:center; gap:3px; color:#5B6478; text-decoration:none; position:relative;"><span style="width:24px;height:24px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wallet.svg) center/contain no-repeat;"></span>Pay<span style="position:absolute; top:-2px; left:calc(50% + 8px); width:8px; height:8px; border-radius:50%; background:#D92D20;"></span></a>
+          <a href="#" style="display:flex; flex-direction:column; align-items:center; gap:3px; color:#5B6478; text-decoration:none;"><span style="width:24px;height:24px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/video.svg) center/contain no-repeat;"></span>Live</a>
+          <a href="#" style="display:flex; flex-direction:column; align-items:center; gap:3px; color:#5B6478; text-decoration:none;"><span style="width:24px;height:24px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/user.svg) center/contain no-repeat;"></span>Me</a>
+        </nav>
+        <div style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:134px; height:5px; border-radius:3px; background:#0E1525;"></div>
+      </div>
+    </div>
+
+    <div id="2b" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3A4357; font-weight:500;"><span style="font-family:'Geist Mono',monospace; font-size:12px; padding:1px 6px; border-radius:6px; background:#0E1525; color:#fff;">2b</span>Desktop 1440</div>
+      <div data-screen-label="2b Student home desktop" style="width:1440px; height:900px; border-radius:12px; overflow:hidden; box-shadow:0 0 0 1px #D9DDE5, 0 24px 60px -24px rgba(14,21,37,.28); display:flex; background:#F6F7FA; font-size:14px; line-height:20px;">
+        <aside style="width:240px; flex:none; background:#fff; border-right:1px solid #E4E7EE; display:flex; flex-direction:column; padding:16px 12px;">
+          <div style="display:flex; align-items:center; gap:10px; padding:4px 8px 20px;">
+            <div style="width:36px; height:36px; border-radius:10px; background:var(--brand,#2B4BF2); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700;">KP</div>
+            <span style="font-weight:600;">Kamal Physics</span>
+          </div>
+          <nav style="display:flex; flex-direction:column; gap:2px;">
+            <a href="#" style="display:flex; align-items:center; gap:10px; height:40px; padding:0 10px; border-radius:8px; background:color-mix(in oklch, var(--brand,#2B4BF2) 9%, white); color:var(--brand,#2B4BF2); font-weight:500; text-decoration:none;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/home.svg) center/contain no-repeat;"></span>Home</a>
+            <a href="#" style="display:flex; align-items:center; gap:10px; height:40px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/book-open.svg) center/contain no-repeat;"></span>Classes</a>
+            <a href="#" style="display:flex; align-items:center; gap:10px; height:40px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wallet.svg) center/contain no-repeat;"></span><span style="flex:1;">Pay</span><span style="font-size:12px; font-weight:600; line-height:18px; padding:0 6px; border-radius:6px; background:#FEE4E2; color:#B42318;">1</span></a>
+            <a href="#" style="display:flex; align-items:center; gap:10px; height:40px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/video.svg) center/contain no-repeat;"></span>Live</a>
+            <a href="#" style="display:flex; align-items:center; gap:10px; height:40px; padding:0 10px; border-radius:8px; color:#3A4357; text-decoration:none;" style-hover="background:#F3F4F7;"><span style="width:20px;height:20px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/user.svg) center/contain no-repeat;"></span>Me</a>
+          </nav>
+          <div style="margin-top:auto; display:flex; align-items:center; gap:10px; padding:10px 8px; border-top:1px solid #EEF0F4;">
+            <div style="width:32px; height:32px; border-radius:50%; background:#E7E9EF; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600;">NP</div>
+            <div style="display:flex; flex-direction:column;"><span style="font-weight:500;">Nimali Perera</span><span style="font-size:12px; color:#5B6478;">BR-1042</span></div>
+          </div>
+        </aside>
+        <main style="flex:1; min-width:0; padding:32px 40px; display:flex; flex-direction:column; gap:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <h2 style="margin:0; font-size:26px; line-height:32px; font-weight:600; letter-spacing:-0.02em;">Hi Nimali</h2>
+              <span style="color:#5B6478;">Sat, 26 Sep 2026 · 2 classes today</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; padding:10px 12px 10px 16px; border-radius:12px; background:#FFF8EB; border:1px solid #F3D59B;">
+              <span style="font-weight:600; color:#8A5200;">October 2026 fee due</span>
+              <span style="font-variant-numeric:tabular-nums;">LKR 2,500</span>
+              <button style="height:34px; padding:0 14px; border:0; border-radius:8px; background:#0E1525; color:#fff; font:inherit; font-weight:600; cursor:pointer;">Pay now</button>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:20px;">
+            <div style="background:#0E1525; color:#fff; border-radius:14px; padding:24px; display:flex; align-items:center; gap:24px;">
+              <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; letter-spacing:0.04em;"><span style="width:8px; height:8px; border-radius:50%; background:#F04438; box-shadow:0 0 0 4px rgba(240,68,56,.25);"></span>LIVE NOW</div>
+                <span style="font-size:22px; line-height:28px; font-weight:600;">2027 A/L Physics Theory</span>
+                <span style="color:#B8BECB;">Started 8:00 AM · Hall A &amp; Zoom · 164 joined</span>
+              </div>
+              <button style="height:48px; padding:0 22px; border:0; border-radius:12px; background:#fff; color:#0E1525; font:inherit; font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; cursor:pointer;"><span style="width:18px;height:18px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/video.svg) center/contain no-repeat;"></span>Join class</button>
+            </div>
+            <div style="background:#fff; border:1px solid #E4E7EE; border-radius:14px; overflow:hidden;">
+              <div style="padding:14px 18px; border-bottom:1px solid #E4E7EE; font-weight:600;">Today</div>
+              <div style="display:flex; gap:14px; padding:12px 18px; border-bottom:1px solid #EEF0F4;"><span style="width:64px; font-weight:600; font-variant-numeric:tabular-nums;">8:00 AM</span><span style="flex:1;">Physics Theory · Hall A</span><span style="font-size:12px; font-weight:600; color:#0B7A3B; background:#E8F6EE; padding:0 8px; border-radius:6px;">Now</span></div>
+              <div style="display:flex; gap:14px; padding:12px 18px;"><span style="width:64px; font-weight:600; font-variant-numeric:tabular-nums;">7:00 PM</span><span style="flex:1;">A/L Revision · Zoom</span><span style="font-size:12px; color:#5B6478;">in 10 h 48 min</span></div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:20px; align-items:start;">
+            <div style="display:flex; flex-direction:column; gap:20px;">
+              <div style="background:#fff; border:1px solid #E4E7EE; border-radius:14px; display:flex; overflow:hidden;">
+                <div style="width:280px; flex:none; background:repeating-linear-gradient(135deg,#E7E9EF 0 10px,#EEF0F4 10px 20px); display:flex; align-items:center; justify-content:center;"><span style="width:52px; height:52px; border-radius:50%; background:rgba(14,21,37,.8); display:flex; align-items:center; justify-content:center;"><span style="width:22px;height:22px;background:#fff;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/play.svg) center/contain no-repeat;"></span></span></div>
+                <div style="flex:1; padding:20px; display:flex; flex-direction:column; gap:10px;">
+                  <span style="font-size:12px; font-weight:600; color:#5B6478; letter-spacing:0.04em;">CONTINUE WATCHING</span>
+                  <span style="font-size:18px; line-height:24px; font-weight:600;">Lesson 14 · Waves</span>
+                  <span style="color:#5B6478;">2027 A/L Physics Theory · September</span>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:auto;"><div style="flex:1; height:6px; border-radius:6px; background:#EEF0F4;"><div style="width:35%; height:100%; border-radius:6px; background:var(--brand,#2B4BF2);"></div></div><span style="font-size:13px; color:#5B6478; font-variant-numeric:tabular-nums;">18 of 52 min</span></div>
+                </div>
+              </div>
+              <div style="background:#fff; border:1px solid #E4E7EE; border-radius:14px; overflow:hidden;">
+                <div style="display:flex; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #E4E7EE;"><span style="font-weight:600;">New this week</span><a href="#" style="font-weight:500; color:var(--brand,#2B4BF2);">All lessons</a></div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid #EEF0F4;"><span style="width:18px;height:18px;background:var(--brand,#2B4BF2);mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/play-circle.svg) center/contain no-repeat;"></span><span style="flex:1; font-weight:500;">Lesson 15 · Standing waves</span><span style="color:#5B6478;">Physics Theory</span><span style="width:90px; text-align:right; color:#5B6478; font-variant-numeric:tabular-nums;">48 min</span></div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid #EEF0F4;"><span style="width:18px;height:18px;background:var(--brand,#2B4BF2);mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/play-circle.svg) center/contain no-repeat;"></span><span style="flex:1; font-weight:500;">2023 paper · Q1–Q10</span><span style="color:#5B6478;">A/L Revision</span><span style="width:90px; text-align:right; color:#5B6478; font-variant-numeric:tabular-nums;">1 h 05 min</span></div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 18px;"><span style="width:18px;height:18px;background:#8A5200;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/file-text.svg) center/contain no-repeat;"></span><span style="flex:1; font-weight:500;">Tute 07 · Waves</span><span style="color:#5B6478;">Physics Theory</span><span style="width:90px; text-align:right; color:#5B6478;">PDF</span></div>
+              </div>
+            </div>
+            <div style="background:#fff; border:1px solid #E4E7EE; border-radius:14px; overflow:hidden;">
+              <div style="padding:14px 18px; border-bottom:1px solid #E4E7EE; font-weight:600;">From Kamal sir</div>
+              <div style="padding:14px 18px; border-bottom:1px solid #EEF0F4; display:flex; flex-direction:column; gap:4px;"><span style="font-size:12px; color:#5B6478;">Yesterday · 6:30 PM</span><span style="text-wrap:pretty;">Next Saturday's class moves to Hall B. Bring Tute 07 and a calculator.</span></div>
+              <div style="padding:14px 18px; display:flex; flex-direction:column; gap:4px;"><span style="font-size:12px; color:#5B6478;">Tue · 8:10 PM</span><span style="text-wrap:pretty;">Paper class marks are out. Check your results under Classes.</span></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;brandColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2B4BF2&quot;,&quot;options&quot;:[&quot;#2B4BF2&quot;,&quot;#0F766E&quot;,&quot;#7C3AED&quot;,&quot;#B42318&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Institute&quot;}}">
+class Component extends DCLogic {
+  renderVals() { return { brand: this.props.brandColor ?? '#2B4BF2' }; }
+}
+</script>
+</body>
+</html>

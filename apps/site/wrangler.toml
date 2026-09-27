@@ -1,0 +1,24 @@
+# Cloudflare Pages config for remix.lk (apps/site). Set the Pages project's root directory to
+# `apps/site` so Cloudflare picks up this file and the functions/ directory.
+#
+# NO SECRETS IN THIS FILE. TURNSTILE_SECRET_KEY and RESEND_API_KEY are set as encrypted
+# secrets in Cloudflare Pages → Settings → Variables and Secrets (or .dev.vars locally).
+name = "remix-site"
+pages_build_output_dir = "out"
+compatibility_date = "2026-09-01"
+
+[vars]
+LEAD_NOTIFY_TO = "sales@remix.lk"
+LEAD_NOTIFY_FROM = "ReMix website <no-reply@remix.lk>"
+# This project's pages.dev host: lets preview deploys (<hash>.remix-site.pages.dev) submit the form.
+PAGES_PREVIEW_HOST = "remix-site.pages.dev"
+
+# Leads from the demo form. Create once (EU location hint, see the privacy policy):
+#   npx wrangler d1 create remix-site-leads --location=weur
+# then paste the returned database_id below (an identifier, not a secret) and apply migrations:
+#   npx wrangler d1 migrations apply remix-site-leads --remote
+[[d1_databases]]
+binding = "DB"
+database_name = "remix-site-leads"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"

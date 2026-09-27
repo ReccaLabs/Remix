@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "title": "About Recca Labs",
+    "description": "Recca Labs is a software company in Colombo. ReMix is our product: one system for the hall, the Zoom room and the fee counter, built for Sri Lankan tuition."
+  },
+  "hero": {
+    "eyebrow": "About Recca Labs",
+    "title": "Software built for Sri Lankan tuition, not adapted from abroad.",
+    "intro": "Recca Labs is a software company in Colombo. ReMix is our product: one system for the hall, the Zoom room and the fee counter."
+  },
+  "story": {
+    "title": "Why we built ReMix",
+    "p1": "Tuition in Sri Lanka runs on halls, WhatsApp groups, bank slips and Zoom links. Most tools were built for somewhere else, so teachers patch four of them together and still lose lessons to Telegram and fees to shared accounts.",
+    "p2": "We built one system around how classes here actually work: month-by-month fees, mixed hall and online batches, cashiers on a Saturday morning and students on low-cost phones."
+  },
+  "values": {
+    "title": "What we hold ourselves to",
+    "items": {
+      "trust": {
+        "title": "Trust first",
+        "body": "You hand us your income and your students' data. We keep it calm, precise and honest."
+      },
+      "fast": {
+        "title": "Fast for busy people",
+        "body": "Every common task in three clicks or fewer, and keyboard shortcuts for the fee counter."
+      },
+      "phone": {
+        "title": "Works on a cheap phone",
+        "body": "Student screens load quickly on a low-end Android over 4G."
+      },
+      "languages": {
+        "title": "Three languages from day one",
+        "body": "Sinhala and Tamil written by native speakers, not machine-translated."
+      }
+    }
+  },
+  "pilot": {
+    "title": "Designed with teachers and cashiers, one screen at a time.",
+    "body": "Before we build a screen, we test it with a real teacher and a real cashier. Our pilot institutes shape what ships next.",
+    "cta": "Join the pilot",
+    "factsLabel": "Company facts",
+    "basedIn": "Based in",
+    "basedInValue": "Colombo, Sri Lanka",
+    "product": "Product",
+    "productValue": "ReMix · remix.lk",
+    "talk": "Talk to us",
+    "whatsapp": "WhatsApp"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "meta": {
+    "title": "Pricing — pay per active student",
+    "description": "ReMix pricing for Sri Lankan tuition teachers and institutes: a monthly base plus a small fee for each active student. One student counts once, however many classes they join. 30-day free trial."
+  },
+  "hero": {
+    "eyebrow": "Pricing",
+    "title": "Simple pricing. One student counts once.",
+    "subtitle": "A monthly base plus a small fee for each active student. No per-class cards, no charge for students who stopped coming."
+  },
+  "billing": {
+    "legend": "Billing period",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "yearlyBadge": "{months} months free",
+    "perMonth": "/month",
+    "perStudent": "+ {price} per active student",
+    "noteMonthly": "Billed monthly · cancel any time",
+    "noteYearly": "Base billed yearly · pay {paid} months, get {covered}"
+  },
+  "plans": {
+    "title": "Plans",
+    "tutor": {
+      "name": "Tutor",
+      "audience": "{teachers, plural, one {# teacher} other {# teachers}}, up to {max} students",
+      "cta": "Start free trial",
+      "features": {
+        "classes": "Classes, students and fees",
+        "payments": "PayHere cards and bank slips",
+        "zoom": "Zoom with name lock",
+        "video": "Protected video with watermark",
+        "storage": "{storage} storage",
+        "website": "Free yourname.remix.lk website"
+      }
+    },
+    "institute": {
+      "name": "Institute",
+      "popular": "Most popular",
+      "audience": "Many teachers, up to about {max} students",
+      "cta": "Start free trial",
+      "includes": "Everything in Tutor, plus",
+      "features": {
+        "teachers": "Unlimited teachers",
+        "cashiers": "{count} cashier logins",
+        "qr": "QR attendance",
+        "exams": "Exams and results",
+        "domain": "Your own domain",
+        "storage": "{storage} storage"
+      }
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "audience": "Branches and {min}+ students",
+      "cta": "Book a demo",
+      "includes": "Everything in Institute, plus",
+      "features": {
+        "app": "White-label mobile app",
+        "reports": "Branch reports",
+        "support": "Priority support",
+        "storage": "{storage} storage"
+      }
+    }
+  },
+  "calculator": {
+    "title": "Work out your bill.",
+    "subtitle": "Compare ReMix with paying per class card for every class a student joins.",
+    "students": "Active students",
+    "studentsValue": "{count} active students",
+    "classes": "Classes per student",
+    "classesValue": "{count} classes per student",
+    "assumption": "Class card price assumed at {perCard} per class per student each month, with a {minimum} monthly minimum. Monthly billing.",
+    "perMonth": "ReMix per month",
+    "formula": "{base} + {students} × {perStudent}",
+    "average": "About {price} per student each month",
+    "cardPricing": "Per-class-card pricing",
+    "save": "You save each month",
+    "cta": "Start free for 30 days"
+  },
+  "active": {
+    "title": "What counts as an active student?",
+    "subtitle": "We count each student once per 30-day billing cycle, only if they actually used ReMix.",
+    "counts": {
+      "badge": "Counts",
+      "body": "The student paid a fee <b>or</b> logged in at least once during the cycle."
+    },
+    "free": {
+      "badge": "Free",
+      "body": "Students who didn't pay and didn't log in. Keep old batches on file for as long as you like."
+    },
+    "example": {
+      "badge": "Example",
+      "body": "Nimali joins Theory, Revision and Paper class. She is <b>one</b> active student, not three."
+    }
+  },
+  "addons": {
+    "title": "Add-ons",
+    "columns": {
+      "name": "Add-on",
+      "what": "What it does",
+      "price": "Price"
+    },
+    "items": {
+      "gate": {
+        "name": "ReMix+ offline gate attendance",
+        "body": "QR and NFC scanning at the hall door, works offline"
+      },
+      "drm": {
+        "name": "Hardware DRM",
+        "body": "Blocks screen recording on supported devices"
+      },
+      "sms": {
+        "name": "SMS",
+        "body": "Fee reminders, absence alerts, class notices"
+      },
+      "whiteLabel": {
+        "name": "White-label app",
+        "body": "Your own app in the Play Store with your name and logo"
+      },
+      "extraVideo": {
+        "name": "Extra video",
+        "body": "Streaming beyond {gb} GB per student in a month"
+      }
+    },
+    "units": {
+      "branchMonth": "{price} per branch / month",
+      "premiumStudent": "{price} per student in premium courses",
+      "message": "{price} each",
+      "oneTime": "{price} one-time",
+      "gb": "{price} per GB"
+    }
+  },
+  "faq": {
+    "title": "Pricing questions",
+    "contact": "Not sure which plan fits? <link>Ask us on WhatsApp</link>.",
+    "items": {
+      "trial": {
+        "q": "What happens after the 30-day trial?",
+        "a": "You pick a plan and your first bill is based on the students who were active in the trial month. Everything you set up stays exactly as it is."
+      },
+      "change": {
+        "q": "Can I change plans later?",
+        "a": "Yes. Move from Tutor to Institute when you add teachers or pass {max} students. The change starts from your next billing cycle."
+      },
+      "students": {
+        "q": "Do students pay anything to ReMix?",
+        "a": "No. Students pay their class fees to you. ReMix bills the institute, once a month, for active students."
+      },
+      "migration": {
+        "q": "Is moving our data really free?",
+        "a": "Yes, on every plan. We import your students, classes and fee history from Excel, CSV or your current system."
+      }
+    }
+  },
+  "finalCta": {
+    "title": "Try every feature free for 30 days."
+  }
+}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Noto+Sans+Sinhala:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&display=swap" rel="stylesheet">
+<style>body{margin:0;font-family:'Geist',system-ui,sans-serif;color:#0E1525;-webkit-font-smoothing:antialiased}a{color:#2B4BF2;text-decoration:none}a:hover{text-decoration:underline}*{box-sizing:border-box}</style>
+</helmet>
+<div style="--brand: {{ brand }}; min-height:100vh; background:#EDEEF2; padding:48px; display:flex; flex-direction:column; gap:32px; font-size:15px; line-height:22px;">
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    <span style="font-family:'Geist Mono',monospace; font-size:13px; color:#5B6478;">kamalphysics.remix.lk · Student area · P1</span>
+    <h1 style="margin:0; font-size:28px; line-height:36px; font-weight:600; letter-spacing:-0.02em;">Login, SMS code, device limit</h1>
+  </div>
+  <section style="display:flex; flex-wrap:wrap; gap:48px; align-items:flex-start;">
+
+    <div id="1a" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3A4357; font-weight:500;"><span style="font-family:'Geist Mono',monospace; font-size:12px; padding:1px 6px; border-radius:6px; background:#0E1525; color:#fff;">1a</span>Login</div>
+      <div data-screen-label="1a Login" style="width:390px; height:844px; border-radius:44px; background:#fff; box-shadow:0 0 0 1px #D9DDE5, 0 24px 60px -24px rgba(14,21,37,.28); overflow:hidden; display:flex; flex-direction:column; position:relative;">
+        <div style="height:50px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 30px; font-size:15px; font-weight:600;"><span>8:04</span><span style="display:flex; gap:5px;"><span style="width:17px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/signal.svg) center/contain no-repeat;"></span><span style="width:17px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wifi.svg) center/contain no-repeat;"></span><span style="width:20px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/battery-full.svg) center/contain no-repeat;"></span></span></div>
+        <div style="flex:1; display:flex; flex-direction:column; padding:12px 24px 28px; gap:28px;">
+          <div style="display:flex; justify-content:flex-end;">
+            <div style="display:flex; gap:2px; padding:2px; border:1px solid #E4E7EE; border-radius:8px; font-size:12px;">
+              <span style="height:26px; min-width:34px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#0E1525; color:#fff; font-weight:600;">EN</span>
+              <span style="height:26px; min-width:34px; display:flex; align-items:center; justify-content:center; border-radius:6px; color:#3A4357; font-family:'Noto Sans Sinhala',sans-serif;">සිං</span>
+              <span style="height:26px; min-width:34px; display:flex; align-items:center; justify-content:center; border-radius:6px; color:#3A4357; font-family:'Noto Sans Tamil',sans-serif;">த</span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="width:56px; height:56px; border-radius:14px; background:var(--brand,#2B4BF2); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px; letter-spacing:-0.02em;">KP</div>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <h2 style="margin:0; font-size:26px; line-height:32px; font-weight:600; letter-spacing:-0.02em;">Kamal Physics</h2>
+              <span style="color:#5B6478;">Student login</span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <label style="display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:14px; font-weight:500;">Phone number</span>
+              <span style="height:52px; display:flex; align-items:center; border:1px solid #D9DDE5; border-radius:12px; overflow:hidden;">
+                <span style="height:100%; padding:0 14px; display:flex; align-items:center; background:#F6F7FA; border-right:1px solid #D9DDE5; font-weight:500; font-variant-numeric:tabular-nums;">+94</span>
+                <span style="padding:0 14px; font-size:17px; font-variant-numeric:tabular-nums; letter-spacing:0.02em;">77 123 4521</span>
+              </span>
+            </label>
+            <label style="display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:14px; font-weight:500;">Password</span>
+              <span style="height:52px; display:flex; align-items:center; padding:0 14px; border:2px solid var(--brand,#2B4BF2); border-radius:12px; gap:10px;">
+                <span style="flex:1; font-size:20px; letter-spacing:0.18em;">••••••••</span>
+                <span style="width:20px;height:20px;background:#5B6478;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/eye.svg) center/contain no-repeat;"></span>
+              </span>
+            </label>
+            <span style="display:flex; align-items:center; gap:10px; font-size:14px;">
+              <span style="width:22px; height:22px; border-radius:6px; background:var(--brand,#2B4BF2); display:flex; align-items:center; justify-content:center;"><span style="width:14px;height:14px;background:#fff;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check.svg) center/contain no-repeat;"></span></span>
+              Stay signed in for 30 days
+            </span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <button style="height:52px; border:0; border-radius:12px; background:var(--brand,#2B4BF2); color:#fff; font:inherit; font-size:16px; font-weight:600; cursor:pointer;">Log in</button>
+            <div style="text-align:center; font-size:14px; color:#5B6478;">Forgot password? <a href="#" style="color:var(--brand,#2B4BF2); font-weight:500;">Get an SMS code</a></div>
+          </div>
+          <div style="margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:14px;">
+            <div style="font-size:14px; color:#3A4357;">New student? <a href="#" style="color:var(--brand,#2B4BF2); font-weight:500;">Join a class</a></div>
+            <div style="font-size:12px; color:#5B6478;">Powered by <span style="font-weight:700; color:#0E1525; letter-spacing:-0.02em;">Re<span style="color:#D98A00;">M</span>ix</span></div>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:134px; height:5px; border-radius:3px; background:#0E1525;"></div>
+      </div>
+    </div>
+
+    <div id="1b" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3A4357; font-weight:500;"><span style="font-family:'Geist Mono',monospace; font-size:12px; padding:1px 6px; border-radius:6px; background:#0E1525; color:#fff;">1b</span>SMS code</div>
+      <div data-screen-label="1b SMS code" style="width:390px; height:844px; border-radius:44px; background:#fff; box-shadow:0 0 0 1px #D9DDE5, 0 24px 60px -24px rgba(14,21,37,.28); overflow:hidden; display:flex; flex-direction:column; position:relative;">
+        <div style="height:50px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 30px; font-size:15px; font-weight:600;"><span>8:05</span><span style="display:flex; gap:5px;"><span style="width:17px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/signal.svg) center/contain no-repeat;"></span><span style="width:17px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wifi.svg) center/contain no-repeat;"></span><span style="width:20px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/battery-full.svg) center/contain no-repeat;"></span></span></div>
+        <div style="flex:1; display:flex; flex-direction:column; padding:8px 24px 28px; gap:28px;">
+          <button aria-label="Back" style="width:44px; height:44px; margin-left:-10px; border:0; background:none; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span style="width:22px;height:22px;background:#0E1525;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/arrow-left.svg) center/contain no-repeat;"></span></button>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <h2 style="margin:0; font-size:26px; line-height:32px; font-weight:600; letter-spacing:-0.02em;">Enter the code</h2>
+            <p style="margin:0; color:#5B6478; text-wrap:pretty;">We sent a 6-digit code to <span style="color:#0E1525; font-weight:500; font-variant-numeric:tabular-nums;">+94 77 xxx 4521</span>.</p>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:8px; font-size:26px; font-weight:600; font-variant-numeric:tabular-nums;">
+            <span style="height:60px; border:1px solid #D9DDE5; border-radius:12px; display:flex; align-items:center; justify-content:center;">4</span>
+            <span style="height:60px; border:1px solid #D9DDE5; border-radius:12px; display:flex; align-items:center; justify-content:center;">8</span>
+            <span style="height:60px; border:1px solid #D9DDE5; border-radius:12px; display:flex; align-items:center; justify-content:center;">2</span>
+            <span style="height:60px; border:1px solid #D9DDE5; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
+            <span style="height:60px; border:2px solid var(--brand,#2B4BF2); border-radius:12px; display:flex; align-items:center; justify-content:center;"><span style="width:2px; height:26px; background:var(--brand,#2B4BF2);"></span></span>
+            <span style="height:60px; border:1px solid #D9DDE5; border-radius:12px;"></span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:14px;">
+            <span style="color:#5B6478;">Didn't get it?</span>
+            <span style="color:#5B6478; font-variant-numeric:tabular-nums;">Resend in <span style="color:#0E1525; font-weight:600;">0:42</span></span>
+          </div>
+          <button style="height:52px; border:0; border-radius:12px; background:#E4E7EE; color:#8A92A3; font:inherit; font-size:16px; font-weight:600;">Verify</button>
+          <div style="margin-top:auto; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-left:-16px; margin-right:-16px; font-size:24px; font-weight:500;">
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">1</span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">2</span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">3</span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">4</span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">5</span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">6</span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">7</span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">8</span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">9</span>
+            <span></span>
+            <span style="height:52px; border-radius:10px; background:#F3F4F7; display:flex; align-items:center; justify-content:center;">0</span>
+            <span style="height:52px; display:flex; align-items:center; justify-content:center;"><span style="width:24px;height:24px;background:#0E1525;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/delete.svg) center/contain no-repeat;"></span></span>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:134px; height:5px; border-radius:3px; background:#0E1525;"></div>
+      </div>
+    </div>
+
+    <div id="1c" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3A4357; font-weight:500;"><span style="font-family:'Geist Mono',monospace; font-size:12px; padding:1px 6px; border-radius:6px; background:#0E1525; color:#fff;">1c</span>Device limit reached</div>
+      <div data-screen-label="1c Device limit" style="width:390px; height:844px; border-radius:44px; background:#fff; box-shadow:0 0 0 1px #D9DDE5, 0 24px 60px -24px rgba(14,21,37,.28); overflow:hidden; display:flex; flex-direction:column; position:relative;">
+        <div style="height:50px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 30px; font-size:15px; font-weight:600;"><span>8:06</span><span style="display:flex; gap:5px;"><span style="width:17px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/signal.svg) center/contain no-repeat;"></span><span style="width:17px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/wifi.svg) center/contain no-repeat;"></span><span style="width:20px;height:17px;background:currentColor;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/battery-full.svg) center/contain no-repeat;"></span></span></div>
+        <div style="flex:1; display:flex; flex-direction:column; padding:24px 24px 28px; gap:24px;">
+          <div style="width:52px; height:52px; border-radius:14px; background:#FFF4E0; display:flex; align-items:center; justify-content:center;"><span style="width:26px;height:26px;background:#8A5200;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/monitor-smartphone.svg) center/contain no-repeat;"></span></div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <h2 style="margin:0; font-size:26px; line-height:32px; font-weight:600; letter-spacing:-0.02em;">You're signed in on 2 devices</h2>
+            <p style="margin:0; color:#5B6478; text-wrap:pretty;">Your account works on 2 devices at a time. Sign out of one to use this phone.</p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:12px; padding:14px; border:2px solid var(--brand,#2B4BF2); border-radius:14px; background:color-mix(in oklch, var(--brand,#2B4BF2) 5%, white);">
+              <span style="width:22px; height:22px; flex:none; margin-top:1px; border-radius:50%; border:6px solid var(--brand,#2B4BF2); background:#fff;"></span>
+              <div style="flex:1; display:flex; flex-direction:column; gap:2px;">
+                <span style="font-weight:600;">HP Laptop · Chrome</span>
+                <span style="font-size:13px; line-height:18px; color:#5B6478;">Windows · Last used Wed 9:40 PM</span>
+                <span style="font-size:13px; line-height:18px; color:#5B6478;">Kandy</span>
+              </div>
+              <span style="width:22px;height:22px;flex:none;background:#5B6478;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/laptop.svg) center/contain no-repeat;"></span>
+            </div>
+            <div style="display:flex; gap:12px; padding:14px; border:1px solid #D9DDE5; border-radius:14px;">
+              <span style="width:22px; height:22px; flex:none; margin-top:1px; border-radius:50%; border:1.5px solid #B8BECB;"></span>
+              <div style="flex:1; display:flex; flex-direction:column; gap:2px;">
+                <span style="font-weight:600;">Samsung Galaxy A14 · Chrome</span>
+                <span style="font-size:13px; line-height:18px; color:#5B6478;">Android · Last used today 7:12 AM</span>
+                <span style="font-size:13px; line-height:18px; color:#5B6478;">Kandy</span>
+              </div>
+              <span style="width:22px;height:22px;flex:none;background:#5B6478;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/smartphone.svg) center/contain no-repeat;"></span>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; padding:12px 14px; border-radius:12px; background:#F6F7FA; font-size:14px; line-height:20px; color:#3A4357;">
+            <span style="width:18px;height:18px;flex:none;margin-top:1px;background:#3A4357;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/shield-check.svg) center/contain no-repeat;"></span>
+            <span style="text-wrap:pretty;">The 2-device rule stops accounts being shared, which protects your teacher's lessons.</span>
+          </div>
+          <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:13px; color:#5B6478; text-align:center;">This phone: iPhone 12 · Safari</div>
+            <button style="height:52px; border:0; border-radius:12px; background:var(--brand,#2B4BF2); color:#fff; font:inherit; font-size:16px; font-weight:600; cursor:pointer;">Sign out this device and continue</button>
+            <button style="height:48px; border:0; border-radius:12px; background:none; color:#3A4357; font:inherit; font-weight:500; cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:134px; height:5px; border-radius:3px; background:#0E1525;"></div>
+      </div>
+    </div>
+
+    <div id="1d" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3A4357; font-weight:500;"><span style="font-family:'Geist Mono',monospace; font-size:12px; padding:1px 6px; border-radius:6px; background:#0E1525; color:#fff;">1d</span>Desktop login 1440</div>
+      <div data-screen-label="1d Desktop login 1440" style="width:1440px; height:900px; border-radius:12px; overflow:hidden; box-shadow:0 0 0 1px #D9DDE5, 0 24px 60px -24px rgba(14,21,37,.28); display:flex; background:#F6F7FA; font-size:14px; line-height:20px;">
+        <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; background:#fff;">
+          <div style="background:var(--brand,#2B4BF2); color:#fff; padding:48px 56px; display:flex; flex-direction:column; gap:32px;">
+            <div style="display:flex; align-items:center; gap:12px;"><div style="width:44px; height:44px; border-radius:12px; background:#fff; color:var(--brand,#2B4BF2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px;">KP</div><span style="font-size:18px; font-weight:600;">Kamal Physics</span></div>
+            <div style="flex:1; border-radius:16px; background:repeating-linear-gradient(135deg,rgba(255,255,255,.10) 0 12px,rgba(255,255,255,.04) 12px 24px); display:flex; align-items:flex-end; padding:16px;"><span style="font-family:'Geist Mono',monospace; font-size:12px; opacity:.8;">teacher photo</span></div>
+            <div style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:28px; line-height:34px; font-weight:600; letter-spacing:-0.02em;">A/L Physics · Sinhala &amp; English medium</span><span style="opacity:.85;">Lessons, live classes and fees in one place.</span></div>
+          </div>
+          <div style="display:flex; flex-direction:column; padding:48px 56px;">
+            <div style="display:flex; justify-content:flex-end;"><div style="display:flex; gap:2px; padding:2px; border:1px solid #E4E7EE; border-radius:8px; font-size:12px;"><span style="height:26px; min-width:34px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#0E1525; color:#fff; font-weight:600;">EN</span><span style="height:26px; min-width:34px; display:flex; align-items:center; justify-content:center; border-radius:6px; color:#3A4357; font-family:'Noto Sans Sinhala',sans-serif;">සිං</span><span style="height:26px; min-width:34px; display:flex; align-items:center; justify-content:center; border-radius:6px; color:#3A4357; font-family:'Noto Sans Tamil',sans-serif;">த</span></div></div>
+            <div style="margin:auto 0; width:100%; max-width:400px; align-self:center; display:flex; flex-direction:column; gap:24px; font-size:15px;">
+              <div style="display:flex; flex-direction:column; gap:4px;"><h2 style="margin:0; font-size:28px; line-height:34px; font-weight:600; letter-spacing:-0.02em;">Student login</h2><span style="color:#5B6478;">Use the phone number you gave the institute.</span></div>
+              <label style="display:flex; flex-direction:column; gap:6px;"><span style="font-size:14px; font-weight:500;">Phone number</span><span style="height:48px; display:flex; align-items:center; border:1px solid #D9DDE5; border-radius:10px; overflow:hidden;"><span style="height:100%; padding:0 14px; display:flex; align-items:center; background:#F6F7FA; border-right:1px solid #D9DDE5; font-weight:500;">+94</span><span style="padding:0 14px; font-variant-numeric:tabular-nums;">77 123 4521</span></span></label>
+              <label style="display:flex; flex-direction:column; gap:6px;"><span style="display:flex; justify-content:space-between; font-size:14px; font-weight:500;">Password<a href="#" style="color:var(--brand,#2B4BF2); font-weight:500;">Forgot? Get an SMS code</a></span><span style="height:48px; display:flex; align-items:center; padding:0 14px; border:2px solid var(--brand,#2B4BF2); border-radius:10px; gap:10px;"><span style="flex:1; letter-spacing:0.18em;">••••••••</span><span style="width:18px;height:18px;flex:none;background:#5B6478;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/eye.svg) center/contain no-repeat;"></span></span></label>
+              <span style="display:flex; align-items:center; gap:10px; font-size:14px;"><span style="width:20px; height:20px; border-radius:5px; background:var(--brand,#2B4BF2); display:flex; align-items:center; justify-content:center;"><span style="width:13px;height:13px;flex:none;background:#fff;mask:url(https://cdn.jsdelivr.net/npm/lucide-static@0.300.0/icons/check.svg) center/contain no-repeat;"></span></span>Stay signed in for 30 days</span>
+              <button style="height:48px; border:0; border-radius:10px; background:var(--brand,#2B4BF2); color:#fff; font:inherit; font-weight:600; cursor:pointer;">Log in</button>
+              <span style="font-size:14px; color:#3A4357; text-align:center;">New student? <a href="#" style="color:var(--brand,#2B4BF2); font-weight:500;">Join a class</a></span>
+            </div>
+            <div style="font-size:12px; color:#5B6478; text-align:center;">Powered by <span style="font-weight:700; color:#0E1525; letter-spacing:-0.02em;">Re<span style="color:#D98A00;">M</span>ix</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;brandColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2B4BF2&quot;,&quot;options&quot;:[&quot;#2B4BF2&quot;,&quot;#0F766E&quot;,&quot;#7C3AED&quot;,&quot;#B42318&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Institute&quot;}}">
+class Component extends DCLogic {
+  renderVals() { return { brand: this.props.brandColor ?? '#2B4BF2' }; }
+}
+</script>
+</body>
+</html>

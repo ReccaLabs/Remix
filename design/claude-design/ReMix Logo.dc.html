@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+</helmet>
+<sc-if value="{{ isMark }}" hint-placeholder-val="{{ false }}">
+  <span style="width:{{ sizePx }}; height:{{ sizePx }}; border-radius:{{ tileRadius }}; background:{{ tileBg }}; display:inline-flex; align-items:center; justify-content:center; font-size:{{ markFont }}; flex:none;">
+    <span style="position:relative; display:block; width:0.56em; height:0.72em;">
+      <span style="position:absolute; left:50%; top:50%; width:0.16em; height:0.8em; border-radius:0.08em; background:{{ blue }}; transform:translate(-50%,-50%) rotate(-30deg);"></span>
+      <span style="position:absolute; left:50%; top:50%; width:0.16em; height:0.8em; border-radius:0.08em; background:#F2A516; transform:translate(-50%,-50%) rotate(30deg);"></span>
+    </span>
+  </span>
+</sc-if>
+<sc-if value="{{ isWord }}" hint-placeholder-val="{{ true }}">
+  <span style="display:inline-flex; flex-direction:column; align-items:flex-start; gap:0.16em; font-size:{{ sizePx }};">
+    <span style="display:inline-flex; align-items:baseline; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; letter-spacing:-0.045em; line-height:1; color:{{ ink }};">
+      <span>ReMi</span>
+      <span style="position:relative; display:inline-block; width:0.56em; height:0.7em; margin-left:0.02em;">
+        <span style="position:absolute; left:50%; top:50%; width:0.16em; height:0.8em; border-radius:0.08em; background:{{ blue }}; transform:translate(-50%,-50%) rotate(-30deg);"></span>
+        <span style="position:absolute; left:50%; top:50%; width:0.16em; height:0.8em; border-radius:0.08em; background:#F2A516; transform:translate(-50%,-50%) rotate(30deg);"></span>
+      </span>
+    </span>
+    <sc-if value="{{ showBy }}" hint-placeholder-val="{{ false }}">
+      <span style="font-family:'Geist',sans-serif; font-size:0.27em; line-height:1.2; font-weight:500; letter-spacing:0.01em; color:{{ subInk }}; padding-left:0.04em;">by Recca Labs</span>
+    </sc-if>
+  </span>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:320,&quot;height&quot;:120},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:28,&quot;min&quot;:12,&quot;max&quot;:200,&quot;tsType&quot;:&quot;number&quot;},&quot;tone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;'light' | 'dark'&quot;},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;wordmark&quot;,&quot;options&quot;:[&quot;wordmark&quot;,&quot;lockup&quot;,&quot;mark&quot;],&quot;tsType&quot;:&quot;'wordmark' | 'lockup' | 'mark'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const size = Number(this.props.size ?? 28);
+    const dark = this.props.tone === 'dark';
+    const v = this.props.variant ?? 'wordmark';
+    return {
+      sizePx: size + 'px',
+      isMark: v === 'mark',
+      isWord: v !== 'mark',
+      showBy: v === 'lockup',
+      ink: dark ? '#FFFFFF' : '#0E1525',
+      subInk: dark ? '#B5BCCB' : '#5B6478',
+      blue: dark ? '#6F86FF' : '#2B4BF2',
+      tileBg: dark ? '#FFFFFF' : '#0E1525',
+      tileRadius: Math.round(size * 0.26) + 'px',
+      markFont: Math.round(size * 0.92) + 'px',
+    };
+  }
+}
+</script>
+</body>
+</html>
