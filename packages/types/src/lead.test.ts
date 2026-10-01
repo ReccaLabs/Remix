@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { leadRequestSchema, leadSchema, sriLankaMobile } from './lead';
+import { leadRequestSchema, leadSchema } from './lead';
+import { sriLankaMobile } from './phone';
 
 const valid = {
   name: 'Kamal Jayasinghe',

@@ -6,8 +6,10 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./api": "./src/api/index.ts",
     "./pricing": "./src/pricing.ts",
     "./money": "./src/money.ts",
+    "./phone": "./src/phone.ts",
     "./lead": "./src/lead.ts"
   },
   "scripts": {

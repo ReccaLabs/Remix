@@ -11,6 +11,7 @@
 | 3 | [03-architecture.md](03-architecture.md) | System design, multi-tenancy (RLS), identity, data model, API conventions, integrations, jobs, infra |
 | 4 | [04-quality.md](04-quality.md) | NFRs, Definition of Ready/Done (story → release), test strategy + critical journeys, threat model, release process |
 | 5 | [05-roadmap.md](05-roadmap.md) | Phases 1–10 with exit criteria, timeline, long-lead tracks, design gaps, risks, ADR backlog |
+| — | [phase-1.md](phase-1.md) | Phase 1 execution board: tracks, branches, ownership, decisions, status |
 
 Related: [DEVELOPMENT.md](../../DEVELOPMENT.md) (stack, security checklist §5) · [DESIGN.md](../../DESIGN.md) (design system, screen → route map) · [CLAUDE.md](../../CLAUDE.md) (rules for AI assistants) · [docs/decisions/](../decisions/) (ADRs).
 
@@ -31,7 +32,7 @@ Update this table at every phase boundary (and feature statuses in 02-features.m
 | Phase | Name | Release | Status | Target (est.) |
 | --- | --- | --- | --- | --- |
 | 0 | remix.lk marketing site | R0 | ✅ Built — launch tasks pending (D1, Turnstile, legal review, deploy) | done |
-| 1 | Foundation & walking skeleton | — | ⬜ Next | weeks 1–4 |
+| 1 | Foundation & walking skeleton | — | 🔄 In progress — [board](phase-1.md) | weeks 1–4 |
 | 2 | People & classes | R1 | ⬜ | weeks 5–7 |
 | 3 | Money (fees, PayHere, slips, cash) | R1 | ⬜ | weeks 8–11 |
 | 4 | Learning (protected video, tutes) | R1 | ⬜ | weeks 12–14 |
