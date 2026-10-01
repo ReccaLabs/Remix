@@ -14,7 +14,7 @@ Email **security@remix.lk** with a description, steps to reproduce and the affec
 
 ## In scope
 
-`remix.lk`, `*.remix.lk`, `admin.remix.lk`, `api.remix.lk`, and the code in this repository.
+`remix.lk`, `*.remix.lk`, `admin.remix.lk` (including the API at `/api/v1` on each of these hosts — there is no separate API host, see [ADR 0003](docs/decisions/0003-same-origin-api-via-edge-proxy.md)), and the code in this repository.
 
 ## Engineering baseline
 

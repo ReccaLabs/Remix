@@ -13,7 +13,7 @@ These keep the architecture reliable and cheap. Everything else from earlier doc
 | # | Change | Why |
 | --- | --- | --- |
 | 1 | **Build remix.lk as its own static app (`apps/site`) hosted on Cloudflare Pages**, not on our Hetzner servers | Free, served from Cloudflare's global network, and stays online even if our LMS servers are down. Sales never stop. |
-| 2 | **Use a vetted auth library (Better Auth) instead of writing login/sessions ourselves**; evaluate in sprint 1 | Hand-written auth is where most security bugs live. It has phone-number/OTP, session listing/revocation (needed for the 2-device rule) and organisation support. Fall back to our own JWT design only if it doesn't fit. |
+| 2 | **Use a vetted auth library (Better Auth) instead of writing login/sessions ourselves**; evaluate in sprint 1 | Hand-written auth is where most security bugs live. It has phone-number/OTP, session listing/revocation (needed for the 2-device rule) and organisation support. Fall back to our own JWT design only if it doesn't fit. **Superseded:** we build our own auth with opaque, DB-backed sessions — see [ADR 0004](docs/decisions/0004-own-authentication.md). |
 | 3 | **Hash passwords with Argon2id** (not bcrypt) | Current OWASP recommendation. |
 | 4 | **Database high availability before the first paying institute**: primary + standby with automatic failover | The DB is the one part that takes every institute down. |
 | 5 | **Servers on a Hetzner private network; only Cloudflare can reach the app; the DB has no public IP** | Removes most direct attack paths for free. |
@@ -27,14 +27,15 @@ These keep the architecture reliable and cheap. Everything else from earlier doc
 
 ```
                         Cloudflare (DNS, SSL, WAF, DDoS, cache)
-            ┌──────────────────────┼─────────────────────────────┐
-            ▼                      ▼                             ▼
-   remix.lk (apps/site)     *.remix.lk + custom domains     api.remix.lk
-   Cloudflare Pages         (apps/web, Next.js)             (apps/api, NestJS)
-   static, free             student portal, institute       REST API, auth,
-   + Pages Functions        admin, platform admin           workers, realtime
-   (demo form)                     │                             │
-                                   └──────────┬──────────────────┘
+            ┌──────────────────────┴──────────┐
+            ▼                                 ▼
+   remix.lk (apps/site)     *.remix.lk + custom domains + admin.remix.lk
+   Cloudflare Pages         edge proxy, same origin on every host (ADR 0003):
+   static, free               /api/v1/*  → apps/api (NestJS): REST API, auth,
+   + Pages Functions                       workers, realtime
+   (demo form)                everything else → apps/web (Next.js): portal,
+                                           institute admin, platform admin
+                                              │
                                               ▼
                               Hetzner private network
                     ┌──────────────┬──────────────┬──────────────┐
@@ -80,7 +81,7 @@ remix/
 | Marketing site | Next.js 16 (App Router) with `output: 'export'`, Tailwind CSS v4, next-intl (en / si / ta), MDX for Guides |
 | App front end | Next.js 16, Tailwind v4, shadcn/ui, TanStack Query, react-hook-form + Zod |
 | Backend | NestJS, Drizzle ORM, PostgreSQL 18, Valkey (Redis-compatible), BullMQ, Socket.io |
-| Auth | Better Auth (evaluate) with phone/OTP; Argon2id |
+| Auth | Own implementation ([ADR 0004](docs/decisions/0004-own-authentication.md)): Argon2id, opaque DB-backed sessions, SMS OTP later |
 | Files / video | Cloudflare R2 (private buckets), Bunny Stream (Volume tier) |
 | Integrations | PayHere (institute's own merchant), Text.lk + BYO gateway adapters, Zoom OAuth app |
 | Hosting | Cloudflare Pages (site), Hetzner Cloud Germany/Finland (app), Docker + Kamal |
@@ -333,11 +334,11 @@ Treat this as a release gate: nothing goes to real institutes until every "Must"
 | --- | --- |
 | Argon2id password hashing (OWASP parameters), minimum 8 characters, block common passwords | Must |
 | Rate limits: login 5/min per phone + 20/min per IP; OTP 3 per 15 min per phone; lockout with SMS unlock | Must |
-| Sessions: short access token (15 min) + rotating refresh token in `HttpOnly; Secure; SameSite=Lax` cookie; revoke on password change | Must |
+| Sessions: opaque token (SHA-256 hash stored) in a host-only `HttpOnly; Secure; SameSite=Lax` cookie, rotated every 15 min with reuse detection; revoke on password change ([ADR 0004](docs/decisions/0004-own-authentication.md)) | Must |
 | 2-device limit with visible device list and "sign out other device" | Must |
 | Roles checked in API guards **and** RLS; deny by default | Must |
 | Platform staff: separate table, **mandatory 2FA (TOTP)**, IP allowlist optional, all actions audited | Must |
-| "Log in as institute": reason required, time-limited (60 min), banner visible, audited | Must |
+| "Log in as institute": reason required, time-limited (30 min, per [PLT-04](docs/plan/02-features.md#plt--platform-admin)), banner visible, audited | Must |
 | Parents only see their linked children | Must |
 
 ### 5.2 Multi-tenant isolation
@@ -356,8 +357,8 @@ Treat this as a release gate: nothing goes to real institutes until every "Must"
 | --- | --- |
 | Zod validation on every input; reject unknown fields | Must |
 | Parameterised queries only (Drizzle); no string-built SQL | Must |
-| CSRF: SameSite cookies + CSRF token (or double-submit) on state-changing requests from browsers | Must |
-| CORS: explicit allowlist (tenant hosts, app domains); never `*` with credentials | Must |
+| CSRF: `SameSite=Lax` host-only cookies + `Origin` / `Sec-Fetch-Site` verification on every state-changing request + JSON-only bodies ([ADR 0003](docs/decisions/0003-same-origin-api-via-edge-proxy.md)) | Must |
+| CORS: none — the browser calls `/api/v1` same-origin on every host; the API sends no `Access-Control-Allow-*` headers ([ADR 0003](docs/decisions/0003-same-origin-api-via-edge-proxy.md)) | Must |
 | XSS: React escaping; sanitize any rich text (DOMPurify on server); page-builder blocks store data, never raw HTML/JS | Must |
 | Security headers on app (CSP with nonces, HSTS, frame-ancestors 'none' except where embedding is needed) | Must |
 | SSRF: BYO SMS gateway URLs must be `https`, resolve to public IPs only (block 10/8, 172.16/12, 192.168/16, 127/8, 169.254/16, IPv6 private), no redirects, 5 s timeout | Must |
