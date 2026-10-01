@@ -44,7 +44,7 @@
 | --- | --- | --- |
 | `apps/site` ✅ | Next.js static on Cloudflare Pages + Pages Functions + D1 | Sales site, lead capture |
 | `apps/web` | Next.js 16 App Router, RSC, Tailwind v4, `@remix/ui`, TanStack Query (client islands), react-hook-form + Zod | Tenant public site, student portal, institute admin, platform admin. Server-renders pages by calling the API server-side with the user's cookie |
-| `apps/api` | NestJS, Drizzle, Zod pipes, Better Auth (evaluate) | REST API `/api/v1`, auth, webhooks, business rules, RLS context |
+| `apps/api` | NestJS, Drizzle, Zod pipes, own auth ([ADR 0004](../decisions/0004-own-authentication.md)) | REST API `/api/v1`, auth, webhooks, business rules, RLS context |
 | worker | Same NestJS codebase, `WORKER=1` entry | BullMQ processors and schedulers (cron) |
 | `packages/db` | Drizzle schema + SQL migrations + RLS policies + `withTenant()` | Single schema source; migrations run by CI/deploy, never by the app at boot |
 | `packages/types` ✅ | Zod + domain functions | Shared contracts: DTOs, enums, pricing, money, phone |
@@ -69,7 +69,7 @@ The browser always calls `/api/v1/*` **on the host it's on** (e.g. `kamalphysics
 | Resolution | `Host` → `tenant_domains` lookup (cached in Valkey 60 s, key `host:<host>`) → `tenant_id`. Unknown/unverified host → 404 |
 | Enforcement | `withTenant(tenantId, tx => …)` opens a transaction and runs `SET LOCAL app.tenant_id = $1`. RLS policy on each table: `tenant_id = app_tenant_id()`; `app_tenant_id()` returns NULL when unset → zero rows |
 | DB roles | `remix_owner` (migrations, owns tables), `remix_app` (API, RLS enforced, `NOBYPASSRLS`), `remix_platform` (platform staff queries, explicit cross-tenant views only), `remix_readonly` (reporting/backups) |
-| Platform queries | Cross-tenant reads only through dedicated SQL views/functions owned by `remix_platform`, used by the `platform` module. Never by turning RLS off |
+| Platform queries | Cross-tenant reads only through dedicated SQL views/functions owned by `remix_owner` and granted only to `remix_platform` (a view owned by an RLS-bound role would see zero rows), used by the `platform` module. Never by turning RLS off ([ADR 0005](../decisions/0005-tenancy-shared-schema-rls.md)) |
 | Cache keys | Always prefixed `t:<tenantId>:` |
 | Files | Object keys prefixed `<tenantId>/…`; signed URL issuance checks tenant |
 | Custom domains | Cloudflare for SaaS custom hostnames (TLS automated); verification by CNAME to `domains.remix.lk` + TXT token (**ADR-needed**) |
@@ -83,14 +83,14 @@ The browser always calls `/api/v1/*` **on the host it's on** (e.g. `kamalphysics
 
 | Topic | Design |
 | --- | --- |
-| Library | **Better Auth** evaluated in Phase 1 against: phone+password, phone OTP, session listing/revocation, per-tenant user scope, Drizzle adapter, Argon2id. Fallback: own implementation following the same session model (**ADR-needed**) |
+| Library | Own implementation — decided in [ADR 0004](../decisions/0004-own-authentication.md) after evaluating Better Auth against per-tenant phone identities, RLS-scoped sessions/devices and the 2-device rule |
 | Identities | `tenant_users` (students + institute staff, unique `(tenant_id, phone)`), `platform_staff` (separate table, separate login, Google SSO) |
 | Passwords | Argon2id (m=19 MiB, t=2, p=1 — OWASP), min 8 chars, breached/common-password check (k-anonymity list, offline) |
-| Sessions | DB-backed session rows; 15-min access JWT (or opaque) + rotating refresh token in host-only `HttpOnly; Secure; SameSite=Lax` cookie; refresh reuse detection revokes the family |
+| Sessions | DB-backed session rows; opaque 256-bit token (SHA-256 hash stored) in a host-only `__Host-` `HttpOnly; Secure; SameSite=Lax` cookie; rotated at most every 15 min via `POST /auth/session/refresh` called from `proxy.ts`; reuse of a rotated token revokes the family; 12 h / 30 days absolute ([ADR 0004](../decisions/0004-own-authentication.md)) |
 | Devices | `devices` table: id (random cookie), label (parsed UA), first/last seen, last IP country/city (approx.), signed_out_at/by. 2 active per student; 3rd login returns `409 DEVICE_LIMIT` with the device list |
 | 2-step | SMS OTP for owner/admin/cashier (trusted device 30 days); TOTP/WebAuthn for platform staff |
 | Authorization | NestJS guards: `@Roles()` + resource scope (teacher → own classes); policies duplicated in RLS for defence in depth |
-| CSRF | SameSite=Lax + double-submit token on state-changing requests from browsers |
+| CSRF | SameSite=Lax + `Origin` / `Sec-Fetch-Site` verification + JSON-only bodies on every state-changing request — Lax alone is not enough because all `*.remix.lk` hosts are same-site ([ADR 0003](../decisions/0003-same-origin-api-via-edge-proxy.md)) |
 | Impersonation | Platform staff mint a time-boxed (30 min) tenant session flagged `impersonated_by`, reason stored, owner emailed, banner rendered from the flag, every request audit-logged |
 
 ---
@@ -148,7 +148,7 @@ platform (no tenant_id): platform_staff · platform_sessions · plans (mirrors @
 | --- | --- |
 | Style | REST, `/api/v1/<resource>`; plural nouns; actions as sub-resources (`POST /bank-slips/:id/approve`) |
 | Contracts | Request/response Zod schemas in `packages/types/src/api/*`; NestJS `ZodValidationPipe`; `z.strictObject` rejects unknown fields; OpenAPI generated from the schemas for docs and the typed client |
-| Client | Generated typed client in `packages/types` used by `apps/web` (server components and client islands) |
+| Client | Typed client (`createApiClient`) driven by the endpoint registry in `packages/types/src/api/routes.ts`, used by `apps/web` server components and client islands ([ADR 0006](../decisions/0006-web-api-data-access.md)) |
 | Errors | RFC 9457 `application/problem+json`: `{ type, title, status, code, errors? }`; stable `code`s (`DEVICE_LIMIT`, `MONTH_LOCKED`, `PLAN_LIMIT`, …); never stack traces |
 | Pagination | Cursor-based (`?cursor=&limit=`, max 100) |
 | Idempotency | `Idempotency-Key` header required on payment-creating and SMS-sending endpoints; stored 24 h |

@@ -40,6 +40,15 @@ export const API = {
   },
   /** Revokes the current session and clears the cookie. Always 204, even without a session. */
   logout: { method: 'POST', path: '/api/v1/auth/logout' },
+  /**
+   * Rotates the session token when it is ≥ 15 min old (no-op otherwise) and re-sets the cookie.
+   * Called only from the web app's `proxy.ts`, which can set cookies (ADR 0004).
+   */
+  refreshSession: {
+    method: 'POST',
+    path: '/api/v1/auth/session/refresh',
+    response: sessionResponseSchema,
+  },
   /** The signed-in user on this host, or 401 UNAUTHENTICATED. */
   session: { method: 'GET', path: '/api/v1/auth/session', response: sessionResponseSchema },
 

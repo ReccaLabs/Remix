@@ -14,6 +14,7 @@ const session = {
     locale: 'en',
   },
   expiresAt: '2026-11-01T00:00:00.000Z',
+  impersonated: false,
 };
 
 const json = (body: unknown, status = 200, type = 'application/json') =>
@@ -76,6 +77,16 @@ describe('createApiClient', () => {
   it('returns undefined for 204 endpoints', async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () => new Response(null, { status: 204 }));
     await expect(createApiClient({ fetch }).call('logout')).resolves.toBeUndefined();
+  });
+
+  it('sends a JSON body on bodyless state-changing calls (CSRF rule, ADR 0003)', async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () => new Response(null, { status: 204 }));
+    await createApiClient({ fetch }).call('logout');
+
+    const init = fetch.mock.calls[0]![1];
+    expect(init?.method).toBe('POST');
+    expect(init?.body).toBe('{}');
+    expect(new Headers(init?.headers).get('content-type')).toBe('application/json');
   });
 
   it('throws ApiError carrying the problem document', async () => {

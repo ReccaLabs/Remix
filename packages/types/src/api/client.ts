@@ -23,7 +23,10 @@ export interface ApiClientOptions {
    */
   baseUrl?: string;
   fetch?: typeof fetch;
-  /** Extra headers per call — on the server: `cookie` and `x-forwarded-host`. */
+  /**
+   * Extra headers per call. On the web server, only the ADR 0006 allow-list: `cookie`,
+   * `x-forwarded-host`, `x-forwarded-proto`, `x-forwarded-for`, `x-request-id`.
+   */
   headers?: () => HeadersInit | Promise<HeadersInit>;
   signal?: AbortSignal;
 }
@@ -49,11 +52,12 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
       const headers = new Headers(await options.headers?.());
       headers.set('accept', 'application/json');
 
+      // Every state-changing call is JSON — even bodyless ones send `{}` — so the API can reject
+      // any non-JSON unsafe request as a CSRF attempt (ADR 0003).
       let body: string | undefined;
-      if ('request' in def) {
-        body = JSON.stringify(def.request.parse(args[0]));
-        headers.set('content-type', 'application/json');
-      }
+      if ('request' in def) body = JSON.stringify(def.request.parse(args[0]));
+      else if (def.method !== 'GET') body = '{}';
+      if (body !== undefined) headers.set('content-type', 'application/json');
 
       const res = await doFetch(`${baseUrl}${def.path}`, {
         method: def.method,

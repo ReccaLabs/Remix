@@ -50,7 +50,7 @@ Marketing site, demo/trial form, security headers, CI. **Remaining before public
 | Database | DB roles (`remix_owner/app/platform/readonly`), `app_tenant_id()`, RLS policy template, `withTenant()`, migration runner, deterministic seed (Kamal Physics, 2,000 students) |
 | Isolation | Generated isolation test suite + CI check "every tenant table has tenant_id + RLS" |
 | Tenancy | Host → tenant resolution (proxy + API), `*.localhost` dev hosts, tenant status handling (TEN-01/02/06) |
-| Auth spike | Better Auth evaluation against the requirements → **ADR 0004**; then student phone+password login, staff login, sessions table, devices table, logout (AUTH-01/05 basic) |
+| Auth | Better Auth evaluated → own implementation (**ADR 0004**, accepted); student phone+password login, staff login, sessions table, devices table, logout (AUTH-01/05 basic) |
 | UI | `packages/ui`: AppShell, PortalShell, PlatformShell, Button, Input, PhoneInput, DataTable v1, StatCard, StatusBadge, EmptyState, Skeleton, Toast, ConfirmDialog |
 | API conventions | Problem+json errors, Zod pipe, OpenAPI generation, idempotency middleware, request/tenant logging context |
 | Providers | Interfaces + in-memory mocks for Payment, SMS, Video, Meeting, Storage, Email |
@@ -60,7 +60,7 @@ Marketing site, demo/trial form, security headers, CI. **Remaining before public
 **Exit criteria (M1):**
 - [ ] On staging, `kamal.staging.remix.lk` serves the portal; a seeded student logs in and sees their classes list from the API
 - [ ] Isolation suite green for all tables; a deliberately broken policy makes CI fail (verified once)
-- [ ] ADRs 0003–0005, 0010, 0012 accepted
+- [ ] ADRs 0003–0007 (✅ accepted 2 Oct 2026), 0012, 0013 accepted
 - [ ] One-command local setup documented (`pnpm dev` brings up everything)
 
 ---
@@ -229,7 +229,7 @@ The Claude Design files cover the core flows. These are needed before their phas
 | # | Risk | Likelihood | Impact | Mitigation | Owner |
 | --- | --- | --- | --- | --- | --- |
 | R1 | Zoom app review delayed or scopes rejected | Med | High | Submit week 1; dev-mode app for pilots; graceful "Zoom not available" path | Lead dev |
-| R2 | Better Auth doesn't fit tenant-scoped phone auth | Med | Med | Time-boxed spike in Phase 1; fallback design already specified | Lead dev |
+| R2 | Better Auth doesn't fit tenant-scoped phone auth | — | — | **Closed** by ADR 0004 (own auth, reviewed by two developers) | Lead dev |
 | R3 | Money bug (wrong unlock, double charge) | Low | Critical | Ledger model, property tests, idempotency, two-reviewer rule, reconciliation | Dev team |
 | R4 | Tenant data leak | Low | Critical | RLS + isolation suite + pen test | Dev team |
 | R5 | Saturday peak overload | Med | High | k6 before releases, horizontal app nodes, cached tenant lookup, video off-loaded to Bunny | Ops |

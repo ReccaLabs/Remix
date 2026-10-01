@@ -61,5 +61,7 @@ export type SessionUser = z.infer<typeof sessionUserSchema>;
 export const sessionResponseSchema = z.object({
   user: sessionUserSchema,
   expiresAt: z.iso.datetime({ offset: true }),
+  /** True when platform staff are signed in as this user (30 min, banner shown — PLT-04). */
+  impersonated: z.boolean(),
 });
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;

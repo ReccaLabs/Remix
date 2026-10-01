@@ -68,7 +68,8 @@ await withTenant(db, tenant.id, async (tx) => tx.select().from(schema.classes));
 | Track | Status |
 | --- | --- |
 | Contracts | ✅ merged |
-| A · B · C · W · D | ⬜ |
+| D | ✅ merged (ADRs 0003–0007) |
+| A · B · C · W | 🔄 in progress |
 | E · F | ⬜ |
 | G · S | ⬜ |
 
