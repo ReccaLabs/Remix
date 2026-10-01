@@ -1,0 +1,4 @@
+# Files graphify should skip (same syntax as .gitignore).
+# Claude Design viewer runtime and scratch scripts — tooling, not ReMix code; they add noise to queries.
+design/claude-design/support.js
+design/claude-design/scraps/

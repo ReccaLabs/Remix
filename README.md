@@ -5,7 +5,8 @@ Own website, fees and bank slips, protected video, Zoom with name lock, and atte
 
 | Doc | What's in it |
 | --- | --- |
-| [DEVELOPMENT.md](DEVELOPMENT.md) | Architecture, phases, stack, full security checklist, CI/CD |
+| [docs/plan/](docs/plan/README.md) | **Development plan**: product needs, features, architecture, Definition of Done, phased roadmap |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Stack, setup, full security checklist, CI/CD |
 | [DESIGN.md](DESIGN.md) | Design tokens, components, screen → route map, UI rules |
 | [CLAUDE.md](CLAUDE.md) | Rules for AI coding assistants (and a good summary for humans) |
 | [SECURITY.md](SECURITY.md) | Vulnerability reporting and security baseline |

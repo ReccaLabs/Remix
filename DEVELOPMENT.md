@@ -299,6 +299,8 @@ Write unit tests for these (Vitest). Wording on the site: "per-class-card pricin
 
 ## 4. PHASE 1–5 — The LMS platform (after the site)
 
+> **Superseded for planning:** the detailed phases (1–10), exit criteria, feature IDs and Definition of Done now live in [docs/plan/](docs/plan/README.md). The table below is kept as the original outline; the rules in §4.1 still apply.
+
 | Phase | Weeks | Deliver |
 | --- | --- | --- |
 | 1 Foundation | 4–5 | Monorepo apps `web` + `api`, Docker Compose, CI, DB schema + RLS, tenant routing (`*.localhost`), isolation tests, Better Auth evaluation |

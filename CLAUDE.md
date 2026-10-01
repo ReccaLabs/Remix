@@ -4,7 +4,8 @@
 **Now building:** Phase 0, the company website `remix.lk` (`apps/site`). Then the LMS platform (`apps/web` + `apps/api`).
 
 Read before non-trivial work:
-- [`DEVELOPMENT.md`](DEVELOPMENT.md) — architecture, phases, full security checklist (§5), CI/quality (§7).
+- [`docs/plan/`](docs/plan/README.md) — **the development plan**: needs, feature IDs (`FEE-06`…), architecture, Definition of Done, phases. Every task maps to a feature ID; follow its acceptance criteria and the DoD in `docs/plan/04-quality.md`.
+- [`DEVELOPMENT.md`](DEVELOPMENT.md) — stack, setup, full security checklist (§5), CI/quality (§7).
 - [`DESIGN.md`](DESIGN.md) — tokens, components, screen → route map, UI rules.
 - Visual source of truth: [`design/claude-design/*.dc.html`](design/claude-design/). Never import these; re-implement them.
 
@@ -78,5 +79,10 @@ Before finishing any task: `pnpm lint && pnpm typecheck && pnpm test` must pass,
 - Unit tests (Vitest) with every piece of logic (`*.test.ts` next to the file). Pricing/money changes must update `pricing.test.ts`.
 - Phase 1+: tenant-isolation tests for every new table and endpoint.
 
+### Knowledge graph
+- `graphify-out/` holds a graphify knowledge graph of the repo (code, docs, plan, designs). For questions about architecture or "where/how does X work", query it first (`/graphify query "…"`), then read the files it points to.
+- After a feature lands, refresh it with `/graphify . --update`.
+
 ### Git
-- Branches `feat/…`, `fix/…`; Conventional Commits; squash merge into `main` (always deployable). Only commit when asked.
+- Branches `feat/…`, `fix/…`; Conventional Commits with feature IDs (`feat(fees): FEE-06 …`); squash merge into `main` (always deployable). Only commit when asked.
+- Commits are authored by the repo owner, Irusha Shaveen. Do not add AI co-author trailers to commit messages.
