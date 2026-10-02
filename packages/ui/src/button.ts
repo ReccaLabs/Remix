@@ -5,7 +5,8 @@ import { cn } from './cn';
  * Sizes follow the design: md 40px (header), lg 48px (hero), xl 52px (final CTA).
  * All sizes keep a ≥44px touch target on mobile except `md`, which is only used in the desktop header.
  */
-export type ButtonVariant = 'primary' | 'outline' | 'ghost' | 'dark' | 'success';
+export type ButtonVariant =
+  'primary' | 'secondary' | 'outline' | 'ghost' | 'dark' | 'success' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const base =
@@ -13,10 +14,14 @@ const base =
 
 const variants: Record<ButtonVariant, string> = {
   primary: 'bg-brand text-white hover:bg-brand-hover hover:text-white',
+  // App (admin/portal) secondary action: white button on canvas, quiet border.
+  secondary: 'border border-line bg-surface text-ink hover:bg-canvas hover:text-ink',
   outline: 'border border-ink text-ink hover:bg-paper-2 hover:text-ink',
   ghost: 'text-ink hover:bg-paper-2 hover:text-ink',
   dark: 'bg-ink text-white hover:bg-ink-2 hover:text-white',
   success: 'bg-success text-white hover:bg-success-ink hover:text-white',
+  // Destructive confirmations (delete, suspend). Always paired with a word, never colour alone.
+  danger: 'bg-danger text-white hover:bg-danger-ink hover:text-white',
 };
 
 const sizes: Record<ButtonSize, string> = {

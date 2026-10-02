@@ -52,11 +52,16 @@
   --color-success-on-dark: #3ccb7f; /* check marks on night cards */
   --color-warning: #d98a00;
   --color-warning-soft: #fff4e0;
+  --color-warning-ink: #8a5200; /* text on warning-soft (AA). Not accent-ink: tenants may re-colour accent */
   --color-danger: #d92d20;
   --color-danger-ink: #b42318;
   --color-danger-soft: #fef3f2;
   --color-info: #0b84d9;
   --color-info-soft: #e6f3fc;
+  --color-info-ink: #0768ad; /* text on info-soft (AA) */
+
+  /* ---------- Overlays ---------- */
+  --color-scrim: rgb(14 21 37 / 0.55); /* modal backdrop; stays dark in dark mode */
 
   /* ---------- Typography ---------- */
   /* Font families are wired to next/font CSS variables in each app's layout. */
