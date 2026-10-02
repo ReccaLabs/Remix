@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "remix_dev",
+      "credentials": [{ "accessKey": "remix_s3_dev", "secretKey": "remix_s3_dev_password" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

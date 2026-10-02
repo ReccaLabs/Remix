@@ -1,0 +1,85 @@
+# Local development stack for the ReMix platform (Phase 1): Postgres 18, Valkey, Mailpit and
+# S3-compatible storage. DEV ONLY — all credentials here are
+# obviously-dev values and every port is bound to 127.0.0.1.
+#
+#   docker compose -f infra/docker/compose.yaml up -d
+#   pnpm --filter @remix/db migrate && pnpm --filter @remix/db seed
+#
+# Host ports can be overridden in infra/docker/.env (see .env.example).
+name: remix
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev_password
+      POSTGRES_DB: postgres
+      TZ: UTC
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      # Postgres 18 images keep data under /var/lib/postgresql/<major>/docker.
+      - postgres-data:/var/lib/postgresql
+      # Creates remix_owner / remix_app / remix_platform / remix_readonly and the remix database.
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d remix']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:8.1-alpine
+    command: ['valkey-server', '--save', '60', '1', '--appendonly', 'no']
+    ports:
+      - '127.0.0.1:${VALKEY_PORT:-6379}:6379'
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    environment:
+      MP_MAX_MESSAGES: 5000
+    ports:
+      - '127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025'
+      - '127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025'
+    volumes:
+      - mailpit-data:/data
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  s3:
+    # S3-compatible object storage for dev (stands in for Bunny/R2 behind the storage provider
+    # interface). MinIO no longer publishes public container images, so we use SeaweedFS.
+    # Endpoint http://127.0.0.1:8333, keys in seaweedfs/s3.json (dev only).
+    image: chrislusf/seaweedfs:3.97
+    command: ['server', '-dir=/data', '-s3', '-s3.port=8333', '-s3.config=/etc/seaweedfs/s3.json']
+    ports:
+      - '127.0.0.1:${S3_PORT:-8333}:8333'
+    volumes:
+      - s3-data:/data
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1:9333/cluster/status || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  valkey-data:
+  mailpit-data:
+  s3-data:
