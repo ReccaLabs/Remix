@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "platformTitle": "ReMix platform admin",
+    "platformTitleTemplate": "%s · ReMix platform admin",
+    "poweredBy": "Powered by ReMix"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content",
+    "remix": "ReMix"
+  }
+}

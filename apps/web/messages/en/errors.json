@@ -1,0 +1,23 @@
+{
+  "notFound": {
+    "metaTitle": "Page not found",
+    "title": "Page not found",
+    "body": "The page you're looking for doesn't exist or has moved. Check the address and try again.",
+    "home": "Go to the home page"
+  },
+  "error": {
+    "metaTitle": "Something went wrong",
+    "title": "Something went wrong",
+    "body": "We couldn't load this page. Please try again in a moment.",
+    "retry": "Try again",
+    "reference": "Reference: {digest}"
+  },
+  "unavailable": {
+    "metaTitle": "Temporarily unavailable",
+    "title": "{name} is temporarily unavailable",
+    "body": "This page can't be shown right now. If you're a student, please contact your institute."
+  },
+  "loading": {
+    "label": "Loading"
+  }
+}
