@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "home": "Home",
+    "classes": "My classes",
+    "pay": "Pay",
+    "live": "Live classes",
+    "me": "Me"
+  },
+  "nav": {
+    "label": "Student portal",
+    "tabsLabel": "Student portal sections",
+    "home": "Home",
+    "classes": "Classes",
+    "pay": "Pay",
+    "live": "Live",
+    "me": "Me"
+  },
+  "shell": {
+    "skipToContent": "Skip to content",
+    "student": "Student"
+  },
+  "home": {
+    "greeting": "Hi {name}",
+    "today": "Today",
+    "noClassesToday": "No classes today.",
+    "yourClasses": "Your classes",
+    "classLine": "{when} · {medium}",
+    "seeAll": "See all classes",
+    "emptyTitle": "You're not in any classes yet",
+    "emptyBody": "When your institute adds you to a class, it shows up here."
+  },
+  "classes": {
+    "title": "My classes",
+    "count": "{count, plural, one {# class} other {# classes}}",
+    "noTeacher": "Teacher to be confirmed",
+    "slot": "{weekday} {time}",
+    "noSchedule": "Times to be announced",
+    "perMonth": "{fee} a month",
+    "feeLabel": "Monthly fee",
+    "scheduleLabel": "Class times",
+    "emptyTitle": "You're not in any classes yet",
+    "emptyBody": "When your institute adds you to a class, it shows up here.",
+    "loading": "Loading your classes"
+  },
+  "loadError": {
+    "title": "We couldn't load your classes",
+    "body": "Check your internet connection and try again.",
+    "retry": "Try again"
+  },
+  "medium": {
+    "sinhala": "Sinhala medium",
+    "tamil": "Tamil medium",
+    "english": "English medium"
+  },
+  "place": {
+    "hall": "In the hall",
+    "online": "Online",
+    "hybrid": "Hall and online"
+  },
+  "soon": {
+    "title": "Coming soon",
+    "pay": "Paying class fees online will be here soon. Until then, please pay at the institute.",
+    "live": "Joining live classes from here is coming soon.",
+    "me": "Your devices, password and language settings will be here soon.",
+    "backHome": "Back to home"
+  }
+}

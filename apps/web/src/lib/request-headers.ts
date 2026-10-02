@@ -12,6 +12,8 @@ export const REQUEST_HEADERS = {
   requestId: 'x-request-id',
   /** CSP nonce for the rare component that renders its own <script>/<style>. */
   nonce: 'x-nonce',
+  /** Browser-facing path + query (before the area rewrite), for login `?next=` redirects. */
+  path: 'x-remix-path',
 } as const;
 
 const REQUEST_ID = /^[A-Za-z0-9._:-]{8,128}$/;

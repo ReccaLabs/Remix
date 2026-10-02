@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "dashboard": "Dashboard",
+    "students": "Students",
+    "fees": "Fees & payments",
+    "classes": "Classes",
+    "more": "More"
+  },
+  "nav": {
+    "label": "Institute admin",
+    "tabsLabel": "Institute admin sections",
+    "dashboard": "Dashboard",
+    "home": "Home",
+    "students": "Students",
+    "fees": "Fees & payments",
+    "feesShort": "Fees",
+    "classes": "Classes",
+    "more": "More"
+  },
+  "shell": {
+    "skipToContent": "Skip to content"
+  },
+  "roles": {
+    "owner": "Owner",
+    "admin": "Admin",
+    "teacher": "Teacher",
+    "cashier": "Cashier",
+    "gatekeeper": "Gate staff"
+  },
+  "dashboard": {
+    "greeting": "{period, select, morning {Good morning} afternoon {Good afternoon} other {Good evening}}, {name}",
+    "signedInAs": "{date} · Signed in as {roles}",
+    "statsLabel": "Today at a glance",
+    "notAvailable": "Not available yet",
+    "feesCollected": "Fees collected this month",
+    "unpaidStudents": "Unpaid students",
+    "bankSlips": "Bank slips waiting",
+    "presentToday": "Present today",
+    "statPending": "Shows here once fees are set up",
+    "attendancePending": "Shows here once attendance is set up",
+    "note": "These numbers appear as you add students, classes and fees. Those pages are coming next."
+  },
+  "billingOnly": {
+    "metaTitle": "Account suspended",
+    "title": "{name}'s account is suspended",
+    "body": "While the account is suspended only billing is available. Billing pages are coming soon; until then, please contact ReMix support to restore the account."
+  },
+  "more": {
+    "title": "More",
+    "account": "Your account"
+  },
+  "soon": {
+    "title": "Coming soon",
+    "students": "The student list, import and profiles are coming next.",
+    "fees": "Invoices, payments and the bank-slip queue are coming soon.",
+    "classes": "Creating and managing classes is coming soon.",
+    "more": "Lessons, live classes, settings and integrations will be listed here.",
+    "backHome": "Back to the dashboard"
+  }
+}

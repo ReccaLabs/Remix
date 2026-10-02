@@ -10,11 +10,11 @@ import {
 } from '@remix/types/api';
 import { notFound, redirect } from 'next/navigation';
 import { cache } from 'react';
-import { pickAuthCookies } from '@/lib/cookies';
-import { TENANT_PATHS } from '@/lib/paths';
-import { REQUEST_HEADERS } from '@/lib/request-headers';
+import { forwardedHeaders, type ForwardedContext } from '@/lib/forwarded-headers';
+import { ADMIN_PATHS, PORTAL_PATHS, TENANT_PATHS } from '@/lib/paths';
+import { loginRedirect } from '@/lib/safe-next';
 import { getEnv } from './env';
-import { getRequestContext, type RequestContext } from './request';
+import { getRequestContext } from './request';
 
 /**
  * Server-side access to the API (ADR 0006): `apps/web` never touches the database. Every call
@@ -25,31 +25,7 @@ import { getRequestContext, type RequestContext } from './request';
 /** Upper bound for one API call during a render; a hung API must not hang the page. */
 export const API_TIMEOUT_MS = 10_000;
 
-type ForwardedContext = Pick<
-  RequestContext,
-  'host' | 'cookie' | 'requestId' | 'forwardedFor' | 'forwardedProto'
->;
-
-/**
- * Headers for an API call made on behalf of the current request — an allow-list (ADR 0006).
- * Built from scratch, so nothing else from the browser request leaks through; in particular
- * never `origin` or `sec-fetch-*`, which the API's CSRF check reads for browser calls only.
- */
-export function forwardedHeaders(ctx: ForwardedContext): Headers {
-  const h = new Headers();
-  // Only the ReMix session and device cookies — never analytics or other site cookies.
-  const cookie = pickAuthCookies(ctx.cookie);
-  if (cookie) h.set('cookie', cookie);
-  if (ctx.host) h.set('x-forwarded-host', ctx.host);
-  if (ctx.forwardedProto) h.set('x-forwarded-proto', ctx.forwardedProto);
-  // The X-Forwarded-For chain exactly as the edge proxy delivered it. The API (which lists web
-  // nodes in TRUST_PROXY) takes the right-most untrusted address as the client IP, so per-IP
-  // limits apply to the visitor, not to this web node. App Router code can't see the TCP peer,
-  // so the web server can't apply TRUST_PROXY itself; passing the chain gives the same result.
-  if (ctx.forwardedFor) h.set('x-forwarded-for', ctx.forwardedFor);
-  if (ctx.requestId) h.set(REQUEST_HEADERS.requestId, ctx.requestId);
-  return h;
-}
+export { forwardedHeaders };
 
 /** The API error code of a failed call (`UNAUTHENTICATED`, `TENANT_UNAVAILABLE`…), else `null`. */
 export function problemCode(err: unknown): ErrorCode | null {
@@ -128,10 +104,21 @@ async function getTenantSession(): Promise<SessionResponse | null> {
   return session && session.user.tenantId === tenant.id ? session : null;
 }
 
+/**
+ * Where a guard sends a signed-out visitor: the login page, with `?next=` pointing back at the
+ * page they asked for when that page is inside the guarded section.
+ */
+async function loginTarget(loginPath: string, section: string): Promise<string> {
+  const { path } = await getRequestContext();
+  return loginRedirect(loginPath, path, section);
+}
+
 /** Student pages: signed-in student of this institute, else redirect to the student login. */
 export async function requireStudent(): Promise<SessionResponse> {
   const session = await getTenantSession();
-  if (!session || session.user.kind !== 'student') redirect(TENANT_PATHS.studentLogin);
+  if (!session || session.user.kind !== 'student') {
+    redirect(await loginTarget(TENANT_PATHS.studentLogin, PORTAL_PATHS.home));
+  }
   return session;
 }
 
@@ -142,7 +129,9 @@ export async function requireStudent(): Promise<SessionResponse> {
  */
 export async function requireStaff(roles?: readonly StaffRole[]): Promise<SessionResponse> {
   const session = await getTenantSession();
-  if (!session || session.user.kind !== 'staff') redirect(TENANT_PATHS.staffLogin);
+  if (!session || session.user.kind !== 'staff') {
+    redirect(await loginTarget(TENANT_PATHS.staffLogin, ADMIN_PATHS.home));
+  }
   if (roles && !session.user.roles.some((role) => roles.includes(role))) notFound();
   return session;
 }

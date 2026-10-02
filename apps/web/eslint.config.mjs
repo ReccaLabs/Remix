@@ -15,6 +15,17 @@ export default defineConfig([
           message: 'No hex colours in components — use a theme token from @remix/ui/theme.css.',
         },
       ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/test/mock-api*'],
+              message: 'The mock API is a dev-only stand-in; app code talks to the real API.',
+            },
+          ],
+        },
+      ],
     },
   },
   {

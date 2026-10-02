@@ -6,12 +6,44 @@ Next.js 16 (App Router, React 19, RSC by default), Tailwind v4 + `@remix/ui`, ne
 
 ```bash
 cp apps/web/.env.example apps/web/.env.local
-pnpm --filter @remix/web mock-api   # stand-in API on :4000 until apps/api serves /tenant
+pnpm --filter @remix/web mock-api   # stand-in API on :4000 until apps/api serves the Phase 1 contract
 pnpm --filter @remix/web dev        # http://kamalphysics.localhost:3001 · http://admin.localhost:3001
-pnpm --filter @remix/web test       # unit tests (vitest)
+pnpm --filter @remix/web test       # unit + component tests (vitest)
 ```
 
-`*.localhost` resolves to 127.0.0.1 in Chrome, Edge and Firefox without any hosts-file change. The mock API (`test/mock-api.mjs`, dev only) knows the seed slugs `kamalphysics` (active, brand colour), `royalscience` (trial) and `closedacademy` (suspended) and answers `GET /api/v1/_debug/headers` with the headers it received.
+`*.localhost` resolves to 127.0.0.1 in Chrome, Edge and Firefox without any hosts-file change.
+
+Prod-like local run (what E2E uses): `WEB_API_REWRITE=true pnpm --filter @remix/web build`, then `pnpm --filter @remix/web mock-api` and `pnpm --filter @remix/web start` (port 3001).
+
+### Mock API (`test/mock-api.mjs`, dev/test only)
+
+A dependency-free Node server that implements the Phase 1 contract well enough to click through the walking skeleton without `apps/api`. It is **never** deployed or imported by app code. Sessions are in memory (a restart signs everyone out).
+
+| Endpoint | Behaviour |
+| --- | --- |
+| `GET /api/v1/tenant` | seed hosts `kamalphysics` (active, teal brand), `royalscience` (trial), `closedacademy` (suspended); anything else 404 `TENANT_NOT_FOUND` |
+| `POST /api/v1/auth/student/login` | `{ phone, password, staySignedIn }` (strict). Sets `remix_session=<unixSeconds>.<random>` (+ `Max-Age` 30 days with stay-signed-in) and `remix_device`. 401 `INVALID_CREDENTIALS` for unknown phone **and** wrong password; 403 `ACCOUNT_DISABLED`; 409 `DEVICE_LIMIT`; 403 `TENANT_UNAVAILABLE` when suspended/cancelled; 429 `RATE_LIMITED` + `Retry-After` after 5 failures a minute per phone |
+| `POST /api/v1/auth/staff/login` | `{ identifier, password, staySignedIn }`, phone or email; suspended institutes still allow staff (billing only), cancelled → `TENANT_UNAVAILABLE` |
+| `GET /api/v1/auth/session` | session for this host's cookie, else 401 `UNAUTHENTICATED` (a cookie from another institute is 401) |
+| `POST /api/v1/auth/session/refresh` | rotates a token ≥ 15 min old and re-sets the cookie; younger → 200 no-op; previous token accepted for 120 s, reuse after that revokes the session; no session → 401 |
+| `POST /api/v1/auth/logout` | always 204, clears the cookie |
+| `GET /api/v1/me/classes` | the student's classes; 401 without a session, 403 `FORBIDDEN` for staff |
+| `GET /api/v1/_debug/headers` | echoes the request headers |
+
+Unsafe methods pass the ADR 0003 CSRF guard: `Sec-Fetch-Site` must be `same-origin`/`none`, `Origin` (if sent) must equal `http://<X-Forwarded-Host>`, bodies must be `application/json` (403/415 `CSRF_REJECTED`). Server-side calls (no `Origin`/`Sec-Fetch-*`) count as non-browser.
+
+Sample accounts — every password is `remix-dev-only` (dev only, never a real credential):
+
+| Host | Who | Login |
+| --- | --- | --- |
+| `kamalphysics.localhost:3001/login` | Nimali Perera, 3 classes | `077 123 4567` |
+| `kamalphysics.localhost:3001/login` | disabled account / device limit | `077 000 0000` / `077 999 9999` |
+| `royalscience.localhost:3001/login` | Kasun Silva, no classes (empty state; same phone, separate account) | `077 123 4567` |
+| `kamalphysics.localhost:3001/admin/login` | Kamal Jayasinghe (owner, teacher) · Dilani Fernando (cashier) | `kamal@example.com` · `071 234 5678` |
+| `royalscience.localhost:3001/admin/login` | Royal Admin | `royal@example.com` |
+| `closedacademy.localhost:3001/admin/login` | owner of the suspended institute (billing-only notice) | `owner@example.com` |
+
+Env: `MOCK_API_PORT` (4000), `MOCK_TOKEN_BACKDATE_SECONDS` (e.g. `1000` issues tokens already due for rotation, to watch the proxy refresh them), `MOCK_LATENCY_MS` (slow API, to see loading skeletons).
 
 ## How a request reaches the right area
 
@@ -28,8 +60,14 @@ pnpm --filter @remix/web test       # unit tests (vitest)
    | IP literal, single label, empty, garbage                            | `{ area: 'unknown' }`                                      |
 
 2. `decideRoute()` (`src/lib/routing.ts`) rewrites into a real internal segment — route groups can't share URL paths, so each area is a folder: `/x` → `/tenant/x` or `/platform/x`. Unknown hosts and **direct requests to `/tenant…` or `/platform…`** are rewritten to `/__remix_not_found`, which no route matches (App Router ignores `_` folders), so they get the global 404. Tenant page-builder slugs must therefore never be `tenant` or `platform`.
-3. Server code gets the result through request headers the proxy always overwrites or deletes (`src/lib/request-headers.ts`): `x-remix-area`, `x-remix-host` (normalised host), `x-request-id` (an upstream id is kept if log-safe, else a UUID; also returned on the response), `x-nonce`, plus the request's `content-security-policy` from which Next.js reads the nonce. A client can't choose the tenant: it only ever comes from the classified host.
-4. Wave 2 inserts session refresh (`POST /api/v1/auth/session/refresh`, ADR 0004) in the marked spot before the rewrite.
+3. Server code gets the result through request headers the proxy always overwrites or deletes (`src/lib/request-headers.ts`): `x-remix-area`, `x-remix-host` (normalised host), `x-remix-path` (browser-facing path + query, for login `?next=`), `x-request-id` (an upstream id is kept if log-safe, else a UUID; also returned on the response), `x-nonce`, plus the request's `content-security-policy` from which Next.js reads the nonce. A client can't choose the tenant: it only ever comes from the classified host.
+4. **Session refresh** (ADR 0004, `src/lib/session-refresh.ts`, unit-tested). Server Components can't set cookies, so the proxy rotates the session before the render:
+   - reads `remix_session` over plain HTTP (dev) or `__Host-remix_session` over HTTPS (prod) — the same rule the API uses; its value is `<unixSeconds>.<random>`;
+   - when the token is ≥ 15 min old, `POST {API_INTERNAL_URL}/api/v1/auth/session/refresh` with the same allow-listed headers as `server/api.ts`, `content-type: application/json`, body `{}`, 3 s timeout;
+   - **200** → every `Set-Cookie` from the API is copied onto the response, and the `cookie` request header handed to the render is swapped so this page already uses the new token;
+   - **401** → the session cookie is cleared on the response and removed from the render's cookie, so the page guard redirects to login;
+   - anything else (timeout, network error, 5xx) → the request continues untouched;
+   - never for prefetches (`Next-Router-Prefetch`, `Purpose`/`Sec-Purpose: prefetch`), the platform area, unknown hosts, or malformed/young/future-dated tokens.
 
 ## Same-origin API (ADR 0003)
 
@@ -66,13 +104,30 @@ Forwarded headers are an allow-list built from scratch (`forwardedHeaders`): `co
 
 The UI only hides things; the API enforces every permission. Client islands call `createApiClient()` with an empty `baseUrl` (same-origin). Login and logout are called from the browser so `Set-Cookie` reaches it; Server Components never change cookies.
 
+| Helper | Behaviour |
+| --- | --- |
+| `server/portal.ts` `loadMyClasses` | `GET /me/classes`, cached per request. 401 → `/login`; other failures → `{ ok: false }` (in-page error state, logged with code + request id only) |
+| `server/metadata.ts` `portalMetadata` / `adminMetadata` | page `<title>` that falls back to the neutral TEN-06 title (pages override their layout's metadata) |
+| `server/staff.ts` `formatRoles` | "Owner and Teacher" |
+
+## Routes (Track F)
+
+| URL | File | Guard |
+| --- | --- | --- |
+| `/login` | `app/tenant/login/page.tsx` | `tenantAccess.studentPortal` (else unavailable); a signed-in student of this institute → `/app`. Honours `?next=` only for a same-host path inside `/app` (`safeNextPath`) |
+| `/app`, `/app/classes`, `/app/pay`, `/app/live`, `/app/me` | `app/tenant/app/**` | layout: `studentPortal` (else unavailable), then `requireStudent()` → `/login?next=…`. Pages call `requireStudent()` again (cached) because layouts don't re-render on client navigation |
+| `/admin/login` | `app/tenant/admin/login/page.tsx` | `tenantAccess.staff !== 'none'`; signed-in staff → `/admin`; `?next=` inside `/admin` only |
+| `/admin`, `/admin/students`, `/admin/fees`, `/admin/classes`, `/admin/more` | `app/tenant/admin/(console)/**` | `staff === 'none'` → unavailable; `requireStaff()` → `/admin/login?next=…`; `billing-only` → suspended notice + Log out |
+
+Login forms (`components/auth/*`) are client islands with react-hook-form + the API's own Zod schemas (`studentLoginRequestSchema`, `staffLoginRequestSchema`), posting same-origin through `createBrowserApi()` (which also exposes `Retry-After`). Error codes map to messages in `lib/login-errors.ts`: one generic `INVALID_CREDENTIALS` message (never "unknown phone"), `ACCOUNT_DISABLED`, `RATE_LIMITED` ("try again in N" from `Retry-After`), `TENANT_UNAVAILABLE`, `DEVICE_LIMIT` (placeholder until AUTH-03), network failure. Success and logout do a full page load (`lib/navigate.ts`) so no client cache survives a change of user. The shells (`components/shell/app-frame.tsx`) are a thin client wrapper over `PortalShell`/`AdminShell` that marks the active nav item from `usePathname()`.
+
 ## Pages, errors, theming
 
 - `app/layout.tsx` is the one `<html>`: fonts, `lang`, skip link, and the institute's brand colours as CSS variables on `<html>` (`--color-brand`, `-hover`, `-soft`, TEN-03). The colour is re-validated with `brandColorSchema` in `src/lib/brand.ts` and only applied while the institute is live.
 - `app/tenant/layout.tsx` resolves the tenant (404 for unknown hosts) and sets `<title>` from its name. `app/tenant/(site)/layout.tsx` applies `tenantAccess(status)` (TEN-06): suspended/cancelled → `TenantUnavailable` (name only, neutral theme, `noindex`). Track F applies the same check for the portal (`studentPortal`) and admin (`staff`).
 - `not-found.tsx` per area plus a global one; `[...rest]/page.tsx` catch-alls give branded 404s inside each area. `error.tsx` per area and `global-error.tsx` show only the error digest. `loading.tsx` lives inside route groups so a page's `notFound()` still returns HTTP 404 (a `loading.tsx` above it would stream a 200).
 - Next 16.3 renders a 404 raised by `notFound()` as an empty `__next_error__` shell (status 404) and the client draws the not-found UI from the RSC payload; JavaScript-less clients see a blank page. Unmatched paths that the proxy sends to `/__remix_not_found` are fully server-rendered.
-- All text is in `messages/en/<namespace>.json` (`common`, `errors`, `tenant`, `platform`) with keys typed from the English files (`src/i18n/messages.ts`). No locale in URLs; English until si/ta pass native review.
+- All text is in `messages/en/<namespace>.json` (`common`, `errors`, `tenant`, `auth`, `portal`, `admin`, `platform`) with keys typed from the English files (`src/i18n/messages.ts`). Client islands get only the namespaces they need through `<IntlIsland namespaces={…}>`. No locale in URLs; English until si/ta pass native review.
 
 ## Security headers (`src/lib/security-headers.ts`, set by the proxy on every page and 404)
 
@@ -108,9 +163,9 @@ X-Frame-Options: DENY
 
 ```
 apps/web/
-├── messages/en/                  common · errors · tenant · platform
+├── messages/en/                  common · errors · tenant · auth · portal · admin · platform
 ├── public/icon.svg
-├── test/mock-api.mjs             dev-only stand-in API
+├── test/mock-api.mjs             dev-only stand-in API (see "Mock API")
 └── src/
     ├── proxy.ts                  host → area rewrite, security headers + CSP nonce
     ├── instrumentation.ts        env validation at boot
@@ -121,15 +176,22 @@ apps/web/
     │   │   ├── layout.tsx        getTenant() (404 for unknown hosts), <title>
     │   │   ├── (site)/           public website (TEN-06 gate) — placeholder page
     │   │   ├── [...rest]/        branded 404 · not-found.tsx · error.tsx
-    │   │   └── (portal)/, admin/ Track F: student portal, institute admin
+    │   │   ├── login/            student login (AUTH-01)
+    │   │   ├── app/              student portal: home, classes, pay/live/me (coming soon)
+    │   │   └── admin/            login/ (AUTH-05) · (console)/ dashboard + coming-soon sections
     │   └── platform/             admin.remix.lk
     │       ├── layout.tsx        noindex, area check
     │       ├── (shell)/          overview placeholder + loading
     │       └── [...rest]/        not-found.tsx · error.tsx
-    ├── components/               status-page, error-view, page-skeleton, tenant/tenant-unavailable
+    ├── components/               status-page, error-view, page-skeleton, form-alert, intl-island,
+    │                             auth/ (login forms, logout), shell/ (frame, header, page body,
+    │                             skeleton, coming soon), portal/ (class card, load error), tenant/
     ├── i18n/                     config (locales), request (message loading), messages (typed keys)
-    ├── lib/                      host, routing, security-headers, brand, cookies, paths, fonts
-    └── server/                   server-only: env, request context, api (getTenant, getSession…)
+    ├── lib/                      host, routing, security-headers, brand, cookies, paths, fonts,
+    │                             session-refresh, forwarded-headers, safe-next, login-errors,
+    │                             schedule, nav, initials, browser-api, navigate
+    └── server/                   server-only: env, request context, api (getTenant, getSession…),
+                                  portal (loadMyClasses), metadata, staff
 ```
 
 ## Rules specific to this app

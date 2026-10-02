@@ -222,6 +222,25 @@ describe('request-scoped helpers', () => {
     await expect(requireStudent()).rejects.toThrow('NEXT_REDIRECT /login');
   });
 
+  it('requireStudent sends the visitor back to the page they asked for after login', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockApi({
+        '/api/v1/tenant': () => json(tenant),
+        '/api/v1/auth/session': () => problem(401, 'UNAUTHENTICATED'),
+      }),
+    );
+    requestHeaders.set('x-remix-path', '/app/classes?tab=1');
+    await expect(requireStudent()).rejects.toThrow(
+      'NEXT_REDIRECT /login?next=%2Fapp%2Fclasses%3Ftab%3D1',
+    );
+    // Only portal pages are offered as a return target.
+    requestHeaders.set('x-remix-path', '/admin');
+    await expect(requireStudent()).rejects.toThrow(/^NEXT_REDIRECT \/login$/);
+    requestHeaders.set('x-remix-path', '//evil.example/app');
+    await expect(requireStudent()).rejects.toThrow(/^NEXT_REDIRECT \/login$/);
+  });
+
   it('requireStudent rejects a session from another institute', async () => {
     vi.stubGlobal(
       'fetch',
@@ -253,6 +272,11 @@ describe('request-scoped helpers', () => {
       }),
     );
     await expect(requireStaff()).rejects.toThrow('NEXT_REDIRECT /admin/login');
+    requestHeaders.set('x-remix-path', '/admin/students');
+    await expect(requireStaff()).rejects.toThrow(
+      'NEXT_REDIRECT /admin/login?next=%2Fadmin%2Fstudents',
+    );
+    requestHeaders.delete('x-remix-path');
 
     vi.stubGlobal(
       'fetch',

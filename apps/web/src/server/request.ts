@@ -15,6 +15,8 @@ export interface RequestContext {
   forwardedFor: string | null;
   forwardedProto: string | null;
   nonce: string | null;
+  /** Browser-facing path + query of this request (set by the proxy), for login `?next=`. */
+  path: string | null;
 }
 
 /** What the proxy established about this request (see `src/proxy.ts`). Reading it is dynamic. */
@@ -29,5 +31,6 @@ export const getRequestContext = cache(async (): Promise<RequestContext> => {
     forwardedFor: h.get('x-forwarded-for'),
     forwardedProto: h.get('x-forwarded-proto'),
     nonce: h.get(REQUEST_HEADERS.nonce),
+    path: h.get(REQUEST_HEADERS.path),
   };
 });

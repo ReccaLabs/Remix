@@ -1,9 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { forwardedHeaders } from '@/lib/forwarded-headers';
 import { classifyHost, normalizeHost } from '@/lib/host';
 import { REQUEST_HEADERS, resolveRequestId } from '@/lib/request-headers';
 import { decideRoute, NOT_FOUND_PATH, type RouteDecision } from '@/lib/routing';
 import { createNonce, securityHeaders } from '@/lib/security-headers';
-import { hostConfig } from '@/server/env';
+import {
+  applyCookieChanges,
+  clearCookieHeader,
+  parseSetCookie,
+  refreshCandidate,
+  requestRefresh,
+  type SetCookieChange,
+} from '@/lib/session-refresh';
+import { getEnv, hostConfig } from '@/server/env';
 
 /**
  * Host → area routing (TEN-01) and security headers (DEVELOPMENT.md §5.3).
@@ -14,6 +23,8 @@ import { hostConfig } from '@/server/env';
  *    404, so the area can only be chosen by the host.
  * 3. Hand server code the classified host/area via request headers it overwrites (clients can't
  *    inject them), plus a fresh CSP nonce that Next.js stamps on its scripts.
+ * 4. Rotate a tenant session that is ≥ 15 min old (ADR 0004) and relay the new cookie both to
+ *    the browser and to this render.
  */
 export async function proxy(request: NextRequest) {
   const rawHost = request.headers.get('host');
@@ -26,17 +37,15 @@ export async function proxy(request: NextRequest) {
     isDev: process.env.NODE_ENV === 'development',
     hsts: process.env.NODE_ENV === 'production',
   });
+  const host = normalizeHost(rawHost);
   const requestHeaders = forwardRequestHeaders(request, decision, {
-    host: normalizeHost(rawHost),
+    host,
     nonce,
     requestId,
     csp: headers['Content-Security-Policy'] ?? '',
   });
 
-  // Session refresh (Wave 2) slots in here, before the rewrite, for `decision.action ===
-  // 'rewrite'`: call POST /api/v1/auth/session/refresh with the same allow-listed headers as
-  // server/api.ts, replace `cookie` in `requestHeaders` with the rotated value so this render
-  // sees the new session, and copy the API's Set-Cookie onto `response` below.
+  const setCookies = await refreshSession(request, decision, requestHeaders, { host, requestId });
 
   const url = request.nextUrl.clone();
   url.pathname = decision.action === 'rewrite' ? decision.pathname : NOT_FOUND_PATH;
@@ -44,7 +53,61 @@ export async function proxy(request: NextRequest) {
   const response = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   for (const [name, value] of Object.entries(headers)) response.headers.set(name, value);
   response.headers.set(REQUEST_HEADERS.requestId, requestId);
+  for (const cookie of setCookies) response.headers.append('set-cookie', cookie);
   return response;
+}
+
+/**
+ * Session rotation (ADR 0004). When the tenant session cookie is ≥ 15 min old, POST the API's
+ * refresh endpoint with the same allow-listed headers as server/api.ts, then:
+ * - 200 → return the API's Set-Cookie headers for the response, and swap the cookie in
+ *   `requestHeaders` so this render already uses the new token;
+ * - 401 → clear the cookie on both sides; the page's guard then redirects to login;
+ * - anything else (outage, timeout) → change nothing.
+ * Skipped for prefetches, the platform area and fresh or malformed tokens.
+ */
+async function refreshSession(
+  request: NextRequest,
+  decision: RouteDecision,
+  requestHeaders: Headers,
+  ctx: { host: string | null; requestId: string },
+): Promise<string[]> {
+  const secure = request.nextUrl.protocol === 'https:';
+  const candidate = refreshCandidate({
+    area: decision.action === 'rewrite' ? decision.area : null,
+    headers: request.headers,
+    secure,
+    nowSeconds: Math.floor(Date.now() / 1000),
+  });
+  if (!candidate) return [];
+
+  const outcome = await requestRefresh({
+    apiUrl: getEnv().API_INTERNAL_URL,
+    headers: forwardedHeaders({
+      host: ctx.host,
+      cookie: request.headers.get('cookie'),
+      requestId: ctx.requestId,
+      forwardedFor: request.headers.get('x-forwarded-for'),
+      forwardedProto: request.headers.get('x-forwarded-proto'),
+    }),
+  });
+
+  let setCookies: string[];
+  let changes: SetCookieChange[];
+  if (outcome.kind === 'rotated') {
+    setCookies = outcome.setCookies;
+    changes = setCookies.map(parseSetCookie).filter((c): c is SetCookieChange => c !== null);
+  } else if (outcome.kind === 'expired') {
+    setCookies = [clearCookieHeader(candidate.name, secure)];
+    changes = [{ name: candidate.name, value: null }];
+  } else {
+    return [];
+  }
+
+  const cookie = applyCookieChanges(requestHeaders.get('cookie'), changes);
+  if (cookie) requestHeaders.set('cookie', cookie);
+  else requestHeaders.delete('cookie');
+  return setCookies;
 }
 
 /** The request headers server code sees. Proxy-owned headers are always overwritten or removed. */
@@ -62,6 +125,7 @@ function forwardRequestHeaders(
   }
   h.set(REQUEST_HEADERS.requestId, values.requestId);
   h.set(REQUEST_HEADERS.nonce, values.nonce);
+  h.set(REQUEST_HEADERS.path, `${request.nextUrl.pathname}${request.nextUrl.search}`);
   // Next.js reads the nonce from the request's CSP header while rendering.
   h.set('content-security-policy', values.csp);
   return h;
