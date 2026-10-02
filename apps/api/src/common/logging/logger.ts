@@ -2,9 +2,10 @@ import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Params } from 'nestjs-pino';
 import type { Options } from 'pino-http';
-import { type DestinationStream, stdSerializers, stdTimeFunctions } from 'pino';
+import { type DestinationStream, stdTimeFunctions } from 'pino';
 import type { AppConfig } from '../../config/config';
 import { contextLogFields, contextOf, currentContext } from '../context/request-context';
+import { serializeError } from './error-serializer';
 
 /** Field names that are always censored, at any of the first three nesting levels. */
 const SECRET_FIELDS = [
@@ -21,11 +22,24 @@ const SECRET_FIELDS = [
   'otp',
 ];
 
-export const REDACT_PATHS = SECRET_FIELDS.flatMap((f) => {
-  const key = /^[A-Za-z_$][\w$]*$/.test(f) ? f : `["${f}"]`;
-  const dot = key.startsWith('[') ? '' : '.';
-  return [key, `*${dot}${key}`, `*.*${dot}${key}`];
-});
+/**
+ * Backstop for the `err` serializer: SQL, bound parameters and Postgres row `detail` hold phone
+ * numbers and hashes under keys that name nothing secret.
+ */
+const DATA_FIELDS = ['params', 'detail'];
+
+export const REDACT_PATHS = [
+  ...SECRET_FIELDS.flatMap((f) => {
+    const key = /^[A-Za-z_$][\w$]*$/.test(f) ? f : `["${f}"]`;
+    const dot = key.startsWith('[') ? '' : '.';
+    return [key, `*${dot}${key}`, `*.*${dot}${key}`];
+  }),
+  ...DATA_FIELDS.flatMap((f) => [`*.${f}`, `*.*.${f}`]),
+  'err.params',
+  'err.query',
+  'err.cause.params',
+  'err.cause.query',
+];
 
 /** Path without the query string — queries can carry tokens or personal data. */
 export function pathOnly(url: string | undefined): string | undefined {
@@ -57,7 +71,7 @@ export function loggerParams(config: AppConfig, destination?: DestinationStream)
     serializers: {
       req: (req: SerializedReq) => ({ id: req.id, method: req.method, url: pathOnly(req.url) }),
       res: (res: { statusCode?: number }) => ({ statusCode: res.statusCode }),
-      err: stdSerializers.err,
+      err: serializeError,
     },
     genReqId: (req: IncomingMessage) => contextOf(req)?.requestId ?? randomUUID(),
     // The completion line is written from the response's `finish` event; take the context from

@@ -28,16 +28,26 @@ interface Window {
 }
 
 /**
- * Single-process limiter for dev, tests and the first deploy. Memory is bounded: expired
- * windows are swept periodically and, if `maxKeys` is still exceeded, the oldest are dropped.
+ * Single-process limiter for dev, tests and the first deploy. Memory is bounded by `maxKeys`,
+ * and the bound cannot be turned against other clients:
+ * - expired windows are swept at most once per `sweepIntervalMs` (not per call, so a full map
+ *   costs one pass a second instead of one per request);
+ * - a live window is never evicted — least of all one that is at or over its limit — because
+ *   flushing a victim's counter by creating junk keys would hand an attacker fresh attempts;
+ * - when the map is still full, a *new* key fails closed (the request is rate limited) while
+ *   existing keys keep counting. Legitimate new keys wait at most until the next sweep or the
+ *   end of a window; the Valkey limiter (TTL-based) replaces this when it lands.
  */
 export class InMemoryRateLimiter implements RateLimiter {
   private readonly windows = new Map<string, Window>();
-  private hits = 0;
+  private lastSweepAt = Number.NEGATIVE_INFINITY;
+  /** Sweeps run so far (tests and diagnostics). */
+  sweeps = 0;
 
   constructor(
     private readonly now: () => number = Date.now,
     private readonly maxKeys = 100_000,
+    private readonly sweepIntervalMs = 1000,
   ) {}
 
   consume(key: string, limit: number, windowSec: number): Promise<RateLimitDecision> {
@@ -45,9 +55,18 @@ export class InMemoryRateLimiter implements RateLimiter {
       return Promise.reject(new RangeError('limit and windowSec must be positive integers'));
     }
     const now = this.now();
-    if (++this.hits % 1000 === 0 || this.windows.size >= this.maxKeys) this.sweep(now);
+    if (now - this.lastSweepAt >= this.sweepIntervalMs) this.sweep(now);
 
     let window = this.windows.get(key);
+    if (!window && this.windows.size >= this.maxKeys) {
+      // Full of live windows: refuse the newcomer, never evict someone else's counter.
+      return Promise.resolve({
+        allowed: false,
+        limit,
+        remaining: 0,
+        resetSec: Math.max(1, Math.ceil(this.sweepIntervalMs / 1000)),
+      });
+    }
     if (!window || window.resetAt <= now) {
       window = { count: 0, resetAt: now + windowSec * 1000 };
       this.windows.set(key, window);
@@ -69,11 +88,8 @@ export class InMemoryRateLimiter implements RateLimiter {
   }
 
   private sweep(now: number): void {
+    this.lastSweepAt = now;
+    this.sweeps += 1;
     for (const [key, window] of this.windows) if (window.resetAt <= now) this.windows.delete(key);
-    // Still full: drop the oldest entries (Map iterates in insertion order).
-    for (const key of this.windows.keys()) {
-      if (this.windows.size < this.maxKeys) break;
-      this.windows.delete(key);
-    }
   }
 }

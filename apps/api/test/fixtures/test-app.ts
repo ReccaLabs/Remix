@@ -81,7 +81,10 @@ export async function createTestApp(
   class TestFeatureModule {}
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule.forRoot({ config, logDestination: logs }), TestFeatureModule],
+    imports: [
+      AppModule.forRoot({ config, logDestination: logs, database: false }),
+      TestFeatureModule,
+    ],
   })
     .overrideProvider(TENANT_RESOLVER)
     .useValue(tenants)

@@ -39,7 +39,7 @@ table reads empty); never connect the app with the owner URL; never `SET` (sessi
 | Variable | Used by | Role |
 | --- | --- | --- |
 | `DATABASE_URL` | API, workers | `remix_app` |
-| `DATABASE_OWNER_URL` | `migrate`, `seed`, `tenant:create` | `remix_owner` — deploy pipeline only |
+| `DATABASE_OWNER_URL` | `migrate`, `seed`, `tenant:create`, `tenant:reset-owner-password` | `remix_owner` — deploy pipeline only |
 | `DATABASE_PLATFORM_URL` | platform module (later) | `remix_platform` |
 | `DATABASE_READONLY_URL` | support/exports (later) | `remix_readonly` |
 | `SEED_ALLOW_REMOTE` | `seed` | `true` to seed a non-local host (never prod) |
@@ -89,6 +89,19 @@ pnpm --filter @remix/db tenant:create -- --slug galle-maths --name "Galle Maths 
 Validates with `tenantSlugSchema` / `sriLankaMobile`, creates the tenant (`trial`), an owner
 staff user and an audit entry, and prints a random temporary password **once**
 (`must_change_password = true`). Prefix defaults to the name's initials.
+
+### Reset an owner's password
+
+```bash
+pnpm --filter @remix/db tenant:reset-owner-password -- --slug galle-maths [--owner-phone 0771234567]
+```
+
+For a lost password, or an owner who never replaced the temporary one (until the first-login
+change, AUTH-07, is enforced in the API). Sets a new random temporary password (printed **once**,
+`must_change_password = true`), revokes every live session of that owner and writes a
+`user.password_reset` audit entry. `--owner-phone` is only needed when the tenant has several
+owners. The API audits any login that still uses a temporary password as
+`auth.login.temporary_password`.
 
 ## Migrations
 

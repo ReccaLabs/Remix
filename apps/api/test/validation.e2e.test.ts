@@ -95,7 +95,7 @@ describe('@Endpoint boot checks', () => {
     @Module({ controllers: [controller] })
     class Feature {}
     const ref = await Test.createTestingModule({
-      imports: [AppModule.forRoot({ config }), Feature],
+      imports: [AppModule.forRoot({ config, database: false }), Feature],
     }).compile();
     const app = ref.createNestApplication({ bodyParser: false });
     try {

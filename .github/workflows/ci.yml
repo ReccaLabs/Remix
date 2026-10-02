@@ -20,11 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -50,7 +50,7 @@ jobs:
         run: pnpm audit --audit-level high
 
       - name: Upload site build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: site-out
           path: apps/site/out
@@ -66,11 +66,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -93,12 +93,12 @@ jobs:
       # the Trivy releases.
       TRIVY_IMAGE: aquasec/trivy:0.75.0
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           file: apps/api/Dockerfile
@@ -108,15 +108,32 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Production config is strict (no localhost base domain, secure cookies), so give it real-looking
-      # hosts. No database: DATABASE_URL is optional until the database module lands.
-      - name: Smoke test (boots and answers /health)
+      # The API refuses to boot without a database it can verify (remix_app must not bypass RLS or
+      # own tables), so run Postgres 18 with the real role-init script on a private network.
+      # Production config is strict (no localhost base domain, secure cookies, a real trusted
+      # proxy list), so give it real-looking hosts and the private ranges Docker networks use.
+      # Dev-only role passwords from infra/docker; nothing here is a secret.
+      - name: Smoke test (boots against Postgres, answers /health and /health/ready)
         run: |
-          docker run -d --name api-smoke -p 127.0.0.1:4000:4000 \
+          docker network create smoke
+          docker run -d --name smoke-db --network smoke \
+            -e POSTGRES_PASSWORD=ci-only-superuser \
+            -v "$PWD/infra/docker/postgres/init:/docker-entrypoint-initdb.d:ro" \
+            postgres:18.6-alpine
+          # TCP only answers after the init scripts have run and the real server has started.
+          for _ in $(seq 1 60); do
+            docker exec smoke-db pg_isready -h 127.0.0.1 -U postgres -d remix >/dev/null 2>&1 && break
+            sleep 1
+          done
+          docker run -d --name api-smoke --network smoke -p 127.0.0.1:4000:4000 \
+            -e DATABASE_URL=postgres://remix_app:remix_app_dev_password@smoke-db:5432/remix \
             -e TENANT_BASE_DOMAINS=remix.lk -e PLATFORM_HOSTS=admin.remix.lk \
+            -e TRUST_PROXY=uniquelocal \
             "$IMAGE"
           for _ in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:4000/health; then echo; exit 0; fi
+            if curl -fsS http://127.0.0.1:4000/health/ready; then
+              echo; curl -fsS http://127.0.0.1:4000/health; echo; exit 0
+            fi
             sleep 1
           done
           docker logs api-smoke
@@ -145,10 +162,10 @@ jobs:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -156,9 +173,10 @@ jobs:
     name: Static analysis (Semgrep)
     runs-on: ubuntu-latest
     container:
-      image: semgrep/semgrep
+      # Pinned to a release and its manifest digest (`latest` moves under us); bump both together.
+      image: semgrep/semgrep:1.178.0@sha256:32e459968daabe7ab86968184a29109b9564aa00392401156f9788452b42786b
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       # design/ is exported mockups; graphify-out/ is a generated knowledge graph (JSON/HTML).
       - run: >-
           semgrep scan

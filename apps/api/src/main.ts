@@ -9,7 +9,7 @@ import { loadConfig } from './config/config';
 
 /** HTTP API entry. Config is validated first: a bad environment never starts a server. */
 async function main(): Promise<void> {
-  const config = loadConfig();
+  const config = loadConfig(process.env, { requireDatabase: true });
   const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot({ config }), {
     bodyParser: false,
     bufferLogs: true,

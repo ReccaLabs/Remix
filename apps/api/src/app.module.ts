@@ -13,17 +13,31 @@ import { loggerParams } from './common/logging/logger';
 import { RateLimitGuard } from './common/rate-limit/rate-limit.guard';
 import { InMemoryRateLimiter, RATE_LIMITER } from './common/rate-limit/rate-limiter';
 import { CsrfGuard } from './common/security/csrf.guard';
+import { TenantAccessGuard } from './common/tenant/tenant-access.guard';
 import { TenantGuard } from './common/tenant/tenant.guard';
 import { NullTenantResolver, TENANT_RESOLVER } from './common/tenant/tenant-resolver';
+import { CLOCK, systemClock } from './common/time/clock';
 import { EndpointInterceptor } from './common/validation/endpoint.interceptor';
 import { EndpointVerifier } from './common/validation/endpoint-verifier';
 import { APP_CONFIG, type AppConfig } from './config/config';
 import { HealthModule } from './health/health.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { DbSessionAuthenticator } from './modules/auth/db-session-authenticator';
+import { ClassesModule } from './modules/classes/classes.module';
+import { DbModule } from './modules/db/db.module';
+import { DbTenantResolver } from './modules/tenancy/db-tenant-resolver';
+import { TenancyModule } from './modules/tenancy/tenancy.module';
 
 export interface AppModuleOptions {
   config: AppConfig;
   /** Where JSON logs go (stdout by default; tests capture them). */
   logDestination?: DestinationStream;
+  /**
+   * Wire the database-backed modules (tenancy, auth, classes) and bind the extension points to
+   * them. On by default — the API never runs without them; `DATABASE_URL` is then required.
+   * Only the core-pipeline tests turn it off and use the in-memory doubles.
+   */
+  database?: boolean;
 }
 
 /**
@@ -33,7 +47,7 @@ export interface AppModuleOptions {
 @Global()
 @Module({})
 class CoreModule {
-  static forRoot({ config, logDestination }: AppModuleOptions): DynamicModule {
+  static forRoot({ config, logDestination, database = true }: AppModuleOptions): DynamicModule {
     return {
       module: CoreModule,
       imports: [LoggerModule.forRoot(loggerParams(config, logDestination)), DiscoveryModule],
@@ -41,37 +55,53 @@ class CoreModule {
         { provide: APP_CONFIG, useValue: config },
 
         // ── Extension points ─────────────────────────────────────────────────────────────
-        // Track E swaps these defaults for the database-backed implementations (TEN-01,
-        // AUTH-01/05) and the Valkey limiter; tests override them with in-memory doubles.
-        { provide: TENANT_RESOLVER, useClass: NullTenantResolver },
-        { provide: SESSION_AUTHENTICATOR, useClass: NullSessionAuthenticator },
+        // With the database: host → tenant from Postgres (TEN-01) and opaque sessions (ADR
+        // 0004), provided by the global TenancyModule/AuthModule. Without it (core-pipeline
+        // tests only): nobody resolves, nobody is signed in. The limiter is in-memory until
+        // the Valkey module lands; tests override any of these with in-memory doubles.
+        database
+          ? { provide: TENANT_RESOLVER, useExisting: DbTenantResolver }
+          : { provide: TENANT_RESOLVER, useClass: NullTenantResolver },
+        database
+          ? { provide: SESSION_AUTHENTICATOR, useExisting: DbSessionAuthenticator }
+          : { provide: SESSION_AUTHENTICATOR, useClass: NullSessionAuthenticator },
         { provide: RATE_LIMITER, useFactory: () => new InMemoryRateLimiter() },
+        { provide: CLOCK, useValue: systemClock },
 
         // ── Request pipeline ─────────────────────────────────────────────────────────────
         // Global guards run in this order: CSRF before anything reads the cookie, then the
         // tenant (so auth can check the session belongs to it), then auth (deny by default),
-        // then rate limits (keyed by tenant/user), then roles.
+        // then the tenant's status vs the session (TEN-06), then rate limits (keyed by
+        // tenant/user), then roles.
         { provide: APP_GUARD, useClass: CsrfGuard },
         { provide: APP_GUARD, useClass: TenantGuard },
         { provide: APP_GUARD, useClass: AuthGuard },
+        { provide: APP_GUARD, useClass: TenantAccessGuard },
         { provide: APP_GUARD, useClass: RateLimitGuard },
         { provide: APP_GUARD, useClass: RolesGuard },
         { provide: APP_INTERCEPTOR, useClass: EndpointInterceptor },
         { provide: APP_FILTER, useClass: ProblemFilter },
         EndpointVerifier,
       ],
-      exports: [APP_CONFIG, TENANT_RESOLVER, SESSION_AUTHENTICATOR, RATE_LIMITER],
+      exports: [APP_CONFIG, TENANT_RESOLVER, SESSION_AUTHENTICATOR, RATE_LIMITER, CLOCK],
     };
   }
 }
 
-/** Root module of the HTTP API. Feature modules (Track E onwards) are added to `imports`. */
+/** Root module of the HTTP API. Feature modules are added to `imports`. */
 @Module({})
 export class AppModule {
   static forRoot(options: AppModuleOptions): DynamicModule {
+    const database = options.database ?? true;
     return {
       module: AppModule,
-      imports: [CoreModule.forRoot(options), HealthModule],
+      imports: [
+        CoreModule.forRoot({ ...options, database }),
+        HealthModule,
+        ...(database
+          ? [DbModule.forRoot(options.config), TenancyModule, AuthModule, ClassesModule]
+          : []),
+      ],
     };
   }
 }

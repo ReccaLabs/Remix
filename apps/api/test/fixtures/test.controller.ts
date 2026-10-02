@@ -1,4 +1,5 @@
 import { Body, Controller, ForbiddenException, Get, Post } from '@nestjs/common';
+import { DrizzleQueryError } from 'drizzle-orm';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { z } from 'zod';
 import { API, type EndpointDef } from '@remix/types/api';
@@ -141,6 +142,20 @@ export class TestController {
   @Get('test/boom')
   boom(): never {
     throw new Error('connect ECONNREFUSED; SELECT password FROM users WHERE phone=+94771234567');
+  }
+
+  /** What a failed insert looks like: SQL + bound params (phone, hash) + the Postgres error. */
+  @Public()
+  @Get('test/db-boom')
+  dbBoom(): never {
+    throw new DrizzleQueryError(
+      'insert into "tenant_users" ("phone", "password_hash") values ($1, $2)',
+      ['+94771234567', '$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$aGFzaGhhc2g'],
+      Object.assign(new Error('duplicate key value violates unique constraint "x"'), {
+        code: '23505',
+        detail: 'Key (phone)=(+94771234567) already exists.',
+      }),
+    );
   }
 
   @Public()

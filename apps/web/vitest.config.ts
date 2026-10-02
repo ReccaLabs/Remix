@@ -15,6 +15,10 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     environment: 'node',
+    // Worker threads, not child processes: on Windows a forked worker loading the jsdom +
+    // next-intl + react-hook-form graph can miss Vitest's fixed 60 s start handshake, failing the
+    // file before any test runs. Threads start in-process and the suite is isolation-safe.
+    pool: 'threads',
     // Component tests type into jsdom forms; give them headroom on a busy CI runner.
     testTimeout: 15_000,
   },

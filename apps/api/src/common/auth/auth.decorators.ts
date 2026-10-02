@@ -23,6 +23,16 @@ export const Public = (options: PublicOptions = {}): MethodDecorator & ClassDeco
 export const Roles = (...roles: [Role, ...Role[]]): MethodDecorator & ClassDecorator =>
   SetMetadata(REQUIRED_ROLES, roles);
 
+export const REQUIRED_KINDS = 'remix:kinds';
+
+/**
+ * Route needs a session of one of these kinds (403 `FORBIDDEN` otherwise), e.g. student-only
+ * portal endpoints that staff must not call.
+ */
+export const SessionKinds = (
+  ...kinds: [AuthSession['kind'], ...AuthSession['kind'][]]
+): MethodDecorator & ClassDecorator => SetMetadata(REQUIRED_KINDS, kinds);
+
 /** The authenticated session (null only on `@Public({ optionalSession: true })` routes). */
 export const CurrentSession = createParamDecorator(
   (_: unknown, context: ExecutionContext): AuthSession | null =>

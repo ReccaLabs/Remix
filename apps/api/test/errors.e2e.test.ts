@@ -90,4 +90,27 @@ describe('problem+json errors (e2e)', () => {
     expect(JSON.stringify(logged)).toContain('ECONNREFUSED'); // stack stays in the logs
     expect(logged?.tenantId).toBe('0199a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b');
   });
+
+  it('logs a failed query without its SQL, bound params or row detail (S-02)', async () => {
+    const res = await request(t.server).get('/api/v1/test/db-boom').set('Host', HOST_A);
+    const problem = expectProblem(res, 500, 'INTERNAL');
+    const logged = t.logs.lines.find(
+      (l) =>
+        l.msg === 'Unhandled error while processing request' && l.requestId === problem.requestId,
+    );
+    expect(logged).toBeDefined();
+    const line = JSON.stringify(logged);
+    for (const secret of [
+      '+94771234567',
+      'argon2id',
+      'aGFzaGhhc2g',
+      'insert into',
+      'password_hash',
+    ]) {
+      expect(line).not.toContain(secret);
+    }
+    expect(line).not.toContain('already exists');
+    expect(line).toContain('23505'); // the useful part survives
+    expect(t.logs.text).not.toContain('argon2id');
+  });
 });

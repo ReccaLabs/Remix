@@ -27,4 +27,5 @@ export {
   type NumberBlock,
 } from './counters';
 export { runMigrations } from './migrate';
+export { ARGON2ID_OPTIONS, hashPassword } from './password';
 export { ACTOR_KINDS, USER_STATUSES, type ActorKind, type UserStatus } from './schema/enums';

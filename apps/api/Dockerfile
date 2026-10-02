@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # ReMix API + worker image. Build from the repo root:
 #   docker build -f apps/api/Dockerfile -t remix-api .
-# Run the API:    docker run -p 4000:4000 -e TENANT_BASE_DOMAINS=… remix-api
+# Run the API:    docker run -p 4000:4000 -e DATABASE_URL=… -e TENANT_BASE_DOMAINS=… -e TRUST_PROXY=… remix-api
 # Run the worker: docker run remix-api node --enable-source-maps dist/worker.js
 
 ARG NODE_IMAGE=node:24-bookworm-slim
@@ -17,11 +17,13 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/api/package.json apps/api/
 COPY packages/types/package.json packages/types/
 COPY packages/config/package.json packages/config/
+COPY packages/db/package.json packages/db/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter @remix/api...
 
 COPY packages/config packages/config
 COPY packages/types packages/types
+COPY packages/db packages/db
 COPY apps/api apps/api
 RUN pnpm --filter @remix/api build \
  && pnpm --filter @remix/api deploy --prod --legacy /out \

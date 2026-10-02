@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { ConfigError, loadConfig } from './config';
 
+/** The smallest valid production environment. */
+const PRODUCTION = {
+  NODE_ENV: 'production',
+  TENANT_BASE_DOMAINS: 'remix.lk',
+  TRUST_PROXY: '10.0.0.0/8',
+};
+
 describe('loadConfig', () => {
   it('applies dev defaults', () => {
     const config = loadConfig({});
@@ -39,8 +46,38 @@ describe('loadConfig', () => {
   });
 
   it('defaults COOKIE_SECURE to true in production', () => {
-    const config = loadConfig({ NODE_ENV: 'production', TENANT_BASE_DOMAINS: 'remix.lk' });
+    const config = loadConfig({ ...PRODUCTION });
     expect(config.cookieSecure).toBe(true);
+  });
+
+  describe('TRUST_PROXY in production (S-07)', () => {
+    it.each(['loopback', '', 'none', 'loopback, none', '127.0.0.1', '::1', '127.0.0.0/8, ::1/128'])(
+      'refuses to boot with %j: every client would share the proxy IP',
+      (trustProxy) => {
+        const env = { ...PRODUCTION, TRUST_PROXY: trustProxy };
+        expect(() => loadConfig(env)).toThrow(ConfigError);
+        expect(() => loadConfig(env)).toThrow(
+          'TRUST_PROXY: must list the edge proxy / web node addresses in production',
+        );
+      },
+    );
+
+    it('refuses the unset default too', () => {
+      const env = { NODE_ENV: 'production', TENANT_BASE_DOMAINS: 'remix.lk' };
+      expect(() => loadConfig(env)).toThrow(/TRUST_PROXY/);
+    });
+
+    it.each(['uniquelocal', '10.0.0.0/8', 'loopback, 172.16.0.0/12', '10.0.0.5, 10.0.0.6'])(
+      'boots with %j',
+      (trustProxy) => {
+        expect(() => loadConfig({ ...PRODUCTION, TRUST_PROXY: trustProxy })).not.toThrow();
+      },
+    );
+
+    it('keeps loopback as the dev and test default', () => {
+      expect(() => loadConfig({ NODE_ENV: 'development' })).not.toThrow();
+      expect(() => loadConfig({ NODE_ENV: 'test', TRUST_PROXY: 'loopback' })).not.toThrow();
+    });
   });
 
   it.each([
@@ -54,11 +91,8 @@ describe('loadConfig', () => {
     [{ PLATFORM_HOSTS: 'admin.remix.lk:443' }, 'PLATFORM_HOSTS'],
     [{ COOKIE_SECURE: 'yes' }, 'COOKIE_SECURE'],
     [{ DATABASE_URL: 'mysql://x@y/z' }, 'DATABASE_URL'],
-    [
-      { NODE_ENV: 'production', COOKIE_SECURE: 'false', TENANT_BASE_DOMAINS: 'remix.lk' },
-      'COOKIE_SECURE',
-    ],
-    [{ NODE_ENV: 'production' }, 'TENANT_BASE_DOMAINS'],
+    [{ ...PRODUCTION, COOKIE_SECURE: 'false' }, 'COOKIE_SECURE'],
+    [{ NODE_ENV: 'production', TRUST_PROXY: '10.0.0.0/8' }, 'TENANT_BASE_DOMAINS'],
   ])('fails fast on %o', (env, variable) => {
     expect(() => loadConfig(env)).toThrow(ConfigError);
     try {

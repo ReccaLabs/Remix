@@ -6,11 +6,13 @@
 !.npmrc
 !packages/config/**
 !packages/types/**
+!packages/db/**
 !apps/api/**
 **/node_modules
 **/dist
 **/coverage
 **/*.test.ts
 apps/api/test
+packages/db/test
 **/.env
 **/.env.*

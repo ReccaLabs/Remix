@@ -33,6 +33,8 @@ export class ProblemFilter implements ExceptionFilter {
     const requestId = contextOf(http.getRequest())?.requestId;
     const rendered = toProblem(exception, requestId);
     if (rendered.unexpected) {
+      // `err` goes through serializeError (logger.ts): a failed query is logged without its SQL,
+      // bound parameters or row detail.
       this.logger.error({ err: exception }, 'Unhandled error while processing request');
     }
     sendProblem(res, rendered);

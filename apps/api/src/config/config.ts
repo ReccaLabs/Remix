@@ -32,6 +32,18 @@ const hostList = list
 
 const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
 
+/**
+ * True when no real proxy is trusted: empty, `none`, or only loopback. In production the API sits
+ * behind the edge proxy and web nodes; trusting none of them makes every client's IP the proxy's,
+ * so every per-IP rate limit (and audit IP) would merge all users into one.
+ */
+function onlyLoopback(entries: readonly string[]): boolean {
+  return entries.every(
+    (e) =>
+      e === 'loopback' || e === 'none' || e === '::1' || e.startsWith('::1/') || /^127\./.test(e),
+  );
+}
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -58,7 +70,7 @@ const envSchema = z
     PLATFORM_HOSTS: hostList.default(['admin.localhost']),
     /** `Secure` flag on cookies. Must be on in production. */
     COOKIE_SECURE: bool.optional(),
-    /** Postgres connection string (optional until the database module lands). */
+    /** Postgres connection string as `remix_app`. Required when the database modules run. */
     DATABASE_URL: z
       .url({ protocol: /^postgres(ql)?$/ })
       .optional()
@@ -75,6 +87,13 @@ const envSchema = z
         code: 'custom',
         path: ['COOKIE_SECURE'],
         message: 'must be true in production',
+      });
+    }
+    if (onlyLoopback(env.TRUST_PROXY.entries)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['TRUST_PROXY'],
+        message: 'must list the edge proxy / web node addresses in production',
       });
     }
     if (env.TENANT_BASE_DOMAINS.includes('localhost')) {
@@ -105,8 +124,19 @@ export class ConfigError extends Error {
   }
 }
 
+export interface LoadConfigOptions {
+  /**
+   * The database modules are enabled (the API process): `DATABASE_URL` becomes required.
+   * Only core-pipeline tests and the worker (until it has jobs) boot without it.
+   */
+  requireDatabase?: boolean;
+}
+
 /** Parse and validate the process environment. Fails fast on the first boot with bad config. */
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
+export function loadConfig(
+  env: NodeJS.ProcessEnv = process.env,
+  options: LoadConfigOptions = {},
+): AppConfig {
   const parsed = envSchema.safeParse(env);
   if (!parsed.success) {
     throw new ConfigError(
@@ -114,6 +144,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     );
   }
   const e = parsed.data;
+  if (options.requireDatabase && !e.DATABASE_URL) {
+    throw new ConfigError(['DATABASE_URL: required (connects as remix_app)']);
+  }
   return {
     nodeEnv: e.NODE_ENV,
     port: e.PORT,

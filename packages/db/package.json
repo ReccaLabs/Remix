@@ -15,6 +15,7 @@
     "migrate": "tsx src/cli/migrate.ts",
     "seed": "tsx src/cli/seed.ts",
     "tenant:create": "tsx src/cli/tenant-create.ts",
+    "tenant:reset-owner-password": "tsx src/cli/tenant-reset-owner-password.ts",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
