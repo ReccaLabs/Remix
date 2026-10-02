@@ -1,0 +1,16 @@
+# Build context is the repo root; send only what the API image needs.
+**
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!.npmrc
+!packages/config/**
+!packages/types/**
+!apps/api/**
+**/node_modules
+**/dist
+**/coverage
+**/*.test.ts
+apps/api/test
+**/.env
+**/.env.*

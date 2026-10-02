@@ -1,0 +1,39 @@
+import { createParamDecorator, type ExecutionContext, SetMetadata } from '@nestjs/common';
+import type { Request } from 'express';
+import { contextOf } from '../context/request-context';
+import type { ResolvedTenant } from '../tenant/tenant-resolver';
+import type { AuthSession, Role } from './session-authenticator';
+
+export const PUBLIC_ROUTE = 'remix:public';
+export const REQUIRED_ROLES = 'remix:roles';
+
+export interface PublicOptions {
+  /**
+   * Look up the session anyway and expose it if present (e.g. logout, which is a no-op without
+   * a session). Off by default so public pages cost no session lookup.
+   */
+  optionalSession?: boolean;
+}
+
+/** Route needs no session. Every route without it requires one (deny by default). */
+export const Public = (options: PublicOptions = {}): MethodDecorator & ClassDecorator =>
+  SetMetadata(PUBLIC_ROUTE, options);
+
+/** Route needs a session holding at least one of `roles` (403 otherwise). */
+export const Roles = (...roles: [Role, ...Role[]]): MethodDecorator & ClassDecorator =>
+  SetMetadata(REQUIRED_ROLES, roles);
+
+/** The authenticated session (null only on `@Public({ optionalSession: true })` routes). */
+export const CurrentSession = createParamDecorator(
+  (_: unknown, context: ExecutionContext): AuthSession | null =>
+    contextOf(context.switchToHttp().getRequest<Request>())?.session ?? null,
+);
+
+/** The tenant that owns the request host (tenant-scoped routes only). */
+export const CurrentTenant = createParamDecorator(
+  (_: unknown, context: ExecutionContext): ResolvedTenant => {
+    const tenant = contextOf(context.switchToHttp().getRequest<Request>())?.tenant;
+    if (!tenant) throw new Error('@CurrentTenant() used on a route that is not tenant-scoped');
+    return tenant;
+  },
+);

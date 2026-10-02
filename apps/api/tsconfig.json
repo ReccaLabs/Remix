@@ -1,0 +1,10 @@
+{
+  "extends": "@remix/config/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": ["src", "test", "*.config.ts"]
+}
