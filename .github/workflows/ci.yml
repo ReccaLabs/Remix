@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
 
-# Least privilege for the default GITHUB_TOKEN.
+# Least privilege for the default GITHUB_TOKEN. No job needs more: nothing is pushed or deployed.
 permissions:
   contents: read
 
@@ -14,6 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Everything that needs no Docker: static checks, unit/component tests, the site/web/api builds.
   check:
     name: Lint · typecheck · test · build
     runs-on: ubuntu-latest
@@ -37,8 +38,10 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Unit tests
-        run: pnpm test
+      # The tenant-isolation suite lives in its own job (db-isolation). The jsdom suites (ui, web)
+      # time out when every package's tests start at once on a 2-4 core runner, so cap turbo.
+      - name: Unit and component tests
+        run: pnpm turbo run test --filter='!@remix/db' --concurrency=2
 
       - name: Build
         run: pnpm build
@@ -52,6 +55,91 @@ jobs:
           name: site-out
           path: apps/site/out
           retention-days: 7
+
+  # Database unit tests + the generated tenant-isolation suite against a real Postgres 18.
+  # Testcontainers talks to the runner's Docker daemon (preinstalled on ubuntu-latest); the reaper
+  # container cleans up after the run, so no extra settings are needed. A separate job runs in
+  # parallel with `check`, so the Docker-bound suite does not add to the critical path, and a
+  # failure names the isolation suite directly.
+  db-isolation:
+    name: Tenant isolation (Postgres 18)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # Only @remix/db and what it depends on; the web/site toolchains are not needed here.
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile --filter '@remix/db...'
+
+      - name: Database unit tests and isolation suite
+        run: pnpm --filter @remix/db test
+
+  # The production image: it must build, boot, and pass a vulnerability scan.
+  api-image:
+    name: API image (build · smoke · Trivy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      IMAGE: remix-api:ci
+      # Pinned scanner version; Dependabot's docker ecosystem does not track this, bump it with
+      # the Trivy releases.
+      TRIVY_IMAGE: aquasec/trivy:0.75.0
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          load: true
+          push: false
+          tags: ${{ env.IMAGE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Production config is strict (no localhost base domain, secure cookies), so give it real-looking
+      # hosts. No database: DATABASE_URL is optional until the database module lands.
+      - name: Smoke test (boots and answers /health)
+        run: |
+          docker run -d --name api-smoke -p 127.0.0.1:4000:4000 \
+            -e TENANT_BASE_DOMAINS=remix.lk -e PLATFORM_HOSTS=admin.remix.lk \
+            "$IMAGE"
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4000/health; then echo; exit 0; fi
+            sleep 1
+          done
+          docker logs api-smoke
+          exit 1
+
+      # Fails the job on HIGH or CRITICAL findings that have a fix available. Unfixed OS-package
+      # CVEs are ignored: nothing can be done about them until the base image is patched.
+      # usr/local/lib/node_modules/npm is the base image's own npm (never run by the API; its
+      # bundled brace-expansion, tar, undici and ip-address are what Trivy flags). It is skipped
+      # until apps/api/Dockerfile deletes npm from the runtime stage; then drop --skip-dirs.
+      - name: Trivy scan (HIGH/CRITICAL with a fix)
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            "$TRIVY_IMAGE" image \
+              --scanners vuln \
+              --severity HIGH,CRITICAL \
+              --ignore-unfixed \
+              --skip-dirs usr/local/lib/node_modules/npm \
+              --exit-code 1 \
+              --no-progress \
+              --skip-version-check \
+              "$IMAGE"
 
   secrets:
     name: Secret scan (gitleaks)
@@ -71,4 +159,9 @@ jobs:
       image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v5
-      - run: semgrep scan --config p/typescript --config p/react --config p/secrets --error --exclude design
+      # design/ is exported mockups; graphify-out/ is a generated knowledge graph (JSON/HTML).
+      - run: >-
+          semgrep scan
+          --config p/typescript --config p/react --config p/secrets
+          --error
+          --exclude design --exclude graphify-out

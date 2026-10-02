@@ -14,12 +14,15 @@ Own website, fees and bank slips, protected video, Zoom with name lock, and atte
 
 ## Quick start
 
-Requires Node 24 and pnpm (`corepack enable`).
+Requires Node 24 and pnpm (`corepack enable`). The platform stack also needs Docker.
 
 ```bash
 pnpm install
 pnpm dev:site        # remix.lk at http://localhost:3000/en/
+pnpm dev             # everything: Docker stack, migrate, seed, then site + web + API
 ```
+
+`pnpm dev` starts [`infra/docker/compose.yaml`](infra/docker/compose.yaml) and waits until it is healthy, applies migrations, seeds the dev tenants if the database is empty (`pnpm dev --reseed` resets them), then runs site (`:3000`), web (`http://kamalphysics.localhost:3001`) and API (`:4000`). It is safe to re-run. The pieces are also available alone: `pnpm dev:stack` (`pnpm dev:stack down` stops it), `pnpm db:migrate`, `pnpm db:seed`, `pnpm dev:web`, `pnpm dev:api`. If a host port is taken, override it in `infra/docker/.env` (see `.env.example`). Seed logins: [packages/db/README.md](packages/db/README.md#seed-logins-dev-only--never-real-credentials).
 
 ```bash
 pnpm lint && pnpm typecheck && pnpm test && pnpm build

@@ -9,6 +9,9 @@
     "dev": { "cache": false, "persistent": true },
     "lint": {},
     "typecheck": {},
-    "test": { "outputs": [] }
+    "test": {
+      "outputs": [],
+      "passThroughEnv": ["DOCKER_*", "TESTCONTAINERS_*"]
+    }
   }
 }

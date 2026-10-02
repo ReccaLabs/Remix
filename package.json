@@ -7,8 +7,13 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "node scripts/dev.mjs",
     "dev:site": "pnpm --filter @remix/site dev",
+    "dev:web": "pnpm --filter @remix/web dev",
+    "dev:api": "pnpm --filter @remix/api dev",
+    "dev:stack": "node scripts/dev-stack.mjs",
+    "db:migrate": "node scripts/db.mjs migrate",
+    "db:seed": "node scripts/db.mjs seed",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

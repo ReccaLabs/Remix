@@ -4,3 +4,6 @@ pnpm-lock.yaml
 out/
 node_modules/
 *.md
+
+# drizzle-kit rewrites these (snapshots and journal) on every db:generate
+packages/db/migrations/meta

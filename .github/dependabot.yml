@@ -20,3 +20,14 @@ updates:
     directory: /
     schedule:
       interval: weekly
+
+  # Base image of the API (apps/api/Dockerfile) and the dev stack images (infra/docker).
+  - package-ecosystem: docker
+    directory: /apps/api
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker-compose
+    directory: /infra/docker
+    schedule:
+      interval: weekly
