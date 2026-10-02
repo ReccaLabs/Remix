@@ -33,8 +33,8 @@ Each becomes an ADR in `docs/decisions/` (track **D**). Summary so parallel trac
 | API (`apps/api`) | `http://localhost:4000` — reached by the browser only via the web app's `/api/v1` rewrite |
 | Site (`apps/site`) | `http://localhost:3000` (unchanged) |
 | Base domains | `TENANT_BASE_DOMAINS=localhost` in dev, `remix.lk` in prod; any other host must be a verified row in `tenant_domains` |
-| Stack | `infra/docker/compose.yaml`: Postgres 18, Valkey, Mailpit, MinIO |
-| Seed tenants | `kamalphysics` (Institute plan, 2,000 students), `royalscience` (Tutor plan), `closedacademy` (suspended) |
+| Stack | `infra/docker/compose.yaml`: Postgres 18, Valkey, Mailpit, SeaweedFS (S3) |
+| Seed tenants | `kamalphysics` (Institute plan, 2,000 students), `royalscience` (Tutor plan), `closedacademy` (suspended) — logins in `packages/db/README.md` |
 
 ## 4. Tracks
 
@@ -67,10 +67,17 @@ await withTenant(db, tenant.id, async (tx) => tx.select().from(schema.classes));
 
 | Track | Status |
 | --- | --- |
-| Contracts | ✅ merged |
-| D | ✅ merged (ADRs 0003–0007) |
-| A · B · C · W | 🔄 in progress |
-| E · F | ⬜ |
-| G · S | ⬜ |
+| Contracts | ✅ merged — schemas, endpoint registry, typed client (95 tests) |
+| D · Decisions | ✅ merged — ADRs 0003–0007 |
+| A · Database | ✅ merged — RLS schema, roles, `withTenant`, seed, CLI, isolation suite (197 tests; a broken policy fails 11) |
+| B · UI kit | ✅ merged — form, feedback, data primitives and three shells (57 tests incl. axe) |
+| C · API core | ✅ merged — NestJS core, problem+json, CSRF, guards, rate limiter, health, provider mocks, Dockerfile (315 tests) |
+| W · Web core | ✅ merged — host routing, CSP nonces, server API client, TEN-06 pages (116 tests) |
+| E · Tenancy + auth API | 🔄 in progress (Opus — security-critical) |
+| F · Portal + admin UI | 🔄 in progress |
+| G · E2E + CI | ⬜ next (Sonnet) |
+| S · Security review | ⬜ after E/F merge (Opus) |
+
+Agent models are chosen per track by risk: Opus for auth, RLS and security review; Sonnet for well-specified implementation; Haiku for mechanical edits.
 
 **Not doable from a dev machine (owner action needed):** Hetzner staging server + Kamal deploy, Sentry project DSNs, Zoom Marketplace submission, PayHere/Text.lk/Bunny accounts — see [05-roadmap.md §3](05-roadmap.md#3-parallel-long-lead-tracks-start-week-1).

@@ -112,7 +112,13 @@ General scale: 12 · 13 · 14 · 16 · 18 · 20 · 24 · 30 · 36 · 48 · 64. F
 | Component | File | Notes |
 | --- | --- | --- |
 | `Logo` | `logo.tsx` | `variant`: wordmark · lockup ("by Recca Labs") · mark (app icon). `tone`: light · dark. Pure CSS, no image |
-| `buttonClass()` | `button.ts` | Class helper → works on `<button>`, `<a>`, `<Link>`. Variants: primary · outline · ghost · dark · success. Sizes: sm 36 · md 40 · lg 48 · xl 52 |
+| `buttonClass()` | `button.ts` | Class helper → works on `<button>`, `<a>`, `<Link>`. Variants: primary · secondary · outline · ghost · dark · success · danger. Sizes: sm 36 · md 40 · lg 48 · xl 52 |
+| `Button` | `actions/button.tsx` | `buttonClass` + `loading` (spinner, `aria-busy`); ≥ 44 px on touch |
+| `Field`, `Input`, `PasswordInput`, `PhoneInput`, `Checkbox` | `forms/` | Field wires label/hint/error via `aria-describedby` + `aria-invalid`; PhoneInput announces the +94 prefix |
+| `StatusBadge`, `EmptyState`, `Skeleton` | `feedback/` | Status always word + colour |
+| `ToastProvider` / `useToast`, `ConfirmDialog` | `feedback/` | Client. Live region exists before the first toast; native `<dialog>` with focus return and type-to-confirm |
+| `StatCard`, `DataTable` v1 | `data/` | Real table semantics, one tab stop with arrow-key rows, scroll region on phones. No sort/bulk select yet |
+| `PortalShell`, `AdminShell`, `PlatformShell` | `shells/` | Sidebar ≥ 1024 px, bottom tabs below; skip link; `linkComponent` prop (no Next.js dependency); all copy via props |
 | `Container` | `layout.tsx` | marketing (1200) / app (1440) widths with gutters |
 | `DisplayHeading` | `layout.tsx` | Bricolage headings, sizes md/lg/xl, responsive |
 | `Eyebrow` | `layout.tsx` | Small blue label above section titles |
@@ -140,11 +146,11 @@ General scale: 12 · 13 · 14 · 16 · 18 · 20 · 24 · 30 · 36 · 48 · 64. F
 
 | Group | Components |
 | --- | --- |
-| Layout | AppShell (sidebar + topbar), PageHeader (title, breadcrumbs, primary action), Section, Card, Tabs |
-| Data | DataTable (sort, filter, column toggle, bulk select, sticky header, CSV export), StatCard, EmptyState, Skeleton |
-| Forms | Input, Select, Combobox (student search), DatePicker, MonthPicker, MoneyInput (LKR), PhoneInput (+94), FileDrop, Switch, Form with Zod errors |
-| Feedback | Toast, AlertBanner, ConfirmDialog (type-the-name to delete), Progress, StatusBadge (Paid / Unpaid / Pending / Suspended) |
-| Navigation | Sidebar with groups, Command palette (Ctrl/Cmd K), TenantSwitcher (platform staff), bottom TabBar (student mobile) |
+| Layout | PageHeader (title, breadcrumbs, primary action), Section, Card, Tabs |
+| Data | DataTable v2 (sort, filter, column toggle, bulk select, sticky header, CSV export) |
+| Forms | Select, Combobox (student search), DatePicker, MonthPicker, MoneyInput (LKR), FileDrop, Switch |
+| Feedback | AlertBanner, Progress |
+| Navigation | Sidebar groups, Command palette (Ctrl/Cmd K), TenantSwitcher (platform staff) |
 | Special | ImpersonationBanner, VideoPlayer with watermark layer, QR scanner, LanguageSwitcher |
 
 ---
