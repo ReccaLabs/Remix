@@ -204,6 +204,7 @@ jobs:
           done
           docker run -d --name api-smoke --network smoke -p 127.0.0.1:4000:4000 \
             -e VALKEY_URL=redis://smoke-valkey:6379 \
+            -e AUTH_CODE_SECRET=ci-smoke-only-auth-code-secret-0123456789 \
             -e DATABASE_URL=postgres://remix_app:remix_app_dev_password@smoke-db:5432/remix \
             -e TENANT_BASE_DOMAINS=remix.lk -e PLATFORM_HOSTS=admin.remix.lk \
             -e TRUST_PROXY=uniquelocal \

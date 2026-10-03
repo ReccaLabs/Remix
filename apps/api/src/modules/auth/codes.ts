@@ -18,7 +18,7 @@ export type CodeBinding = readonly [tenantId: string, subject: string, purpose: 
 
 /**
  * HMAC-SHA-256 (hex) of `tenantId | subject | purpose | code`. `subject` is the phone for
- * `otp_challenges` and the ticket id for two-step codes. The parts never contain `|`
+ * `otp_challenges` and the user id for two-step codes. The parts never contain `|`
  * (UUIDs, E.164 numbers, enum values, digits), so the encoding is unambiguous.
  */
 export function hashCode(secret: string, binding: CodeBinding, code: string): string {
