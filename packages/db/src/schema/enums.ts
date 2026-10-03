@@ -1,6 +1,8 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
 import {
   CLASS_PLACES,
+  CONSENT_METHODS,
+  GUARDIAN_RELATIONS,
   LOCALES,
   MEDIUMS,
   OTP_PURPOSES,
@@ -21,6 +23,8 @@ export const appLocale = pgEnum('app_locale', LOCALES);
 export const userKind = pgEnum('user_kind', USER_KINDS);
 export const staffRole = pgEnum('staff_role', STAFF_ROLES);
 export const medium = pgEnum('medium', MEDIUMS);
+export const guardianRelation = pgEnum('guardian_relation', GUARDIAN_RELATIONS);
+export const consentMethod = pgEnum('consent_method', CONSENT_METHODS);
 export const classPlace = pgEnum('class_place', CLASS_PLACES);
 export const otpPurpose = pgEnum('otp_purpose', OTP_PURPOSES);
 

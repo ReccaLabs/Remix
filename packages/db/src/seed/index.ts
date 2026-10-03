@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { TWO_STEP_ROLES, type StaffRole } from '@remix/types';
 import type { Db, Tx } from '../client';
 import { allocateNumbers, formatStudentNo } from '../counters';
@@ -9,6 +9,8 @@ import {
   classSchedules,
   devices,
   enrollments,
+  guardians,
+  staffInvites,
   staffRoles,
   students,
   tenantCounters,
@@ -37,6 +39,7 @@ const sha256Hex = (value: string) => createHash('sha256').update(value).digest('
 const DEV_TRUST_DAYS = 365;
 const twoStepRoles: readonly StaffRole[] = TWO_STEP_ROLES;
 const CHUNK = 500;
+const GUARDIAN_NAMES = ['Sunethra', 'Nimal', 'Kumari', 'Ranjith', 'Malini', 'Sarath'] as const;
 /** Billing months the seeded enrolments start in (first of the month). */
 const START_MONTHS = [
   '2026-01-01',
@@ -179,6 +182,14 @@ async function seedTenant(
     if (!row) throw new Error(`seed: class ${c.name} not created`);
     return row.id;
   });
+  // STF-02 — teachers limited to some classes.
+  for (const [i, s] of spec.staff.entries()) {
+    if (!s.classScope) continue;
+    await tx
+      .update(staffRoles)
+      .set({ classScope: s.classScope.map((c) => classIds[c] ?? '') })
+      .where(and(eq(staffRoles.userId, staffIds[i] ?? ''), eq(staffRoles.role, 'teacher')));
+  }
   await tx.insert(classSchedules).values(
     spec.classes.flatMap((c, i) =>
       c.schedules.map(([weekday, startTime, durationMinutes]) => ({
@@ -199,17 +210,23 @@ async function seedTenant(
 
   const alYears = [...new Set(spec.classes.map((c) => c.alYear))];
   const people = Array.from({ length: spec.students }, (_, i) => {
+    const invited = i >= spec.students - spec.invitedStudents;
     const no = block.first + i;
     const name = spec.namedStudents[no] ?? `${rng.pick(FIRST_NAMES)} ${rng.pick(LAST_NAMES)}`;
+    const alYear = rng.pick(alYears);
     return {
       no,
       studentNo: formatStudentNo(spec.studentNoPrefix, no),
       phone: `+94${spec.phoneBase}${String(no).padStart(7, '0')}`,
+      alYear,
       name,
-      alYear: rng.pick(alYears),
       school: rng.pick(SCHOOLS),
       locale: rng.chance(0.25) ? ('si' as const) : ('en' as const),
-      disabled: rng.chance(0.01),
+      invited,
+      // Always draw, so the stream (and the e2e-visible enrolments) stays stable.
+      disabled: rng.chance(0.01) && !invited,
+      // Grade 11 students (no A/L year) are minors.
+      under18: alYear === null,
     };
   });
 
@@ -223,9 +240,13 @@ async function seedTenant(
           kind: 'student' as const,
           phone: p.phone,
           displayName: p.name,
-          passwordHash,
+          passwordHash: p.invited ? null : passwordHash,
           locale: p.locale,
-          status: p.disabled ? ('disabled' as const) : ('active' as const),
+          status: p.invited
+            ? ('invited' as const)
+            : p.disabled
+              ? ('disabled' as const)
+              : ('active' as const),
         })),
       )
       .returning({ id: tenantUsers.id, phone: tenantUsers.phone });
@@ -246,9 +267,60 @@ async function seedTenant(
         school: p.school,
         alYear: p.alYear,
         medium: spec.classes.find((c) => c.alYear === p.alYear)?.medium ?? null,
+        under18: p.under18,
+        ...(p.under18
+          ? {
+              consentGivenBy: 'Parent (paper form)',
+              consentMethod: 'paper_form' as const,
+              consentRecordedAt: new Date('2026-02-01T05:00:00Z'),
+            }
+          : {}),
       })),
     ),
   );
+
+  // PAR-01 — every student has a mother on file; every 4th also a father who opts out of SMS.
+  const guardianRows = people.flatMap((p) => {
+    const studentId = userId(p.phone);
+    const first = GUARDIAN_NAMES[p.no % GUARDIAN_NAMES.length] ?? 'Parent';
+    const lastName = p.name.split(' ').slice(-1)[0] ?? p.name;
+    const rows: (typeof guardians.$inferInsert)[] = [
+      {
+        tenantId,
+        studentId,
+        name: `${first} ${lastName}`,
+        relation: 'mother' as const,
+        phone: `+94${spec.phoneBase === '71' ? '72' : '73'}${String(p.no).padStart(7, '1')}`,
+        smsOptIn: true,
+      },
+    ];
+    if (p.no % 4 === 0) {
+      rows.push({
+        tenantId,
+        studentId,
+        name: `Nimal ${lastName}`,
+        relation: 'father' as const,
+        phone: `+94${spec.phoneBase === '71' ? '74' : '76'}${String(p.no).padStart(7, '2')}`,
+        smsOptIn: false,
+      });
+    }
+    return rows;
+  });
+  await insertChunked(guardianRows, (chunk) => tx.insert(guardians).values(chunk));
+
+  if (spec.pendingInvite) {
+    await tx.insert(staffInvites).values({
+      tenantId,
+      displayName: spec.pendingInvite.name,
+      phone: spec.pendingInvite.phone,
+      role: spec.pendingInvite.role,
+      classScope: [classIds[4] ?? ''],
+      // Dev-only token; the raw value is never needed (only the hash is stored).
+      tokenHash: createHash('sha256').update(`seed-invite-${spec.slug}`).digest('hex'),
+      invitedBy: staffIds[0] ?? '',
+      expiresAt: new Date(Date.now() + 72 * 3_600_000),
+    });
+  }
 
   // Each student takes one or more classes of their year group, from a deterministic month.
   const enrollmentRows = people.flatMap((p) => {

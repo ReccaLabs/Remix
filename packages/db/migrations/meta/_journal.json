@@ -36,6 +36,20 @@
       "when": 1791014062066,
       "tag": "0004_auth_completion_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791035564007,
+      "tag": "0005_people",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791035570006,
+      "tag": "0006_people_rls",
+      "breakpoints": true
     }
   ]
 }

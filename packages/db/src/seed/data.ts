@@ -13,6 +13,8 @@ export interface SeedStaff {
   phone: string;
   email?: string;
   roles: readonly StaffRole[];
+  /** Indexes into the tenant's `classes` a teacher is limited to (STF-02). */
+  classScope?: readonly number[];
 }
 
 export interface SeedClass {
@@ -43,6 +45,10 @@ export interface SeedTenant {
   phoneBase: string;
   staff: readonly SeedStaff[];
   classes: readonly SeedClass[];
+  /** The last N students are still `invited` (no password yet — AUTH-07). */
+  invitedStudents: number;
+  /** A pending staff invitation (STF-01), if any. */
+  pendingInvite?: { name: string; phone: string; role: StaffRole };
   /** Fixed names for some student numbers (the ones the designs show). */
   namedStudents: Readonly<Record<number, string>>;
   domains: ReadonlyArray<{ host: string; verified: boolean; primary: boolean }>;
@@ -72,7 +78,12 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         roles: ['admin'],
       },
       { name: 'Dulmini Rathnayake', phone: '+94770001182', roles: ['cashier'] },
-      { name: 'Ravindu Bandara', phone: '+94770001183', roles: ['teacher'] },
+      {
+        name: 'Ravindu Bandara',
+        phone: '+94770001183',
+        roles: ['teacher'],
+        classScope: [3, 4, 5],
+      },
     ],
     classes: [
       {
@@ -145,6 +156,8 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         schedules: [[5, '16:00', 120]],
       },
     ],
+    invitedStudents: 6,
+    pendingInvite: { name: 'Anura Kumara', phone: '+94770001190', role: 'teacher' },
     namedStudents: {
       871: 'Ishara Dissanayake',
       934: 'Kavindi Herath',
@@ -194,6 +207,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         schedules: [[4, '18:00', 120]],
       },
     ],
+    invitedStudents: 2,
     namedStudents: {},
     domains: [],
   },
@@ -220,6 +234,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         schedules: [[6, '09:00', 120]],
       },
     ],
+    invitedStudents: 2,
     namedStudents: {},
     domains: [],
   },
