@@ -73,10 +73,12 @@ await withTenant(db, tenant.id, async (tx) => tx.select().from(schema.classes));
 | B · UI kit | ✅ merged — form, feedback, data primitives and three shells (57 tests incl. axe) |
 | C · API core | ✅ merged — NestJS core, problem+json, CSRF, guards, rate limiter, health, provider mocks, Dockerfile (315 tests) |
 | W · Web core | ✅ merged — host routing, CSP nonces, server API client, TEN-06 pages (116 tests) |
-| E · Tenancy + auth API | 🔄 in progress (Opus — security-critical) |
-| F · Portal + admin UI | 🔄 in progress |
-| G · E2E + CI | ⬜ next (Sonnet) |
-| S · Security review | ⬜ after E/F merge (Opus) |
+| E · Tenancy + auth API | ✅ merged — login, opaque sessions, refresh, `/me/classes`, audit (api 471 tests incl. Postgres integration) |
+| F · Portal + admin UI | ✅ merged — student/staff login, portal, admin home, session refresh (web 187 tests) |
+| G · CI + E2E | ✅ merged — isolation suite, image scan, Trivy, SHA-pinned actions; 34 Playwright journey runs green |
+| S · Security review | ✅ two passes — S-01 (High) … S-07 and N-1 … N-3 fixed with tests |
+
+**Phase 1 exit criteria (M1):** isolation suite + broken-policy check ✅ · login → classes end to end ✅ (locally) · ADRs 0003–0007 ✅ · one-command `pnpm dev` ✅ · **open:** staging server deploy (owner: Hetzner + Kamal + Sentry), ADRs 0012 (jobs) and 0013 (observability).
 
 Agent models are chosen per track by risk: Opus for auth, RLS and security review; Sonnet for well-specified implementation; Haiku for mechanical edits.
 

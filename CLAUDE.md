@@ -1,7 +1,7 @@
 # CLAUDE.md — rules for AI assistants working on ReMix
 
 **Project:** ReMix by Recca Labs — multi-tenant LMS SaaS for Sri Lankan tuition teachers and institutes.
-**Now building:** Phase 0, the company website `remix.lk` (`apps/site`). Then the LMS platform (`apps/web` + `apps/api`).
+**Now building:** the LMS platform (`apps/web` + `apps/api` + `packages/db`) phase by phase — Phase 1 (foundation) is done, see [`docs/plan/phase-1.md`](docs/plan/phase-1.md). `remix.lk` (`apps/site`) is built.
 
 Read before non-trivial work:
 - [`docs/plan/`](docs/plan/README.md) — **the development plan**: needs, feature IDs (`FEE-06`…), architecture, Definition of Done, phases. Every task maps to a feature ID; follow its acceptance criteria and the DoD in `docs/plan/04-quality.md`.
@@ -20,8 +20,10 @@ apps/site/            remix.lk — Next.js 16 static export → Cloudflare Pages
   messages/<locale>/  one JSON per namespace: common, home, pricing, institutes, teachers, guides, about, demo, legal
   functions/          Cloudflare Pages Functions (server code for the site, e.g. /api/lead)
   public/             _headers (security headers/CSP), _redirects, .well-known/security.txt
-apps/web/             (Phase 1) tenant sites, student portal, institute admin, platform admin
-apps/api/             (Phase 1) NestJS API, workers, realtime
+apps/web/             tenant sites, student portal, institute admin, platform admin (proxy.ts = host routing + CSP)
+apps/api/             NestJS API (modules/, common/ guards·CSRF·rate-limit, integrations/ provider mocks)
+packages/db/          Drizzle schema, RLS migrations, withTenant(), seed, tenant CLIs, isolation suite
+e2e/                  Playwright journeys against the real stack
 packages/ui/          theme.css (ALL design tokens) + shared React primitives (Logo, buttonClass, Container…)
 packages/types/       Zod schemas + domain logic shared by all apps (pricing.ts, money.ts, lead.ts)
 packages/config/      tsconfig presets
@@ -33,6 +35,7 @@ docs/decisions/       ADRs
 
 ```bash
 pnpm install              # Node 24, pnpm via corepack
+pnpm dev                  # Docker stack + migrate + seed + site/web/api dev servers
 pnpm dev:site             # http://localhost:3000 → /en/
 pnpm lint                 # eslint (all packages)
 pnpm typecheck            # tsc --noEmit (all packages)
