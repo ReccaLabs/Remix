@@ -23,6 +23,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { DEV_INVITE_TOKEN, handleAuthRoute } from './mock-api-auth.mjs';
 import { handleImport } from './mock-api-import.mjs';
+import { handleClasses, settingsFor } from './mock-api-classes.mjs';
 import { handlePeople } from './mock-api-people.mjs';
 
 const PORT = Number(process.env.MOCK_API_PORT ?? 4000);
@@ -450,13 +451,14 @@ async function handle(req, res) {
       return json(res, 200, {
         id: t.id,
         slug: t.slug,
-        name: t.name,
+        name: settingsFor(t).name,
         status: t.status,
         plan: t.plan,
-        defaultLocale: 'en',
+        defaultLocale: settingsFor(t).defaultLocale,
         timezone: 'Asia/Colombo',
-        brandColor: t.brandColor,
-        logoUrl: null,
+        brandColor: settingsFor(t).brandColor,
+        logoUrl: settingsFor(t).logoUrl,
+        faviconUrl: settingsFor(t).faviconUrl,
       });
     }
 
@@ -498,13 +500,15 @@ async function handle(req, res) {
     }
 
     default:
-      // Phase 2 student import: test/mock-api-import.mjs; people routes (students, staff): test/mock-api-people.mjs.
+      // Phase 2 student import: test/mock-api-import.mjs.
       if (
         await handleImport({ req, res, pathname, json, problem, csrfRejected, tenantOf, currentSession, USERS, CLASSES })
       )
         return;
-      if (
-        await handlePeople({
+      // Phase 2 routes: classes, halls, timetable, dashboard, settings (mock-api-classes.mjs),
+      // then students and staff (mock-api-people.mjs).
+      {
+        const feature = {
           req,
           res,
           pathname,
@@ -517,9 +521,9 @@ async function handle(req, res) {
           currentSession,
           USERS,
           CLASSES,
-        })
-      )
-        return;
+        };
+        if ((await handleClasses(feature)) || (await handlePeople(feature))) return;
+      }
       return problem(res, 404, 'NOT_FOUND');
   }
 }

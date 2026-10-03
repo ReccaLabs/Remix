@@ -31,4 +31,18 @@ test.describe('accessibility (axe: no serious or critical violations)', () => {
     await expect(page.getByRole('heading', { level: 1, name: /Sunil/ })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });
+
+  test('admin classes, timetable, class form and halls', async ({ page }) => {
+    await loginStaff(page, 'kamalphysics', SUNIL.email, PASSWORD, SUNIL.seedPhone);
+    for (const [path, heading] of [
+      ['/admin/classes', 'Classes'],
+      ['/admin/classes/timetable', 'Timetable'],
+      ['/admin/classes/new', 'New class'],
+      ['/admin/settings/halls', 'Settings'],
+    ] as const) {
+      await page.goto(tenantUrl('kamalphysics', path));
+      await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
+      await expectNoSeriousA11yViolations(page);
+    }
+  });
 });

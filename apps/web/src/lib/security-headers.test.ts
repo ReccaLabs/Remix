@@ -37,7 +37,19 @@ describe('buildCsp (production)', () => {
     expect(csp).not.toContain('unsafe-eval');
     expect(d.get('script-src')).not.toContain("'unsafe-inline'");
     expect(csp).not.toMatch(/(^|\s)\*/);
-    expect(csp).not.toMatch(/(^|\s)(https?:|wss?:)(\s|;|$)/);
+    // Scheme sources (https:, wss:) are not allowed anywhere except img-src (see below).
+    for (const [name, values] of d) {
+      if (name === 'img-src') continue;
+      expect(
+        values.filter((v) => /^(?:https?|wss?):$/.test(v)),
+        name,
+      ).toEqual([]);
+    }
+  });
+
+  it('images may come from https hosts (institute logo and tab icon, TEN-03), never plain http', () => {
+    expect(d.get('img-src')).toEqual(["'self'", 'data:', 'blob:', 'https:']);
+    expect(d.get('img-src')).not.toContain('http:');
   });
 
   it('locks down plugins, base, framing, forms and connections', () => {

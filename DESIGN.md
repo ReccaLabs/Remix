@@ -193,7 +193,8 @@ Every design file and where it lives in code. ✅ built · 🟡 in progress · �
 | `Staff Login.dc.html` | `/admin/login` (+ 2-step code) |
 | `Institute Dashboard.dc.html` / `Admin Dashboard Mobile.dc.html` | `/admin` |
 | `Admin Students.dc.html` | `/admin/students`, `/admin/students/[id]` |
-| `Admin Classes.dc.html` | `/admin/classes`, `/admin/classes/[id]` |
+| `Admin Classes.dc.html` | `/admin/classes`, `/admin/classes/new`, `/admin/classes/[id]` (+ `/edit`), `/admin/classes/timetable` (week view, no design file yet: built from the Classes patterns) |
+| *(no design file yet)* | `/admin/settings` (General), `/admin/settings/theme`, `/admin/settings/halls`, `/admin/settings/staff` |
 | `Admin Lessons.dc.html` | `/admin/lessons` |
 | `Admin Live Classes.dc.html` | `/admin/live` |
 | `Admin Fees.dc.html` | `/admin/fees` (invoices · payments · bank-slip queue · cash counter) |

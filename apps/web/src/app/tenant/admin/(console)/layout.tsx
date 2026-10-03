@@ -1,4 +1,3 @@
-import { can } from '@remix/types';
 import { tenantAccess, type SessionResponse } from '@remix/types/api';
 import { ShellTenant } from '@remix/ui';
 import { BookOpen, LayoutDashboard, Menu, Settings, Users, Wallet } from 'lucide-react';
@@ -9,6 +8,7 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { IntlIsland } from '@/components/intl-island';
 import { AppFrame, type FrameNavItem } from '@/components/shell/app-frame';
 import { ShellHeader, shellTenantProps } from '@/components/shell/shell-header';
+import { settingsSections } from '@/components/settings/settings-nav';
 import { StatusPage } from '@/components/status-page';
 import { TenantUnavailable, unavailableMetadata } from '@/components/tenant/tenant-unavailable';
 import { ADMIN_PATHS, TENANT_PATHS } from '@/lib/paths';
@@ -60,9 +60,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     { href: ADMIN_PATHS.students, label: t('nav.students'), icon: <Users /> },
     { href: ADMIN_PATHS.classes, label: t('nav.classes'), icon: <BookOpen /> },
     { href: ADMIN_PATHS.fees, label: t('nav.fees'), icon: <Wallet /> },
-    // Owners manage staff and roles (STF-01); everyone else has nothing to open here yet.
-    ...(can(session.user.roles, 'staff.manage')
-      ? [{ href: ADMIN_PATHS.staff, label: t('nav.settings'), icon: <Settings /> }]
+    // Settings: owners (General, Theme, Staff) and admins (Halls); nobody else has a page there.
+    ...(settingsSections(session.user.roles).length > 0
+      ? [{ href: ADMIN_PATHS.settings, label: t('nav.settings'), icon: <Settings /> }]
       : []),
   ];
   const mobileNav: FrameNavItem[] = [

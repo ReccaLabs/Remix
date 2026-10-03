@@ -20,7 +20,7 @@ export async function portalMetadata(
 }
 
 export async function adminMetadata(
-  page: 'dashboard' | 'students' | 'fees' | 'classes' | 'more',
+  page: 'dashboard' | 'students' | 'fees' | 'classes' | 'timetable' | 'more',
 ): Promise<Metadata> {
   const tenant = await getTenant();
   if (tenantAccess(tenant.status).staff === 'none') return unavailableMetadata();

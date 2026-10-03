@@ -1,0 +1,333 @@
+{
+  "meta": {
+    "list": "Classes",
+    "new": "New class",
+    "detail": "Class",
+    "edit": "Edit class",
+    "timetable": "Timetable"
+  },
+  "medium": {
+    "sinhala": "Sinhala",
+    "tamil": "Tamil",
+    "english": "English"
+  },
+  "place": {
+    "hall": "Hall",
+    "online": "Online",
+    "hybrid": "Hall and online"
+  },
+  "placeValue": "{place, select, hall {{hall}} hybrid {{hall} + online} other {Online}}",
+  "hallFallback": "Hall",
+  "weekday": {
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday",
+    "7": "Sunday"
+  },
+  "slot": "{weekday} {time}",
+  "timeRange": "{start} – {end}",
+  "minutes": "{count} min",
+  "errors": {
+    "forbidden": "Your role isn't allowed to do this, or you've been signed out.",
+    "conflict": "That conflicts with something that already exists.",
+    "planLimit": "Your plan doesn't allow this.",
+    "validation": "Some details aren't valid. Check the form and try again.",
+    "rateLimited": "Too many requests. Wait a minute and try again.",
+    "notFound": "We couldn't find that. It may have been removed.",
+    "network": "We couldn't reach the server. Check your internet connection and try again.",
+    "unexpected": "Something went wrong. Please try again."
+  },
+  "list": {
+    "title": "Classes",
+    "count": "{count, plural, one {# class} other {# classes}} · {students, plural, one {# enrolment} other {# enrolments}}",
+    "create": "Create class",
+    "tableCaption": "Classes",
+    "cardsLabel": "Classes",
+    "archivedBadge": "Archived",
+    "noTeacher": "No teacher yet",
+    "noSchedule": "No times set",
+    "studentsValue": "{count, plural, one {# student} other {# students}}",
+    "paidPending": "Not available yet",
+    "views": {
+      "label": "View",
+      "list": "List",
+      "week": "Week"
+    },
+    "columns": {
+      "name": "Class",
+      "teacher": "Teacher",
+      "schedule": "Schedule",
+      "place": "Place",
+      "students": "Students",
+      "fee": "Fee (LKR)",
+      "paid": "Paid this month"
+    },
+    "empty": {
+      "title": "No classes yet",
+      "body": "Create your first class. Students are enrolled into classes, and the timetable is built from their times."
+    },
+    "emptyFiltered": {
+      "title": "No classes match",
+      "body": "Try a different search or clear the filters.",
+      "clear": "Clear filters"
+    },
+    "loadError": {
+      "title": "We couldn't load the classes",
+      "body": "Check your internet connection and try again.",
+      "retry": "Try again"
+    },
+    "filters": {
+      "label": "Search and filter classes",
+      "search": "Search by class name",
+      "searchButton": "Search",
+      "toggle": "Filters",
+      "grade": "Grade",
+      "allGrades": "All grades",
+      "place": "Where",
+      "anyPlace": "Anywhere",
+      "teacher": "Teacher",
+      "anyTeacher": "Any teacher",
+      "show": "Show",
+      "showActive": "Current classes",
+      "showArchived": "Archived classes",
+      "clear": "Clear filters"
+    }
+  },
+  "timetable": {
+    "title": "Timetable",
+    "weekOf": "Week of {start} to {end}",
+    "navLabel": "Choose a week",
+    "previous": "Previous week",
+    "next": "Next week",
+    "thisWeek": "This week",
+    "today": "Today",
+    "dayLabel": "{weekday}, {date}",
+    "noClasses": "No classes",
+    "students": "{count, plural, one {# student} other {# students}}",
+    "empty": {
+      "title": "No classes this week",
+      "body": "Classes appear here on the days and times you set in their schedule."
+    },
+    "loadError": {
+      "title": "We couldn't load the timetable",
+      "body": "Check your internet connection and try again.",
+      "retry": "Try again"
+    }
+  },
+  "form": {
+    "titleNew": "New class",
+    "titleEdit": "Edit class",
+    "sections": {
+      "details": "Class details",
+      "teaching": "Teacher and place",
+      "schedule": "Schedule",
+      "fee": "Fee"
+    },
+    "fields": {
+      "name": "Class name",
+      "namePlaceholder": "2029 A/L Physics Theory",
+      "grade": "Grade or A/L year",
+      "gradePlaceholder": "A/L 2029",
+      "medium": "Medium",
+      "teacher": "Teacher",
+      "noTeacher": "No teacher yet",
+      "teacherHint": "Teachers only see the classes they teach.",
+      "place": "Where",
+      "hall": "Hall",
+      "noHall": "No hall chosen",
+      "hallHint": "Add halls under Settings.",
+      "noHallsLink": "Add a hall",
+      "fee": "Monthly fee (LKR)",
+      "feeHint": "Whole rupees or with cents, e.g. 2,500 or 1,250.50.",
+      "startsOn": "Starts on",
+      "startsOnHint": "The first day of the class. It does not appear in the timetable before this date."
+    },
+    "schedule": {
+      "hint": "Add each day and time the class meets every week.",
+      "empty": "No times yet. The class will not appear in the timetable.",
+      "add": "Add a time",
+      "remove": "Remove time {number}",
+      "row": "Time {number}",
+      "weekday": "Day",
+      "start": "Starts at",
+      "duration": "Length",
+      "limit": "A class can have up to 14 weekly times."
+    },
+    "durations": {
+      "30": "30 minutes",
+      "45": "45 minutes",
+      "60": "1 hour",
+      "90": "1 hour 30 minutes",
+      "120": "2 hours",
+      "150": "2 hours 30 minutes",
+      "180": "3 hours",
+      "240": "4 hours",
+      "300": "5 hours"
+    },
+    "optional": "optional",
+    "errors": {
+      "required": "This field is required.",
+      "invalid": "Check this field.",
+      "feeInvalid": "Enter an amount in rupees, for example 2,500 or 1,250.50.",
+      "feeTooHigh": "The fee is too high. The most you can enter is LKR 1,000,000.",
+      "onlineNoHall": "Online classes have no hall.",
+      "duplicateTime": "This day and time is listed twice.",
+      "teacherInvalid": "Choose a teacher from your staff.",
+      "hallInvalid": "Choose a hall from the list."
+    },
+    "submitNew": "Create class",
+    "submitEdit": "Save changes",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "savedNew": "Class created",
+    "savedEdit": "Class saved"
+  },
+  "detail": {
+    "back": "Classes",
+    "edit": "Edit",
+    "headline": "{teacher} · {schedule} · {place} · {medium} · {fee} / month",
+    "noTeacherShort": "No teacher",
+    "archived": "This class is archived. Students and history stay readable, but it is not in lists or the timetable.",
+    "archive": {
+      "button": "Archive",
+      "title": "Archive {name}?",
+      "body": "The class leaves the lists, pickers and timetable. Enrolments and history are kept.",
+      "confirm": "Archive class",
+      "cancel": "Cancel",
+      "done": "{name} archived"
+    },
+    "tabs": {
+      "label": "Class sections",
+      "students": "Students",
+      "schedule": "Schedule",
+      "lessons": "Lessons",
+      "fees": "Fees",
+      "attendance": "Attendance"
+    },
+    "kpis": {
+      "label": "Class at a glance",
+      "enrolled": "Enrolled",
+      "paid": "Paid this month",
+      "unpaid": "Unpaid this month",
+      "attendance": "Average attendance",
+      "pending": "Not available yet",
+      "pendingFees": "Shows here once fees are set up",
+      "pendingAttendance": "Shows here once attendance is set up"
+    },
+    "schedule": {
+      "title": "Weekly times",
+      "empty": "No times set. Edit the class to add the days and times it meets.",
+      "caption": "Weekly times of this class",
+      "day": "Day",
+      "time": "Time",
+      "length": "Length",
+      "startsOn": "Starts on {date}",
+      "hall": "Hall: {hall}",
+      "online": "Taught online"
+    },
+    "later": {
+      "lessons": {
+        "title": "Lessons come in a later phase",
+        "body": "Recorded and live lessons for this class will be listed here."
+      },
+      "fees": {
+        "title": "Fees come in a later phase",
+        "body": "Monthly fees, payments and unpaid students of this class will be listed here."
+      },
+      "attendance": {
+        "title": "Attendance comes in a later phase",
+        "body": "Who attended each session will be listed here."
+      }
+    }
+  },
+  "students": {
+    "title": "Enrolled students",
+    "add": "Add students",
+    "tableCaption": "Students in this class",
+    "columns": {
+      "name": "Student",
+      "studentNo": "Student no.",
+      "phone": "Phone",
+      "from": "Since",
+      "fee": "Monthly fee",
+      "actions": "Actions"
+    },
+    "customFee": "Custom fee",
+    "customFeeTitle": "Reason: {reason}",
+    "ends": "Ends {month}",
+    "upcoming": "Starts {month}",
+    "empty": {
+      "title": "No students yet",
+      "body": "Add the students who attend this class. They can then see it in their portal."
+    },
+    "archivedNote": "This class is archived, so students cannot be added.",
+    "enrol": {
+      "title": "Add students to {name}",
+      "body": "Search for students and choose who joins. Students already in this class are skipped.",
+      "search": "Search by name, student number or phone",
+      "searchButton": "Search",
+      "results": "Search results",
+      "noResults": "No students found.",
+      "searchFirst": "Search to find students.",
+      "alreadyIn": "Already in this class",
+      "selected": "{count, plural, =0 {No students chosen} one {# student chosen} other {# students chosen}}",
+      "pick": "Choose {name}",
+      "fromMonth": "From month",
+      "fromMonthHint": "The first month the student pays for.",
+      "customFee": "Use a different monthly fee",
+      "customFeeAmount": "Fee for these students (LKR)",
+      "customFeeHint": "Enter 0 for a free card.",
+      "reason": "Reason",
+      "reasonHint": "Kept in the audit trail, for example Sibling discount.",
+      "confirm": "Add students",
+      "cancel": "Cancel",
+      "done": "{count, plural, one {# student added} other {# students added}}",
+      "doneSkipped": "{count, plural, one {# was skipped (already in the class or not available).} other {# were skipped (already in the class or not available).}}",
+      "loadFailed": "We couldn't search students. Try again."
+    },
+    "fee": {
+      "title": "Fee for {name}",
+      "body": "The class fee is {fee} a month. Set a different fee for this student, or go back to the class fee.",
+      "amount": "Monthly fee (LKR)",
+      "amountHint": "Enter 0 for a free card.",
+      "reason": "Reason",
+      "reasonHint": "Required. Kept in the audit trail.",
+      "useClassFee": "Use the class fee",
+      "confirm": "Save fee",
+      "cancel": "Cancel",
+      "saved": "Fee saved for {name}",
+      "cleared": "{name} pays the class fee again"
+    },
+    "moveDialog": {
+      "title": "Move {name}",
+      "body": "The student leaves this class the month before and joins the other class from the month you choose. Their fee discount moves with them.",
+      "to": "New class",
+      "choose": "Choose a class",
+      "fromMonth": "Joins the new class in",
+      "fromMonthHint": "This class ends the month before.",
+      "confirm": "Move student",
+      "cancel": "Cancel",
+      "done": "{name} moved to {class}"
+    },
+    "endDialog": {
+      "title": "End {name}'s enrolment",
+      "body": "Choose the last month the student attends. They stay in the list until that month is over.",
+      "lastMonth": "Last month",
+      "confirm": "End enrolment",
+      "cancel": "Cancel",
+      "done": "{name}'s enrolment ends in {month}"
+    },
+    "errors": {
+      "validation": "Some details aren't valid. Check the form and try again.",
+      "conflict": "That student is already in the other class.",
+      "reasonRequired": "Give a reason for the fee.",
+      "amountInvalid": "Enter an amount in rupees, for example 2,500 or 0 for free."
+    },
+    "changeFeeFor": "Change fee for {name}",
+    "moveFor": "Move {name} to another class",
+    "endFor": "End enrolment of {name}"
+  }
+}

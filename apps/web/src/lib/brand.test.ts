@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { brandCssVars, brandStyle } from './brand';
 
 describe('brandCssVars', () => {
-  it('derives brand, hover and soft variables from a valid colour', () => {
+  it('derives brand, hover, soft and line variables from a valid colour', () => {
     const vars = brandCssVars('#2B4BF2');
     expect(vars).toEqual({
       '--color-brand': '#2b4bf2',
       '--color-brand-hover': expect.stringMatching(/^#[0-9a-f]{6}$/),
       '--color-brand-soft': expect.stringMatching(/^#[0-9a-f]{6}$/),
+      '--color-brand-line': expect.stringMatching(/^#[0-9a-f]{6}$/),
     });
   });
 
@@ -16,6 +17,7 @@ describe('brandCssVars', () => {
       '--color-brand': '#808080',
       '--color-brand-hover': '#747474',
       '--color-brand-soft': '#f6f6f6',
+      '--color-brand-line': '#dfdfdf',
     });
   });
 
