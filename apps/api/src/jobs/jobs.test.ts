@@ -111,6 +111,23 @@ describe('producers', () => {
     );
   });
 
+  it('JobsModule without VALKEY_URL: inline in development, refusing in test', async () => {
+    const { Test } = await import('@nestjs/testing');
+    const { JobsModule } = await import('./jobs.module');
+    const { JOB_PRODUCER } = await import('./job-producer');
+    const producerFor = async (nodeEnv: string) => {
+      const ref = await Test.createTestingModule({
+        imports: [JobsModule.forRoot(loadConfig({ NODE_ENV: nodeEnv }))],
+      }).compile();
+      return ref.get<{ add: InlineJobProducer['add'] }>(JOB_PRODUCER);
+    };
+    const dev = await producerFor('development');
+    expect(dev).toBeInstanceOf(InlineJobProducer);
+    await expect(dev.add('sms', sms('dev'))).resolves.toEqual({ jobId: `sms-${TENANT}-dev` });
+    const test = await producerFor('test');
+    await expect(test.add('sms', sms())).rejects.toBeInstanceOf(JobQueueUnavailableError);
+   }, 30_000);
+
   it('BullJobProducer validates the payload before touching Valkey', async () => {
     const connection = new Proxy({} as Redis, {
       get() {

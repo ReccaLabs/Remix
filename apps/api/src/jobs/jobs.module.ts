@@ -8,11 +8,15 @@ import { BullJobProducer, JOB_PRODUCER, UnavailableJobProducer } from './job-pro
 import { JobWorkers } from './job-workers';
 import { ProcessorRegistry } from './processor-registry';
 import { createSmsProcessor } from './sms/sms.processor';
+import { InlineJobProducer } from './testing/inline-jobs';
 
 /**
  * Producer side, imported by the API (`AppModule`): exposes `JOB_PRODUCER` globally so feature
- * modules can `add` jobs. Without `VALKEY_URL` (development/tests) the producer rejects every
- * add; tests bind an `InlineJobProducer` instead.
+ * modules can `add` jobs. Without `VALKEY_URL`:
+ * - development (`pnpm dev`, E2E): jobs run inline in the API process — SMS through the logging
+ *   mock provider, so sign-in codes appear in the API log (ADR 0004 addendum "Development");
+ * - tests: the producer rejects every add; tests bind their own `InlineJobProducer`.
+ * Production always has `VALKEY_URL` (enforced by the config) and never gets either.
  */
 @Global()
 @Module({})
@@ -27,7 +31,16 @@ export class JobsModule {
               useFactory: (client: Redis) => new BullJobProducer(client),
               inject: [VALKEY],
             }
-          : { provide: JOB_PRODUCER, useClass: UnavailableJobProducer },
+          : config.nodeEnv === 'development'
+            ? {
+                provide: JOB_PRODUCER,
+                useFactory: () =>
+                  new InlineJobProducer(
+                    { sms: createSmsProcessor(smsProviderBinding(config)) },
+                    { autoRun: true },
+                  ),
+              }
+            : { provide: JOB_PRODUCER, useClass: UnavailableJobProducer },
       ],
       exports: [JOB_PRODUCER],
     };
