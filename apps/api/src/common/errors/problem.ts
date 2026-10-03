@@ -33,6 +33,7 @@ export function toProblem(error: unknown, requestId: string | undefined): Render
     const problem = base(error.status, error.code, error.title);
     if (error.detail) problem.detail = error.detail;
     if (error.errors?.length) problem.errors = error.errors;
+    if (error.challenge !== undefined) problem.challenge = error.challenge;
     return { problem, headers: error.headers, unexpected: error.status >= 500 };
   }
 

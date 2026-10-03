@@ -65,10 +65,7 @@ export const devices = pgTable(
     unique('devices_tenant_trust_token_hash_key').on(t.tenantId, t.trustTokenHash),
     check('devices_token_hash_length', hashLength(t.tokenHash)),
     check('devices_trust_token_hash_length', hashLength(t.trustTokenHash)),
-    check(
-      'devices_trust_pair',
-      sql`(${t.trustTokenHash} IS NULL) = (${t.trustedUntil} IS NULL)`,
-    ),
+    check('devices_trust_pair', sql`(${t.trustTokenHash} IS NULL) = (${t.trustedUntil} IS NULL)`),
     check('devices_label_length', sql`char_length(${t.label}) BETWEEN 1 AND 120`),
     check('devices_user_agent_length', sql`char_length(${t.userAgent}) <= 512`),
   ],

@@ -8,13 +8,20 @@ import type { IncomingHttpHeaders } from 'node:http';
 export interface CookieNames {
   session: string;
   device: string;
+  /** Staff "trust this computer" (AUTH-05): random 256-bit token, 30 days, stored hashed. */
+  trust: string;
 }
 
 export const SECURE_COOKIE_NAMES: CookieNames = {
   session: '__Host-remix_session',
   device: '__Host-remix_device',
+  trust: '__Host-remix_trust',
 };
-export const DEV_COOKIE_NAMES: CookieNames = { session: 'remix_session', device: 'remix_device' };
+export const DEV_COOKIE_NAMES: CookieNames = {
+  session: 'remix_session',
+  device: 'remix_device',
+  trust: 'remix_trust',
+};
 
 export function cookieNames(secure: boolean): CookieNames {
   return secure ? SECURE_COOKIE_NAMES : DEV_COOKIE_NAMES;

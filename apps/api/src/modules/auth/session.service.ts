@@ -16,12 +16,12 @@ import {
   tokenIssuedAt,
   withinRotationGrace,
 } from './lifetimes';
+import type { RevokeReason } from './device-store';
 import { hashToken, newSessionToken } from './tokens';
 
 const { sessions, tenantUsers, students, devices, staffRoles } = schema;
 
-/** Why a session was revoked (`sessions.revoked_reason`). */
-export type RevokeReason = 'logout' | 'reuse_detected' | 'replaced' | 'password_reset';
+export type { RevokeReason } from './device-store';
 
 /** A live session as the auth module sees it, kept on the request for its handlers. */
 export interface SessionRecord {

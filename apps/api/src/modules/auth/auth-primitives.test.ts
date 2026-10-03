@@ -79,8 +79,13 @@ describe('cookies', () => {
     expect(cookieNames(true)).toEqual({
       session: '__Host-remix_session',
       device: '__Host-remix_device',
+      trust: '__Host-remix_trust',
     });
-    expect(cookieNames(false)).toEqual({ session: 'remix_session', device: 'remix_device' });
+    expect(cookieNames(false)).toEqual({
+      session: 'remix_session',
+      device: 'remix_device',
+      trust: 'remix_trust',
+    });
   });
 
   it('serialises host-only, HttpOnly, Lax, Path=/ — Secure and Max-Age as asked', () => {

@@ -30,6 +30,12 @@ const hostList = list
   )
   .transform((hosts) => [...new Set(hosts)]);
 
+/**
+ * Development/test fallback for `AUTH_CODE_SECRET`. Public on purpose (it is in the repo), so it
+ * protects nothing: the API refuses it in production.
+ */
+export const DEV_AUTH_CODE_SECRET = 'remix-dev-only-auth-code-secret-never-in-production';
+
 const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
 
 /**
@@ -83,6 +89,17 @@ const envSchema = z
       .url({ protocol: /^rediss?$/ })
       .optional()
       .or(z.literal('').transform(() => undefined)),
+    /**
+     * HMAC key for SMS one-time codes (ADR 0004 addendum): at least 32 characters, its own secret
+     * (never the session or database secret). Required in production for the API; development
+     * and tests fall back to {@link DEV_AUTH_CODE_SECRET}.
+     */
+    AUTH_CODE_SECRET: z
+      .string()
+      .min(32, 'must be at least 32 characters')
+      .max(512)
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
   })
   .transform((env) => ({
     ...env,
@@ -111,6 +128,13 @@ const envSchema = z
         message: 'required in production (rate limits and job queues)',
       });
     }
+    if (env.AUTH_CODE_SECRET === DEV_AUTH_CODE_SECRET) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['AUTH_CODE_SECRET'],
+        message: 'must not be the development value in production',
+      });
+    }
     if (env.TENANT_BASE_DOMAINS.includes('localhost')) {
       ctx.addIssue({
         code: 'custom',
@@ -131,6 +155,8 @@ export interface AppConfig {
   databaseUrl: string | undefined;
   /** Valkey connection string; undefined only outside production. */
   valkeyUrl: string | undefined;
+  /** HMAC key for SMS codes; the public dev value outside production when unset. */
+  authCodeSecret: string;
 }
 
 /** Thrown when the environment is invalid. Lists variable names and reasons, never values. */
@@ -164,6 +190,10 @@ export function loadConfig(
   if (options.requireDatabase && !e.DATABASE_URL) {
     throw new ConfigError(['DATABASE_URL: required (connects as remix_app)']);
   }
+  // Only the API process hashes SMS codes; the worker never needs the key.
+  if (options.requireDatabase && e.NODE_ENV === 'production' && !e.AUTH_CODE_SECRET) {
+    throw new ConfigError(['AUTH_CODE_SECRET: required in production (HMAC key for SMS codes)']);
+  }
   return {
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
@@ -174,6 +204,7 @@ export function loadConfig(
     cookieSecure: e.COOKIE_SECURE,
     databaseUrl: e.DATABASE_URL,
     valkeyUrl: e.VALKEY_URL,
+    authCodeSecret: e.AUTH_CODE_SECRET ?? DEV_AUTH_CODE_SECRET,
   };
 }
 

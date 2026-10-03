@@ -1,4 +1,4 @@
-import { Body, Controller, Header, Inject, Req, Res } from '@nestjs/common';
+import { Body, Controller, Header, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { API, type UserKind } from '@remix/types/api';
 import { CurrentTenant, Public } from '../../common/auth/auth.decorators';
@@ -6,11 +6,8 @@ import { AppException } from '../../common/errors/app-exception';
 import { RateLimit, type RateLimitRule } from '../../common/rate-limit/rate-limit.guard';
 import { TenantAccess } from '../../common/tenant/tenant-access.guard';
 import type { ResolvedTenant } from '../../common/tenant/tenant-resolver';
-import { CLOCK, type Clock } from '../../common/time/clock';
 import { Endpoint, type EndpointBody, type EndpointResult } from '../../common/validation/endpoint';
-import { APP_CONFIG, type AppConfig } from '../../config/config';
-import { clearSessionCookies, cookieNames, serializeCookie } from './cookies';
-import { DEVICE_COOKIE_MAX_AGE_SEC, sessionCookieMaxAge } from './lifetimes';
+import { AuthCookies } from './auth-cookies';
 import { loginIdentifierKey, LoginService, type LoginResult } from './login.service';
 import {
   sessionRecordOf,
@@ -38,18 +35,16 @@ const loginLimits = (kind: UserKind): [RateLimitRule, RateLimitRule] => [
  */
 @Controller()
 export class AuthController {
-  private readonly names: ReturnType<typeof cookieNames>;
-
   constructor(
     private readonly logins: LoginService,
     private readonly sessions: SessionService,
-    @Inject(APP_CONFIG) private readonly config: AppConfig,
-    @Inject(CLOCK) private readonly clock: Clock,
-  ) {
-    this.names = cookieNames(config.cookieSecure);
-  }
+    private readonly cookies: AuthCookies,
+  ) {}
 
-  /** AUTH-01 — 403 TENANT_UNAVAILABLE when the tenant's students are locked out (TEN-06). */
+  /**
+   * AUTH-01 — 403 TENANT_UNAVAILABLE when the tenant's students are locked out (TEN-06);
+   * 403 DEVICE_LIMIT with a challenge on a third device (AUTH-03); 423 ACCOUNT_LOCKED (AUTH-09).
+   */
   @Public()
   @RateLimit(...loginLimits('student'))
   @Header('cache-control', 'no-store')
@@ -69,7 +64,10 @@ export class AuthController {
     return this.signedIn(res, result);
   }
 
-  /** AUTH-05 basic (2-step SMS is Phase 2) — staff of a cancelled tenant get TENANT_UNAVAILABLE. */
+  /**
+   * AUTH-05 — staff of a cancelled tenant get TENANT_UNAVAILABLE; owner/admin/cashier on an
+   * untrusted computer get 401 TWO_STEP_REQUIRED with a challenge (the SMS is already queued).
+   */
   @Public()
   @RateLimit(...loginLimits('staff'))
   @Header('cache-control', 'no-store')
@@ -111,7 +109,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<EndpointResult<typeof API.refreshSession>> {
     const result = await this.sessions.refresh(this.recordOf(req));
-    if (result.rotated) this.setSessionCookie(res, result.token, result.session);
+    if (result.rotated) this.cookies.session(res, result.token, result.session);
     return toSessionResponse(result.session);
   }
 
@@ -126,32 +124,13 @@ export class AuthController {
   ): Promise<EndpointResult<typeof API.logout>> {
     const record = sessionRecordOf(req);
     if (record) await this.sessions.logout(record);
-    res.append('Set-Cookie', clearSessionCookies(this.config.cookieSecure));
+    this.cookies.clearSession(res);
     return undefined;
   }
 
   private signedIn(res: Response, result: LoginResult): EndpointResult<typeof API.studentLogin> {
-    this.setSessionCookie(res, result.sessionToken, result.session);
-    // Re-set on every login, so a known device's cookie keeps its full 400-day life.
-    res.append(
-      'Set-Cookie',
-      serializeCookie(this.names.device, result.deviceToken, {
-        secure: this.config.cookieSecure,
-        maxAge: DEVICE_COOKIE_MAX_AGE_SEC,
-      }),
-    );
+    this.cookies.signedIn(res, result);
     return toSessionResponse(result.session);
-  }
-
-  private setSessionCookie(res: Response, token: string, session: SessionRecord): void {
-    const maxAge = sessionCookieMaxAge(session, this.clock.now());
-    res.append(
-      'Set-Cookie',
-      serializeCookie(this.names.session, token, {
-        secure: this.config.cookieSecure,
-        ...(maxAge === undefined ? {} : { maxAge }),
-      }),
-    );
   }
 
   private recordOf(req: Request): SessionRecord {
