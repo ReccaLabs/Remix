@@ -24,6 +24,15 @@ describe('InMemoryTenantCache', () => {
     expect(await cache.get('host:c')).toBe('C');
   });
 
+  it('forgets an entry on delete (settings changes), and deleting a missing key is fine', async () => {
+    const cache = new InMemoryTenantCache();
+    await cache.set('host:a', 'A', 60);
+    await cache.delete('host:a');
+    await cache.delete('host:never-there');
+    expect(await cache.get('host:a')).toBeNull();
+    expect(cache.size).toBe(0);
+  });
+
   it('misses unknown keys', async () => {
     expect(await new InMemoryTenantCache().get('host:none')).toBeNull();
   });

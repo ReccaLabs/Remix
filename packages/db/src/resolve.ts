@@ -7,6 +7,8 @@ import { classifyHost } from './host';
 export interface TenantCache {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, ttlSeconds: number): Promise<void>;
+  /** Forget an entry (settings changes take effect at once on this node). Optional. */
+  delete?(key: string): Promise<void>;
 }
 
 export interface ResolveTenantOptions {
