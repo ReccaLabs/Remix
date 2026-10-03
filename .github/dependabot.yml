@@ -1,4 +1,8 @@
 version: 2
+
+# Few, reviewable PRs: safe updates arrive grouped once a week; framework families move together;
+# major upgrades of runtimes and services are planned work, not drive-by PRs. Merge a Dependabot PR
+# only when every CI check is green.
 updates:
   - package-ecosystem: npm
     directory: /
@@ -7,27 +11,67 @@ updates:
       day: monday
       time: '06:00'
       timezone: Asia/Colombo
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    ignore:
+      # Types must match the Node runtime we ship (Node 24, .nvmrc); bump with the runtime.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+    # A dependency joins the first group that matches it.
     groups:
+      # @nestjs/* packages must share one version or the API fails to start.
+      nestjs:
+        patterns: ['@nestjs/*']
       next-react:
         patterns: ['next', 'react', 'react-dom', '@types/react*', 'eslint-config-next', '@next/*']
-      tailwind:
-        patterns: ['tailwindcss', '@tailwindcss/*', 'prettier-plugin-tailwindcss']
       tooling:
-        patterns: ['typescript', 'eslint', 'prettier', 'vitest', 'turbo']
+        patterns:
+          - 'typescript'
+          - 'typescript-eslint'
+          - 'eslint'
+          - '@eslint/*'
+          - 'prettier'
+          - 'prettier-plugin-*'
+          - 'vitest'
+          - 'turbo'
+          - 'tailwindcss'
+          - '@tailwindcss/*'
+      # Everything else that is a minor or patch update: one PR a week.
+      minor-and-patch:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+      day: monday
+      timezone: Asia/Colombo
+    groups:
+      actions:
+        patterns: ['*']
 
-  # Base image of the API (apps/api/Dockerfile) and the dev stack images (infra/docker).
+  # Base image of the API (apps/api/Dockerfile). A Node major is a runtime upgrade: plan it.
   - package-ecosystem: docker
     directory: /apps/api
     schedule:
       interval: weekly
+      day: monday
+      timezone: Asia/Colombo
+    ignore:
+      - dependency-name: 'node'
+        update-types: ['version-update:semver-major']
 
+  # Dev stack images (infra/docker). Majors of Postgres, Valkey or SeaweedFS change data formats
+  # and behaviour, so they are upgraded deliberately with the matching production plan.
   - package-ecosystem: docker-compose
     directory: /infra/docker
     schedule:
       interval: weekly
+      day: monday
+      timezone: Asia/Colombo
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    groups:
+      dev-stack:
+        patterns: ['*']
