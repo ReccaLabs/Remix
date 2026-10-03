@@ -50,6 +50,20 @@
       "when": 1791035570006,
       "tag": "0006_people_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791037322778,
+      "tag": "0007_import_jobs",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791037335525,
+      "tag": "0008_import_jobs_rls",
+      "breakpoints": true
     }
   ]
 }

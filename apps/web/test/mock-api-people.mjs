@@ -53,7 +53,7 @@ const SCHOOLS = ["Mahamaya Girls' College", 'Dharmaraja College', 'Kingswood Col
 /** slug → { students: Map, invites: Map, staffStatus: Map, staffRoles: Map, counter } */
 const stores = new Map();
 
-function storeFor(tenant, env) {
+export function storeFor(tenant, env) {
   let store = stores.get(tenant.slug);
   if (store) return store;
   store = { students: new Map(), invites: new Map(), staff: new Map(), counter: 0 };

@@ -1,6 +1,6 @@
 import { can } from '@remix/types';
 import { buttonClass, EmptyState } from '@remix/ui';
-import { CircleAlert, UserPlus } from 'lucide-react';
+import { CircleAlert, FileUp, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { PeopleIsland } from '@/components/people/people-island';
@@ -32,11 +32,13 @@ export default async function StudentsPage({
   const roles = session.user.roles;
   const canWrite = can(roles, 'students.write');
   const canDevices = can(roles, 'students.devices');
+  const canImport = can(roles, 'students.import');
 
-  const [result, classes, t] = await Promise.all([
+  const [result, classes, t, tImport] = await Promise.all([
     loadStudents(query),
     loadClassOptions(),
     getTranslations('students.list'),
+    getTranslations('import.entry'),
   ]);
 
   return (
@@ -46,15 +48,26 @@ export default async function StudentsPage({
           title={t('title')}
           subtitle={result.ok ? t('count', { count: result.data.total }) : undefined}
         />
-        {canWrite ? (
-          <Link
-            href={`${ADMIN_PATHS.students}/new`}
-            className={buttonClass({ variant: 'primary', size: 'md' })}
-          >
-            <UserPlus aria-hidden size={18} />
-            {t('add')}
-          </Link>
-        ) : null}
+        <div className="flex flex-wrap gap-2">
+          {canImport ? (
+            <Link
+              href={`${ADMIN_PATHS.students}/import`}
+              className={buttonClass({ variant: 'secondary', size: 'md' })}
+            >
+              <FileUp aria-hidden size={18} />
+              {tImport('button')}
+            </Link>
+          ) : null}
+          {canWrite ? (
+            <Link
+              href={`${ADMIN_PATHS.students}/new`}
+              className={buttonClass({ variant: 'primary', size: 'md' })}
+            >
+              <UserPlus aria-hidden size={18} />
+              {t('add')}
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <PeopleIsland namespaces={['students']}>

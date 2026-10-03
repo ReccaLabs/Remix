@@ -13,6 +13,7 @@ import type { DestinationStream } from 'pino';
 import { loggerParams } from './common/logging/logger';
 import { APP_CONFIG, type AppConfig } from './config/config';
 import { WorkerJobsModule } from './jobs/jobs.module';
+import { ImportWorkerModule } from './modules/imports/import-worker.module';
 
 /**
  * Keeps the worker process alive until shutdown. BullMQ workers (ADR 0012) hold their own
@@ -51,6 +52,8 @@ export class WorkerModule {
       imports: [
         LoggerModule.forRoot(loggerParams(options.config, options.logDestination)),
         WorkerJobsModule.forRoot(options.config),
+        // Processors that touch tenant data need the database (not configured in bare tests).
+        ...(options.config.databaseUrl ? [ImportWorkerModule.forRoot(options.config)] : []),
       ],
       providers: [{ provide: APP_CONFIG, useValue: options.config }, WorkerLifecycle],
     };

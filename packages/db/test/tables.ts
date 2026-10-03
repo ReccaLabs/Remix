@@ -59,6 +59,7 @@ export interface World {
   otpChallengeId: string;
   authTicketId: string;
   staffInviteId: string;
+  importJobId: string;
 }
 
 type Row = Record<string, unknown>;
@@ -153,6 +154,13 @@ const freshStaffInvite = (w: World): Row => ({
   token_hash: hash('h'),
   invited_by: w.staffUserId,
   expires_at: inOneHour(),
+});
+
+const freshImportJob = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  created_by: w.staffUserId,
+  options: JSON.stringify({ sendWelcomeSms: false }),
+  input: JSON.stringify([]),
 });
 
 export const TABLES = {
@@ -312,6 +320,15 @@ export const TABLES = {
         accepted_at: new Date(),
         accepted_user_id: other.staffUserId,
       }),
+    },
+  },
+  import_jobs: {
+    access: 'full',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.importJobId }),
+    fresh: freshImportJob,
+    crossTenantRefs: {
+      createdBy: (home, other) => ({ ...freshImportJob(home), created_by: other.staffUserId }),
     },
   },
 } satisfies Record<TableName, TableSpec>;
@@ -540,6 +557,14 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       'staff invite',
     );
 
+    const importJob = one(
+      await tx
+        .insert(schema.importJobs)
+        .values({ tenantId, createdBy: staff.id, options: { sendWelcomeSms: false }, input: [] })
+        .returning({ id: schema.importJobs.id }),
+      'import job',
+    );
+
     return {
       tag,
       tenantId,
@@ -560,6 +585,7 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       otpChallengeId: otp.id,
       authTicketId: ticket.id,
       staffInviteId: invite.id,
+      importJobId: importJob.id,
     };
   });
 }

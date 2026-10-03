@@ -32,7 +32,9 @@ export type AuditAction =
   | 'staff.role_change'
   | 'staff.scope_change'
   | 'staff.disable'
-  | 'staff.enable';
+  | 'staff.enable'
+  // Student import (STU-04): one event per committed import.
+  | 'import.students';
 
 export interface AuditEntry {
   action: AuditAction;

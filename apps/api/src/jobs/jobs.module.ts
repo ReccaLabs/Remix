@@ -7,6 +7,7 @@ import { APP_CONFIG, type AppConfig } from '../config/config';
 import { BullJobProducer, JOB_PRODUCER, UnavailableJobProducer } from './job-producer';
 import { JobWorkers } from './job-workers';
 import { ProcessorRegistry } from './processor-registry';
+import { ImportRunner } from '../modules/imports/import-runner';
 import { createSmsProcessor } from './sms/sms.processor';
 import { InlineJobProducer } from './testing/inline-jobs';
 
@@ -34,11 +35,21 @@ export class JobsModule {
           : config.nodeEnv === 'development'
             ? {
                 provide: JOB_PRODUCER,
-                useFactory: () =>
+                useFactory: (imports?: ImportRunner) =>
                   new InlineJobProducer(
-                    { sms: createSmsProcessor(smsProviderBinding(config)) },
+                    {
+                      sms: createSmsProcessor(smsProviderBinding(config)),
+                      ...(imports
+                        ? {
+                            imports: async (payload, ctx) => {
+                              await imports.run(payload, ctx);
+                            },
+                          }
+                        : {}),
+                    },
                     { autoRun: true },
                   ),
+                inject: [{ token: ImportRunner, optional: true }],
               }
             : { provide: JOB_PRODUCER, useClass: UnavailableJobProducer },
       ],

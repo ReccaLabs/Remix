@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "title": "Import students"
+  },
+  "entry": {
+    "button": "Import CSV"
+  },
+  "page": {
+    "back": "All students",
+    "title": "Import students",
+    "subtitle": "Bring your existing student list in from a CSV or Excel file. Nothing is saved until you confirm."
+  },
+  "steps": {
+    "label": "Import steps",
+    "upload": "Upload file",
+    "map": "Match columns",
+    "review": "Check and import",
+    "done": "Finished",
+    "current": "current step"
+  },
+  "upload": {
+    "title": "Choose your file",
+    "body": "Use a CSV or Excel (.xlsx) file with one student per row and a heading row. Up to {rows, number} students and {mb} MB.",
+    "choose": "Choose a file",
+    "chooseAnother": "Choose a different file",
+    "drop": "or drop it here",
+    "reading": "Reading the file…",
+    "required": "Each student needs a name and a Sri Lankan mobile number. Everything else is optional.",
+    "tipsTitle": "Columns we understand",
+    "tips": "Name, phone, student number, school, A/L year, medium, under 18, consent given by, guardian name, relation and phone, and classes (separate several with a semicolon, for example “Physics Theory; Chemistry”).",
+    "loaded": "{name}: {rows, plural, one {# student row} other {# student rows}} and {columns, plural, one {# column} other {# columns}}.",
+    "errors": {
+      "tooLarge": "This file is bigger than {mb} MB. Split it into smaller files and import them one at a time.",
+      "unsupported": "We can read CSV and Excel (.xlsx) files. Save the sheet as one of those and choose it again.",
+      "unreadable": "We couldn't read this file. Make sure it isn't damaged or password-protected, then try again.",
+      "empty": "The file has no students in it. It needs a heading row and at least one student row.",
+      "tooManyRows": "A single import can have up to {rows, number} students. Split the file and import it in parts."
+    }
+  },
+  "map": {
+    "title": "Match your columns",
+    "body": "Tell us which column of your file holds each detail. We matched what we could from your headings; check them and fix anything that's off.",
+    "field": "Student detail",
+    "column": "Column in your file",
+    "notInFile": "Not in my file",
+    "requiredError": "Choose the column that holds this.",
+    "sharedError": "This column is already used for another detail.",
+    "optional": "optional",
+    "sample": "First rows of your file",
+    "sampleCaption": "First rows of your file, as we read them",
+    "columnFallback": "Column {n}",
+    "rowNo": "Row",
+    "missing": "Match {fields} to continue.",
+    "shared": "Each column can be used for only one detail. Check {fields}.",
+    "fields": {
+      "displayName": "Name",
+      "phone": "Phone",
+      "studentNo": "Student number",
+      "school": "School",
+      "alYear": "A/L year",
+      "medium": "Medium",
+      "under18": "Under 18",
+      "consentGivenBy": "Consent given by",
+      "guardianName": "Guardian name",
+      "guardianRelation": "Guardian relation",
+      "guardianPhone": "Guardian phone",
+      "classes": "Classes"
+    },
+    "hints": {
+      "displayName": "The student's full name.",
+      "phone": "A Sri Lankan mobile, for example 077 123 4567. This is how the student signs in.",
+      "studentNo": "Kept if it isn't used yet. Leave it out and we number students for you.",
+      "school": "Optional.",
+      "alYear": "A four-digit year such as 2027.",
+      "medium": "Sinhala, Tamil or English.",
+      "under18": "Yes or no. Students under 18 need “consent given by”.",
+      "consentGivenBy": "Who gave parental consent, for students under 18.",
+      "guardianName": "One parent or guardian.",
+      "guardianRelation": "Mother, father, guardian or other.",
+      "guardianPhone": "Their Sri Lankan mobile number.",
+      "classes": "Names of existing classes, separated by a semicolon."
+    },
+    "back": "Choose a different file",
+    "next": "Check my students"
+  },
+  "review": {
+    "title": "Check before you import",
+    "checking": "Checking {count, plural, one {# student} other {# students}}…",
+    "summaryLabel": "Result of the check",
+    "ready": "Ready to import",
+    "errors": "Need a fix",
+    "duplicates": "Already exist",
+    "of": "of {total, number} in the file",
+    "intro": "This is only a check; nothing has been saved. Rows that need a fix or that already exist are left out of the import. Download them, correct them and import that file again.",
+    "allGood": "Everything in your file is ready to import.",
+    "noneReady": "None of the students can be imported yet. Fix the problems below, or choose a different file.",
+    "tableCaption": "Rows of your file and their check result",
+    "columns": {
+      "row": "Row",
+      "name": "Name",
+      "phone": "Phone",
+      "status": "Result",
+      "problems": "What to fix"
+    },
+    "status": {
+      "ok": "Ready",
+      "error": "Needs a fix",
+      "duplicate": "Already exists"
+    },
+    "filterProblems": "Show only rows that need attention",
+    "showing": "Showing {shown, number} of {total, number} rows",
+    "showMore": "Show more rows",
+    "noName": "(no name)",
+    "duplicateOfStudent": "This phone number already belongs to {studentNo}.",
+    "duplicateOfStudentAnon": "This phone number already belongs to a person at your institute.",
+    "duplicateOfRow": "This phone number is already used in row {row}.",
+    "options": "Import options",
+    "welcomeSms": "Send each new student a text to set their password",
+    "welcomeSmsHint": "Each text costs SMS credit. You can also send them later from the student's page.",
+    "enrolFrom": "Enrol in classes from",
+    "enrolFromHint": "The first month the fee is charged for the classes in your file.",
+    "downloadErrors": "Download rows that need attention",
+    "back": "Change column matching",
+    "import": "Import {count, plural, one {# student} other {# students}}",
+    "loadError": "We couldn't check your file."
+  },
+  "errorFile": {
+    "name": "students-import-needs-attention.csv",
+    "row": "Row",
+    "status": "Result",
+    "problems": "What to fix",
+    "fields": {
+      "displayName": "Name",
+      "phone": "Phone",
+      "studentNo": "Student no.",
+      "school": "School",
+      "alYear": "A/L year",
+      "medium": "Medium",
+      "under18": "Under 18",
+      "consentGivenBy": "Consent given by",
+      "guardianName": "Guardian name",
+      "guardianRelation": "Guardian relation",
+      "guardianPhone": "Guardian phone",
+      "classes": "Classes"
+    }
+  },
+  "running": {
+    "title": "Importing your students",
+    "body": "Importing {count, plural, one {# student} other {# students}}. This usually takes a few seconds. Please keep this page open.",
+    "label": "Import in progress",
+    "queued": "Waiting to start…",
+    "working": "Adding students…",
+    "slow": "This is taking longer than usual. It will keep going in the background; you can check the Students list shortly."
+  },
+  "done": {
+    "title": "Import finished",
+    "created": "{count, plural, =0 {No students were imported.} one {# student imported.} other {# students imported.}}",
+    "enrolled": "{count, plural, =0 {} one {# class enrolment added.} other {# class enrolments added.}}",
+    "skipped": "{count, plural, one {# row was left out.} other {# rows were left out.}} Download them, correct them and import that file again.",
+    "failedTitle": "The import didn't finish",
+    "failedBody": "Nothing was added to your students. Please try again; if it keeps happening, contact support.",
+    "viewStudents": "View students",
+    "another": "Import another file",
+    "tryAgain": "Try again"
+  },
+  "errors": {
+    "forbidden": "Your role isn't allowed to import students, or you've been signed out.",
+    "conflict": "That conflicts with something that already exists.",
+    "planLimit": "Your plan doesn't allow this.",
+    "validation": "Some details in the file aren't valid. Check the file and try again.",
+    "rateLimited": "Too many imports. Wait a few minutes and try again.",
+    "notFound": "We couldn't find that import.",
+    "network": "We couldn't reach the server. Check your internet connection and try again.",
+    "unexpected": "Something went wrong. Please try again."
+  }
+}
