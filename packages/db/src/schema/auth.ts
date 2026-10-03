@@ -5,12 +5,14 @@ import {
   foreignKey,
   index,
   pgTable,
+  smallint,
   text,
   unique,
   uuid,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import { id, instant, tenantId, timestamps } from './columns';
+import { authTicketKind, otpPurpose } from './enums';
 import { tenants } from './tenants';
 import { tenantUsers } from './users';
 
@@ -36,6 +38,12 @@ export const devices = pgTable(
     signedOutAt: instant('signed_out_at'),
     /** Who signed the device out (the student, or staff). Null while active. */
     signedOutBy: uuid('signed_out_by'),
+    /**
+     * Staff "trust this computer" (AUTH-05): SHA-256 of the separate trust cookie and when the
+     * trust ends (30 days). Cleared by sign-out and by any password change or reset.
+     */
+    trustTokenHash: text('trust_token_hash'),
+    trustedUntil: instant('trusted_until'),
     ...timestamps(),
   },
   (t) => [
@@ -54,7 +62,13 @@ export const devices = pgTable(
     index('devices_active_by_user_idx')
       .on(t.tenantId, t.userId)
       .where(sql`${t.signedOutAt} IS NULL`),
+    unique('devices_tenant_trust_token_hash_key').on(t.tenantId, t.trustTokenHash),
     check('devices_token_hash_length', hashLength(t.tokenHash)),
+    check('devices_trust_token_hash_length', hashLength(t.trustTokenHash)),
+    check(
+      'devices_trust_pair',
+      sql`(${t.trustTokenHash} IS NULL) = (${t.trustedUntil} IS NULL)`,
+    ),
     check('devices_label_length', sql`char_length(${t.label}) BETWEEN 1 AND 120`),
     check('devices_user_agent_length', sql`char_length(${t.userAgent}) <= 512`),
   ],
@@ -112,5 +126,96 @@ export const sessions = pgTable(
       sql`${t.revokedReason} IS NULL OR ${t.revokedAt} IS NOT NULL`,
     ),
     check('sessions_expires_after_created', sql`${t.expiresAt} > ${t.createdAt}`),
+  ],
+);
+
+/**
+ * SMS one-time codes (AUTH-02/07/09, ADR 0004 addendum). A row is written for every accepted
+ * request — also for phones without an account (`user_id` null, nothing sent) — so the work and
+ * the timing do not depend on whether the phone exists. Only
+ * `HMAC-SHA-256(server secret, tenant | phone | purpose | code)` is stored. A newer code for the
+ * same phone and purpose, a correct guess and the last allowed wrong guess all set `consumed_at`.
+ */
+export const otpChallenges = pgTable(
+  'otp_challenges',
+  {
+    id: id(),
+    tenantId: tenantId().references(() => tenants.id, { onDelete: 'cascade' }),
+    /** E.164 Sri Lankan mobile (`+947XXXXXXXX`), the only numbers that receive codes. */
+    phone: text('phone').notNull(),
+    /** The account the code was sent to; null when the phone has none (no SMS was sent). */
+    userId: uuid('user_id'),
+    purpose: otpPurpose('purpose').notNull(),
+    codeHash: text('code_hash').notNull(),
+    attempts: smallint('attempts').notNull().default(0),
+    expiresAt: instant('expires_at').notNull(),
+    consumedAt: instant('consumed_at'),
+    ...timestamps(),
+  },
+  (t) => [
+    foreignKey({
+      name: 'otp_challenges_user_fk',
+      columns: [t.tenantId, t.userId],
+      foreignColumns: [tenantUsers.tenantId, tenantUsers.id],
+    }).onDelete('cascade'),
+    unique('otp_challenges_tenant_id_id_key').on(t.tenantId, t.id),
+    index('otp_challenges_open_idx')
+      .on(t.tenantId, t.phone, t.purpose)
+      .where(sql`${t.consumedAt} IS NULL`),
+    check('otp_challenges_phone_lk_mobile', sql`${t.phone} ~ '^[+]947[0-9]{8}$'`),
+    check('otp_challenges_code_hash_length', hashLength(t.codeHash)),
+    check('otp_challenges_attempts_range', sql`${t.attempts} BETWEEN 0 AND 100`),
+    check('otp_challenges_expires_after_created', sql`${t.expiresAt} > ${t.createdAt}`),
+  ],
+);
+
+/**
+ * Short-lived, single-use bearer tickets between two steps of a sign-in (see `AUTH_TICKET_KINDS`).
+ * The raw ticket (256 random bits) goes to the browser once; only its SHA-256 is stored. A ticket
+ * is spent by one conditional UPDATE (`consumed_at IS NULL`), so it cannot be used twice even by
+ * concurrent requests. Two-step tickets also carry the HMAC of the SMS code they wait for.
+ */
+export const authTickets = pgTable(
+  'auth_tickets',
+  {
+    id: id(),
+    tenantId: tenantId().references(() => tenants.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
+    kind: authTicketKind('kind').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    /** `password` tickets: which code purpose they came from (`password_reset`/`first_password`). */
+    purpose: otpPurpose('purpose'),
+    /** `two_step` tickets: HMAC of the SMS code, wrong guesses so far, last send. */
+    codeHash: text('code_hash'),
+    attempts: smallint('attempts').notNull().default(0),
+    sends: smallint('sends').notNull().default(0),
+    lastSentAt: instant('last_sent_at'),
+    /** Carried from the login form to the session the ticket finally creates. */
+    staySignedIn: boolean('stay_signed_in').notNull().default(false),
+    expiresAt: instant('expires_at').notNull(),
+    consumedAt: instant('consumed_at'),
+    ...timestamps(),
+  },
+  (t) => [
+    foreignKey({
+      name: 'auth_tickets_user_fk',
+      columns: [t.tenantId, t.userId],
+      foreignColumns: [tenantUsers.tenantId, tenantUsers.id],
+    }).onDelete('cascade'),
+    unique('auth_tickets_tenant_id_id_key').on(t.tenantId, t.id),
+    unique('auth_tickets_tenant_token_hash_key').on(t.tenantId, t.tokenHash),
+    check('auth_tickets_token_hash_length', hashLength(t.tokenHash)),
+    check('auth_tickets_code_hash_length', hashLength(t.codeHash)),
+    check(
+      'auth_tickets_two_step_has_code',
+      sql`(${t.kind} = 'two_step') = (${t.codeHash} IS NOT NULL)`,
+    ),
+    check(
+      'auth_tickets_password_has_purpose',
+      sql`(${t.kind} = 'password') = (${t.purpose} IS NOT NULL)`,
+    ),
+    check('auth_tickets_attempts_range', sql`${t.attempts} BETWEEN 0 AND 100`),
+    check('auth_tickets_sends_range', sql`${t.sends} BETWEEN 0 AND 100`),
+    check('auth_tickets_expires_after_created', sql`${t.expiresAt} > ${t.createdAt}`),
   ],
 );

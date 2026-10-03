@@ -55,6 +55,9 @@ export interface World {
   scheduleId: string;
   enrollmentId: string;
   auditLogId: string;
+  otpChallengeId: string;
+  authTicketId: string;
+  staffInviteId: string;
 }
 
 type Row = Record<string, unknown>;
@@ -117,6 +120,31 @@ const freshEnrollment = (w: World): Row => ({
   class_id: w.classId,
   student_id: w.studentUserId,
   from_month: '2026-10-01',
+});
+
+const freshOtpChallenge = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  phone: '+94770000002',
+  user_id: w.studentUserId,
+  purpose: 'password_reset',
+  code_hash: hash('f'),
+  expires_at: inOneHour(),
+});
+const freshAuthTicket = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  user_id: w.studentUserId,
+  kind: 'device_limit',
+  token_hash: hash('g'),
+  expires_at: inOneHour(),
+});
+const freshStaffInvite = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  display_name: 'Fresh Invitee',
+  phone: '+94770000008',
+  role: 'teacher',
+  token_hash: hash('h'),
+  invited_by: w.staffUserId,
+  expires_at: inOneHour(),
 });
 
 export const TABLES = {
@@ -236,6 +264,38 @@ export const TABLES = {
       entity: 'tenant',
       entity_id: w.tenantId,
     }),
+  },
+  otp_challenges: {
+    access: 'full',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.otpChallengeId }),
+    fresh: freshOtpChallenge,
+    crossTenantRefs: {
+      user: (home, other) => ({ ...freshOtpChallenge(home), user_id: other.studentUserId }),
+    },
+  },
+  auth_tickets: {
+    access: 'full',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.authTicketId }),
+    fresh: freshAuthTicket,
+    crossTenantRefs: {
+      user: (home, other) => ({ ...freshAuthTicket(home), user_id: other.studentUserId }),
+    },
+  },
+  staff_invites: {
+    access: 'full',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.staffInviteId }),
+    fresh: freshStaffInvite,
+    crossTenantRefs: {
+      invitedBy: (home, other) => ({ ...freshStaffInvite(home), invited_by: other.staffUserId }),
+      acceptedUser: (home, other) => ({
+        ...freshStaffInvite(home),
+        accepted_at: new Date(),
+        accepted_user_id: other.staffUserId,
+      }),
+    },
   },
 } satisfies Record<TableName, TableSpec>;
 
@@ -406,6 +466,50 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       'audit log',
     );
 
+    const otp = one(
+      await tx
+        .insert(schema.otpChallenges)
+        .values({
+          tenantId,
+          phone: '+94770000002',
+          userId: student.id,
+          purpose: 'password_reset',
+          codeHash: hash('e'),
+          expiresAt: inOneHour(),
+        })
+        .returning({ id: schema.otpChallenges.id }),
+      'otp challenge',
+    );
+    const ticket = one(
+      await tx
+        .insert(schema.authTickets)
+        .values({
+          tenantId,
+          userId: staff.id,
+          kind: 'two_step',
+          tokenHash: hash('e'),
+          codeHash: hash('e'),
+          expiresAt: inOneHour(),
+        })
+        .returning({ id: schema.authTickets.id }),
+      'auth ticket',
+    );
+    const invite = one(
+      await tx
+        .insert(schema.staffInvites)
+        .values({
+          tenantId,
+          displayName: 'Invitee',
+          phone: '+94770000007',
+          role: 'cashier',
+          tokenHash: hash('e'),
+          invitedBy: staff.id,
+          expiresAt: inOneHour(),
+        })
+        .returning({ id: schema.staffInvites.id }),
+      'staff invite',
+    );
+
     return {
       tag,
       tenantId,
@@ -422,6 +526,9 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       scheduleId: schedule.id,
       enrollmentId: enrollment.id,
       auditLogId: audit.id,
+      otpChallengeId: otp.id,
+      authTicketId: ticket.id,
+      staffInviteId: invite.id,
     };
   });
 }
