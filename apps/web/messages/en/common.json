@@ -12,5 +12,9 @@
     "logout": "Log out",
     "loggingOut": "Logging out…",
     "logoutFailed": "We couldn't log you out. Check your internet connection and try again."
+  },
+  "toast": {
+    "dismiss": "Dismiss",
+    "region": "Notifications"
   }
 }

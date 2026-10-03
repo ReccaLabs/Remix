@@ -80,6 +80,20 @@ describe('DataTable', () => {
     expect(region.className).toContain('overflow-x-auto');
   });
 
+  it('stickyHeader keeps the header row in view inside a height-limited region', () => {
+    render(table({ stickyHeader: true }));
+    expect(screen.getByRole('region', { name: 'Students' }).className).toContain('max-h-[70vh]');
+    for (const th of screen.getAllByRole('columnheader')) {
+      expect(th.className).toContain('sticky');
+      expect(th.className).toContain('top-0');
+    }
+    render(table());
+    // Without the prop nothing sticks (and the region is not height-limited).
+    expect(screen.getAllByRole('region', { name: 'Students' })[1]?.className).not.toContain(
+      'max-h-',
+    );
+  });
+
   it('shows the empty state in one full-width cell', () => {
     render(
       table({

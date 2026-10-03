@@ -51,6 +51,11 @@ export interface DataTableProps<T> {
   onRowActivate?: (row: T) => void;
   /** Extra classes per row, e.g. highlight the class in progress. */
   rowClassName?: (row: T) => string | undefined;
+  /**
+   * Keeps the header row visible while the rows scroll (long lists): the table body scrolls
+   * inside a region of at most 70 vh.
+   */
+  stickyHeader?: boolean;
   className?: string;
 }
 
@@ -78,6 +83,7 @@ export function DataTable<T>({
   linkComponent: Link = 'a',
   onRowActivate,
   rowClassName,
+  stickyHeader = false,
   className,
 }: DataTableProps<T>) {
   const captionId = `table-caption-${useId()}`;
@@ -170,7 +176,10 @@ export function DataTable<T>({
         role="region"
         aria-labelledby={captionId}
         tabIndex={0}
-        className="focus-visible:outline-brand overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2"
+        className={cn(
+          'focus-visible:outline-brand overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2',
+          stickyHeader && 'max-h-[70vh] overflow-y-auto',
+        )}
       >
         <table
           aria-busy={loading || undefined}
@@ -194,6 +203,8 @@ export function DataTable<T>({
                   scope="col"
                   className={cn(
                     'text-muted whitespace-nowrap py-2.5 text-xs font-medium',
+                    stickyHeader &&
+                      'bg-surface sticky top-0 z-10 shadow-[inset_0_-1px_0_var(--color-line)]',
                     cellPad,
                     col.align === 'end' ? 'text-right' : 'text-left',
                     col.headerClassName,

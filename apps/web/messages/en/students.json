@@ -1,0 +1,345 @@
+{
+  "meta": {
+    "list": "Students",
+    "new": "Add student",
+    "profile": "Student",
+    "edit": "Edit student"
+  },
+  "status": {
+    "active": "Active",
+    "invited": "Invited",
+    "archived": "Archived"
+  },
+  "list": {
+    "title": "Students",
+    "count": "{count, plural, one {# student} other {# students}}",
+    "add": "Add student",
+    "tableCaption": "Students",
+    "loadError": {
+      "title": "We couldn't load the students",
+      "body": "Check your internet connection and try again.",
+      "retry": "Try again"
+    },
+    "empty": {
+      "title": "No students yet",
+      "body": "Add your first student and they will appear here."
+    },
+    "emptyFiltered": {
+      "title": "No students match",
+      "body": "Try a different search, or clear the filters.",
+      "clear": "Clear filters"
+    },
+    "filters": {
+      "label": "Search and filter students",
+      "search": "Name, number or phone",
+      "searchButton": "Search",
+      "toggle": "Filters",
+      "class": "Class",
+      "allClasses": "All classes",
+      "status": "Status",
+      "anyStatus": "Active and invited",
+      "devices": "Devices",
+      "anyDevices": "Any",
+      "devicesAny": "Signed in somewhere",
+      "devicesLimit": "At the 2-device limit",
+      "joinedFrom": "Joined from",
+      "joinedTo": "Joined until",
+      "sort": "Sort by",
+      "clear": "Clear filters"
+    },
+    "sort": {
+      "name": "Name",
+      "studentNo": "Student number",
+      "joined": "Newest first"
+    },
+    "columns": {
+      "name": "Name",
+      "studentNo": "Student no.",
+      "phone": "Phone",
+      "classes": "Classes",
+      "status": "Status",
+      "devices": "Devices",
+      "joined": "Joined"
+    },
+    "selectAll": "Select all students on this page",
+    "selectOne": "Select {name}",
+    "noClasses": "No classes",
+    "classCount": "{count} classes",
+    "devicesValue": "{count} of {limit}",
+    "pagination": {
+      "label": "Pages",
+      "range": "{from}–{to} of {total}",
+      "page": "Page {page} of {pages}",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "bulk": {
+    "region": "Actions for the selected students",
+    "selected": "{count, plural, one {# student selected} other {# students selected}}",
+    "clear": "Clear selection",
+    "moveClass": "Move class",
+    "signOut": "Sign out devices",
+    "archive": "Archive",
+    "reactivate": "Reactivate",
+    "cancel": "Cancel",
+    "skipped": "{count, plural, one {# was skipped (already in that state).} other {# were skipped (already in that state).}}",
+    "done": {
+      "archive": "{count, plural, one {# student archived} other {# students archived}}",
+      "reactivate": "{count, plural, one {# student reactivated} other {# students reactivated}}",
+      "signOut": "{count, plural, one {# student signed out} other {# students signed out}}",
+      "moveClass": "{count, plural, one {# student moved} other {# students moved}}"
+    },
+    "signOutConfirm": {
+      "title": "Sign out {count, plural, one {# student} other {# students}}?",
+      "body": "They are signed out of every device now and have to log in again. This does not change their password.",
+      "confirm": "Sign out"
+    },
+    "archiveConfirm": {
+      "title": "Archive {count, plural, one {# student} other {# students}}?",
+      "body": "Archived students cannot log in and leave the active list. Their history is kept, and you can reactivate them later.",
+      "confirm": "Archive"
+    },
+    "reactivateConfirm": {
+      "title": "Reactivate {count, plural, one {# student} other {# students}}?",
+      "body": "They can log in again and return to the active list.",
+      "confirm": "Reactivate"
+    },
+    "move": {
+      "title": "Move {count, plural, one {# student} other {# students}} to another class",
+      "body": "Students who are not in the first class that month are skipped. Their fee discounts move with them.",
+      "from": "From class",
+      "to": "To class",
+      "choose": "Choose a class",
+      "sameClass": "Choose a different class.",
+      "fromMonth": "From month",
+      "fromMonthHint": "The old class ends the month before.",
+      "confirm": "Move students"
+    }
+  },
+  "form": {
+    "back": "Back to students",
+    "backToProfile": "Back to the profile",
+    "titleNew": "Add student",
+    "subtitleNew": "The student number is assigned automatically.",
+    "titleEdit": "Edit {name}",
+    "optional": "optional",
+    "sections": {
+      "details": "Student",
+      "classes": "Classes",
+      "guardians": "Parents and guardians",
+      "consent": "Parental consent"
+    },
+    "fields": {
+      "name": "Full name",
+      "phone": "Phone number",
+      "phoneHint": "The student logs in with this number.",
+      "school": "School",
+      "alYear": "A/L year",
+      "notSet": "Not set",
+      "medium": "Medium",
+      "enrolFrom": "Starting from",
+      "guardianName": "Name",
+      "relation": "Relation",
+      "guardianPhone": "Phone number",
+      "smsOptIn": "Send fee and attendance texts",
+      "under18": "This student is under 18",
+      "consentGivenBy": "Consent given by",
+      "consentMethod": "How it was given",
+      "sendWelcomeSms": "Text the student a link to set a password"
+    },
+    "mediums": {
+      "sinhala": "Sinhala",
+      "english": "English",
+      "tamil": "Tamil"
+    },
+    "classesHint": "Optional. You can enrol the student later from the class page.",
+    "noClasses": "No classes yet. Create classes first, then enrol students.",
+    "guardiansHint": "Up to {max}. Parents can get fee and attendance texts.",
+    "guardianN": "Guardian {n}",
+    "addGuardian": "Add a parent or guardian",
+    "removeGuardian": "Remove",
+    "relations": {
+      "mother": "Mother",
+      "father": "Father",
+      "guardian": "Guardian",
+      "other": "Other"
+    },
+    "under18Hint": "Under-18 students need a parent's or guardian's consent to keep their data (PDPA).",
+    "consentMethods": {
+      "paper_form": "Signed paper form",
+      "verbal": "Said so in person or by phone",
+      "online": "Online"
+    },
+    "consentHint": "We record who gave consent, how, and when.",
+    "welcomeSmsHint": "The student gets a text and sets their own password. Nothing is shared by SMS.",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "saveNew": "Add student",
+    "saveEdit": "Save changes",
+    "savedNew": "Student added",
+    "savedEdit": "Changes saved",
+    "errors": {
+      "name": "Enter the student's name.",
+      "phone": "Enter a Sri Lankan mobile number, for example 077 123 4567.",
+      "phoneTaken": "Someone at your institute already uses this phone number.",
+      "alYear": "Choose a valid year.",
+      "consent": "Say who gave consent.",
+      "guardianName": "Enter the guardian's name.",
+      "guardianPhone": "Enter a Sri Lankan mobile number, for example 077 123 4567.",
+      "invalid": "Check this field."
+    }
+  },
+  "profile": {
+    "back": "All students",
+    "joined": "joined {date}",
+    "edit": "Edit",
+    "tabs": {
+      "label": "Student sections",
+      "overview": "Overview",
+      "classes": "Classes",
+      "payments": "Payments",
+      "attendance": "Attendance",
+      "devices": "Devices",
+      "parent": "Parent"
+    },
+    "lifecycle": {
+      "cancel": "Cancel",
+      "archive": {
+        "button": "Archive",
+        "title": "Archive {name}?",
+        "body": "They cannot log in and leave the active list. Their history is kept, and you can reactivate them later.",
+        "confirm": "Archive",
+        "done": "{name} archived"
+      },
+      "reactivate": {
+        "button": "Reactivate",
+        "title": "Reactivate {name}?",
+        "body": "They can log in again and return to the active list.",
+        "confirm": "Reactivate",
+        "done": "{name} reactivated"
+      }
+    },
+    "overview": {
+      "statsLabel": "Student summary",
+      "owes": "Owes now",
+      "owesContext": "Shows once fees are set up",
+      "paid": "Paid this year",
+      "paidContext": "Shows once fees are set up",
+      "attendance": "Attendance",
+      "attendanceContext": "Shows once attendance is set up",
+      "lessons": "Lessons watched",
+      "lessonsContext": "Shows once lessons are set up",
+      "later": "Not available yet",
+      "classes": "Classes",
+      "since": "since {date}",
+      "noClasses": "Not in any class right now.",
+      "parent": "Parent or guardian",
+      "noParent": "No parent or guardian on file."
+    },
+    "classesTab": {
+      "caption": "Class enrolments",
+      "columns": {
+        "class": "Class",
+        "from": "From",
+        "to": "Until",
+        "fee": "Monthly fee",
+        "note": "Fee note"
+      },
+      "ongoing": "Ongoing",
+      "override": "Special fee",
+      "empty": {
+        "title": "Not enrolled yet",
+        "body": "Enrol this student from a class page."
+      }
+    },
+    "later": {
+      "payments": {
+        "title": "Payments are coming soon",
+        "body": "Fees, payments and receipts will show here once fee collection is set up."
+      },
+      "attendance": {
+        "title": "Attendance is coming soon",
+        "body": "Class and live-session attendance will show here once it is set up."
+      }
+    },
+    "parentTab": {
+      "guardians": "Parents and guardians",
+      "caption": "Parents and guardians",
+      "columns": {
+        "name": "Name",
+        "relation": "Relation",
+        "phone": "Phone",
+        "sms": "Texts"
+      },
+      "relations": {
+        "mother": "Mother",
+        "father": "Father",
+        "guardian": "Guardian",
+        "other": "Other"
+      },
+      "smsOn": "Receives texts",
+      "smsOff": "No texts",
+      "empty": {
+        "title": "No parent or guardian yet",
+        "body": "Add one from Edit so parents can get fee and attendance texts."
+      },
+      "consent": "Parental consent",
+      "consentGiven": "Given by {givenBy} ({method}) on {date}.",
+      "consentMissing": "This student is under 18 and no consent is on file. Add it from Edit.",
+      "consentNotNeeded": "Not needed: the student is not marked as under 18.",
+      "methods": {
+        "paper_form": "signed paper form",
+        "verbal": "in person or by phone",
+        "online": "online"
+      }
+    }
+  },
+  "devices": {
+    "heading": "Signed-in devices · {count} of {limit}",
+    "caption": "Devices this student is signed in on",
+    "signOutAll": "Sign out all",
+    "resetPassword": "Reset password",
+    "signOut": "Sign out",
+    "signOutDevice": "Sign out {device}",
+    "columns": {
+      "device": "Device",
+      "firstSeen": "First used",
+      "lastUsed": "Last used",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "Not signed in anywhere",
+      "body": "When the student logs in, their devices show here."
+    },
+    "signedOutOne": "Device signed out",
+    "signedOutAll": "All devices signed out",
+    "resetSent": "We texted {name} a code to set a new password",
+    "confirm": {
+      "cancel": "Cancel",
+      "one": {
+        "title": "Sign out {device}?",
+        "body": "The student has to log in again on that device."
+      },
+      "all": {
+        "title": "Sign out all devices?",
+        "body": "The student is signed out everywhere and has to log in again."
+      },
+      "reset": {
+        "title": "Reset {name}'s password?",
+        "body": "They are signed out everywhere and get a text with a code to choose a new password.",
+        "confirm": "Reset and text a code"
+      }
+    }
+  },
+  "errors": {
+    "forbidden": "Your role isn't allowed to do this, or you've been signed out.",
+    "conflict": "That conflicts with something that already exists.",
+    "planLimit": "Your plan doesn't allow this.",
+    "validation": "Some details aren't valid. Check the form and try again.",
+    "rateLimited": "Too many requests. Wait a minute and try again.",
+    "notFound": "We couldn't find that student. It may have been removed.",
+    "network": "We couldn't reach the server. Check your internet connection and try again.",
+    "unexpected": "Something went wrong. Please try again."
+  }
+}
