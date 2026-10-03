@@ -82,6 +82,66 @@ jobs:
       - name: Database unit tests and isolation suite
         run: pnpm --filter @remix/db test
 
+  # Phase 1 walking-skeleton journeys (e2e/): Chromium -> built web app -> built API -> Postgres 18
+  # with RLS and the dev seed. Postgres comes from infra/docker/compose.yaml rather than a
+  # `services:` container: only compose mounts postgres/init (the four roles and the remix
+  # database, which the migrations insist on), and that mount needs the checked-out repo. Only the
+  # postgres service is started (no Valkey, Mailpit or S3: nothing here uses them). The tests start
+  # the built API and web app themselves (e2e/playwright.config.ts).
+  e2e:
+    name: E2E journeys (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Start Postgres 18 (roles init script mounted)
+        run: docker compose -f infra/docker/compose.yaml up -d --wait --wait-timeout 120 postgres
+
+      - name: Migrate and seed
+        run: |
+          pnpm db:migrate
+          pnpm db:seed
+
+      # The web build bakes the /api/v1 rewrite in at build time; without it the browser has no API.
+      - name: Build API and web (with the /api/v1 rewrite)
+        run: |
+          pnpm --filter @remix/api build
+          WEB_API_REWRITE=true pnpm --filter @remix/web build
+
+      - name: Install Chromium
+        run: pnpm --filter @remix/e2e exec playwright install --with-deps chromium
+
+      - name: Run the journeys
+        run: pnpm e2e
+        env:
+          # One JSON line per API request in the job log, to diagnose a failure after the fact.
+          E2E_API_LOG_LEVEL: info
+
+      - name: Upload the Playwright report and traces
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7
+
+      - name: Stop the stack
+        if: always()
+        run: docker compose -f infra/docker/compose.yaml down -v
+
   # The production image: it must build, boot, and pass a vulnerability scan.
   api-image:
     name: API image (build · smoke · Trivy)

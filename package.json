@@ -18,6 +18,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "e2e": "pnpm --filter @remix/e2e e2e",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

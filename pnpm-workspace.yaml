@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "e2e"
 # Dependency install scripts are denied unless listed true here (supply-chain hardening).
 # These ship prebuilt binaries via optional platform packages, so scripts are not needed.
 # @remix/db dev tools: esbuild (drizzle-kit, tsx) uses its platform package; ssh2 and its
