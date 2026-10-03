@@ -435,7 +435,8 @@ Treat this as a release gate: nothing goes to real institutes until every "Must"
 
 | Env | Where | Data |
 | --- | --- | --- |
-| Local | Docker Compose on laptop | Seed data |
+| Local | Docker Compose on laptop (`pnpm dev`) | Seed data |
+| Local staging | The production Docker images of web + API on the same stack (`pnpm stack:prod`, `infra/docker/compose.prod.yaml`) | Seed data |
 | Preview | Cloudflare Pages previews (site); optional per-PR API later | Seed |
 | Staging | 1 small Hetzner server (`staging.remix.lk`) | Anonymised copy |
 | Production | Hetzner private network behind Cloudflare | Real |

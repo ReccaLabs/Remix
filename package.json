@@ -12,6 +12,8 @@
     "dev:web": "pnpm --filter @remix/web dev",
     "dev:api": "pnpm --filter @remix/api dev",
     "dev:stack": "node scripts/dev-stack.mjs",
+    "stack:prod": "node scripts/stack-prod.mjs",
+    "stack:prod:down": "node scripts/stack-prod.mjs down",
     "db:migrate": "node scripts/db.mjs migrate",
     "db:seed": "node scripts/db.mjs seed",
     "build": "turbo run build",

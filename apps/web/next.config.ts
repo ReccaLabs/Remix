@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 import createNextIntlPlugin from 'next-intl/plugin';
@@ -15,6 +16,12 @@ export default function config(phase: string): NextConfig {
   return withNextIntl({
     poweredByHeader: false,
     reactStrictMode: true,
+    // Container image (apps/web/Dockerfile): self-contained server in .next/standalone. The
+    // tracing root is the repo root so the pnpm workspace packages are included.
+    ...(process.env.WEB_STANDALONE === 'true' && {
+      output: 'standalone' as const,
+      outputFileTracingRoot: resolve(import.meta.dirname, '../..'),
+    }),
     // `next dev` would otherwise write apps/web/AGENTS.md + CLAUDE.md; the repo root CLAUDE.md
     // already holds the rules for AI assistants.
     agentRules: false,

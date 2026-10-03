@@ -33,7 +33,6 @@
     "@remix/config": "workspace:*",
     "@remix/db": "workspace:*",
     "@remix/types": "workspace:*",
-    "@testcontainers/postgresql": "^12.2.0",
     "@types/express": "^5.0.3",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.23.1",
