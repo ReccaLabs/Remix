@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   bigint,
+  integer,
   check,
   date,
   foreignKey,
@@ -10,12 +11,31 @@ import {
   text,
   time,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { id, instant, tenantId, timestamps } from './columns';
 import { classPlace, medium } from './enums';
 import { tenants } from './tenants';
 import { students, tenantUsers } from './users';
+
+/** CLS-05 — a room the institute teaches in. Names are unique per institute, ignoring case. */
+export const halls = pgTable(
+  'halls',
+  {
+    id: id(),
+    tenantId: tenantId().references(() => tenants.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    capacity: integer('capacity'),
+    ...timestamps(),
+  },
+  (t) => [
+    unique('halls_tenant_id_id_key').on(t.tenantId, t.id),
+    uniqueIndex('halls_tenant_name_key').on(t.tenantId, sql`lower(${t.name})`),
+    check('halls_name_length', sql`char_length(${t.name}) BETWEEN 1 AND 60`),
+    check('halls_capacity_range', sql`${t.capacity} BETWEEN 1 AND 5000`),
+  ],
+);
 
 /** A class an institute runs, e.g. "2027 A/L Physics Theory". `fee_cents` is the monthly fee. */
 export const classes = pgTable(
@@ -27,6 +47,7 @@ export const classes = pgTable(
     grade: text('grade').notNull(),
     medium: medium('medium').notNull(),
     teacherId: uuid('teacher_id'),
+    hallId: uuid('hall_id'),
     feeCents: bigint('fee_cents', { mode: 'number' }).notNull(),
     place: classPlace('place').notNull(),
     startsOn: date('starts_on', { mode: 'string' }),
@@ -39,6 +60,12 @@ export const classes = pgTable(
       columns: [t.tenantId, t.teacherId],
       foreignColumns: [tenantUsers.tenantId, tenantUsers.id],
     }),
+    // RESTRICT: deleting a hall that a class still uses is refused (the API answers 409).
+    foreignKey({
+      name: 'classes_hall_fk',
+      columns: [t.tenantId, t.hallId],
+      foreignColumns: [halls.tenantId, halls.id],
+    }).onDelete('restrict'),
     unique('classes_tenant_id_id_key').on(t.tenantId, t.id),
     index('classes_tenant_teacher_idx').on(t.tenantId, t.teacherId),
     check('classes_name_length', sql`char_length(${t.name}) BETWEEN 1 AND 120`),

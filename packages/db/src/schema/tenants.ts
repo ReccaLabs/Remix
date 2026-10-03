@@ -22,6 +22,7 @@ export const tenants = pgTable(
     studentNoPrefix: text('student_no_prefix').notNull(),
     brandColor: text('brand_color'),
     logoUrl: text('logo_url'),
+    faviconUrl: text('favicon_url'),
     ...timestamps(),
   },
   (t) => [
@@ -37,6 +38,7 @@ export const tenants = pgTable(
     check('tenants_student_no_prefix_format', sql`${t.studentNoPrefix} ~ '^[A-Z]{1,6}$'`),
     check('tenants_brand_color_format', sql`${t.brandColor} ~ '^#[0-9a-fA-F]{6}$'`),
     check('tenants_logo_url_https', sql`${t.logoUrl} ~ '^https://'`),
+    check('tenants_favicon_url_https', sql`${t.faviconUrl} ~ '^https://'`),
   ],
 );
 

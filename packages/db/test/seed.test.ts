@@ -127,6 +127,23 @@ describe('dev seed', () => {
     expect(counts?.minors).toBeGreaterThan(0);
   });
 
+  it('seeds halls and links on-site classes to them (CLS-05)', async () => {
+    const kamal = await resolveTenantByHost(db.app, 'kamalphysics.localhost', {
+      baseDomains: ['localhost'],
+    });
+    if (!kamal) throw new Error('kamalphysics missing');
+    const found = await withTenant(db.app, kamal.id, (tx) =>
+      rows<{ halls: number; with_hall: number; online_with_hall: number; on_site_without: number }>(
+        tx,
+        sql`select (select count(*)::int from halls) as halls,
+          (select count(*)::int from classes where hall_id is not null) as with_hall,
+          (select count(*)::int from classes where place = 'online' and hall_id is not null) as online_with_hall,
+          (select count(*)::int from classes where place <> 'online' and hall_id is null) as on_site_without`,
+      ),
+    );
+    expect(found).toEqual([{ halls: 2, with_hall: 5, online_with_hall: 0, on_site_without: 0 }]);
+  });
+
   it('seeds a verified and an unverified custom domain, and a suspended tenant', async () => {
     const opts = { baseDomains: ['localhost'] };
     expect((await resolveTenantByHost(db.app, 'kamalphysics.test', opts))?.slug).toBe(

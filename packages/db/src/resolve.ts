@@ -28,6 +28,7 @@ interface TenantRow extends Record<string, unknown> {
   timezone: string;
   brand_color: string | null;
   logo_url: string | null;
+  favicon_url: string | null;
 }
 
 /**
@@ -68,6 +69,7 @@ export async function resolveTenantByHost(
     timezone: row.timezone,
     brandColor: row.brand_color,
     logoUrl: row.logo_url,
+    faviconUrl: row.favicon_url,
   });
   await options.cache?.set(cacheKey, JSON.stringify(tenant), TENANT_CACHE_TTL_SECONDS);
   return tenant;
