@@ -16,6 +16,7 @@ import { MockSmsProvider } from '../../../src/integrations/sms/sms.mock';
 import { JOB_PRODUCER } from '../../../src/jobs/job-producer';
 import { createSmsProcessor } from '../../../src/jobs/sms/sms.processor';
 import { InlineJobProducer } from '../../../src/jobs/testing/inline-jobs';
+import { ImportRunner } from '../../../src/modules/imports/import-runner';
 import { TENANT_CACHE } from '../../../src/modules/tenancy/db-tenant-resolver';
 import type { InMemoryTenantCache } from '../../../src/modules/tenancy/tenant-cache';
 import { LogCapture } from '../../fixtures/test-app';
@@ -63,7 +64,11 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
   const clock = new ManualClock(START);
   const limiter = new InMemoryRateLimiter(() => clock.nowMs());
   const sms = new MockSmsProvider();
-  const jobs = new InlineJobProducer({ sms: createSmsProcessor(sms) });
+  // The `imports` processor needs the app (DB, hooks): it is bound once the app exists.
+  const processors: ConstructorParameters<typeof InlineJobProducer>[0] = {
+    sms: createSmsProcessor(sms),
+  };
+  const jobs = new InlineJobProducer(processors);
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule.forRoot({ config, logDestination: logs })],
   })
@@ -80,6 +85,10 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
   });
   configureApp(app, config);
   await app.init();
+  const importRunner = app.get(ImportRunner);
+  processors.imports = async (payload, ctx) => {
+    await importRunner.run(payload, ctx);
+  };
   return {
     app,
     server: app.getHttpServer(),

@@ -45,6 +45,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.3
         version: 0.45.3(@cloudflare/workers-types@5.20260930.1)(@types/pg@8.23.1)(pg@8.23.1)
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1(supports-color@7.2.0)
       helmet:
         specifier: ^8.3.0
         version: 8.3.0

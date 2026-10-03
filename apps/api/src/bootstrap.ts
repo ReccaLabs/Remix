@@ -1,5 +1,6 @@
 import { RequestMethod } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { json } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { bodyParserErrorHandler } from './common/errors/problem.filter';
@@ -12,6 +13,10 @@ import type { AppConfig } from './config/config';
 
 /** JSON bodies above this are rejected with 413 before any handler runs. */
 export const BODY_LIMIT = '100kb';
+/** 5,000 rows of up to 12 cells; the browser enforces a 5 MB file, JSON adds quoting overhead. */
+export const IMPORT_BODY_LIMIT = '10mb';
+/** The import POSTs (`/api/v1/admin/imports/students/preview|commit`). */
+export const IMPORT_BODY_PATH = '/api/v1/admin/imports/students';
 
 /**
  * Everything about the HTTP layer that isn't a module: shared by `main.ts` and the e2e tests so
@@ -41,6 +46,13 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
       xFrameOptions: { action: 'deny' },
       strictTransportSecurity: config.nodeEnv === 'production',
     }),
+  );
+  // The student import posts up to 5,000 mapped rows (STU-04): the two import POSTs get a larger
+  // limit, parsed before the global parser (which then sees an already-read body and skips it).
+  // Every other route keeps BODY_LIMIT.
+  app.use(
+    IMPORT_BODY_PATH,
+    json({ limit: IMPORT_BODY_LIMIT, type: 'application/json', strict: true }),
   );
   // Only JSON is parsed. Other content types leave the body empty, and the CSRF guard rejects
   // them on state-changing methods.
