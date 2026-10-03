@@ -7,7 +7,7 @@ test.describe('staff login', () => {
   test('the owner logs in at /admin/login, sees the admin home with his name, and logs out', async ({
     page,
   }) => {
-    await loginStaff(page, 'kamalphysics', KAMAL.email, PASSWORD);
+    await loginStaff(page, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
 
     await expect(
       page.getByRole('heading', { level: 1, name: /^Good (morning|afternoon|evening), Kamal$/ }),

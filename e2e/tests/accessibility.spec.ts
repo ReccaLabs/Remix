@@ -27,7 +27,7 @@ test.describe('accessibility (axe: no serious or critical violations)', () => {
   });
 
   test('admin home', async ({ page }) => {
-    await loginStaff(page, 'kamalphysics', SUNIL.email, PASSWORD);
+    await loginStaff(page, 'kamalphysics', SUNIL.email, PASSWORD, SUNIL.seedPhone);
     await expect(page.getByRole('heading', { level: 1, name: /Sunil/ })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });

@@ -1,5 +1,31 @@
+import { createHash } from 'node:crypto';
 import { expect, type Page } from '@playwright/test';
 import { tenantUrl } from './env';
+
+/**
+ * Owner/admin/cashier need an SMS code on an untrusted computer (AUTH-05). The dev seed gives
+ * each of them one trusted computer whose trust cookie is derived from tenant + phone — the same
+ * derivation as `devTrustToken` in packages/db/src/seed/index.ts. Setting it here lets a journey
+ * sign in through the real form without an SMS (the two-step itself is covered by API tests).
+ */
+export async function useSeededTrustedComputer(
+  page: Page,
+  slug: string,
+  phoneE164: string,
+): Promise<void> {
+  const value = createHash('sha256')
+    .update(`remix-dev-trust|${slug}|${phoneE164}`)
+    .digest('base64url');
+  await page.context().addCookies([
+    {
+      name: 'remix_trust',
+      value,
+      url: tenantUrl(slug, '/'),
+      httpOnly: true,
+      sameSite: 'Lax',
+    },
+  ]);
+}
 
 /** Student login through the real form: phone + password, "Log in". Does not wait for the result. */
 export async function submitStudentLogin(
@@ -44,7 +70,10 @@ export async function loginStaff(
   slug: string,
   identifier: string,
   password: string,
+  /** For two-step roles: the seeded phone whose trusted computer this browser uses. */
+  trustedPhone?: string,
 ): Promise<void> {
+  if (trustedPhone) await useSeededTrustedComputer(page, slug, trustedPhone);
   await submitStaffLogin(page, slug, identifier, password);
   await expect(page).toHaveURL(tenantUrl(slug, '/admin'));
 }

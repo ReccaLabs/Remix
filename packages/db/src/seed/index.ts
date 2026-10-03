@@ -1,10 +1,13 @@
+import { createHash, randomBytes } from 'node:crypto';
 import { inArray } from 'drizzle-orm';
+import { TWO_STEP_ROLES, type StaffRole } from '@remix/types';
 import type { Db, Tx } from '../client';
 import { allocateNumbers, formatStudentNo } from '../counters';
 import {
   auditLogs,
   classes,
   classSchedules,
+  devices,
   enrollments,
   staffRoles,
   students,
@@ -18,6 +21,21 @@ import { FIRST_NAMES, LAST_NAMES, SCHOOLS, SEED_TENANTS, type SeedTenant } from 
 import { createRng, type Rng } from './random';
 
 const RNG_SEED = 20_261_002;
+
+/**
+ * Seeded staff who need the SMS two-step (owner/admin/cashier) get one "trusted computer" whose
+ * trust cookie value is derivable from the tenant and phone, so E2E journeys and developers can
+ * sign in without an SMS: set `remix_trust=<devTrustToken(slug, phone)>` on the tenant host.
+ * DEV SEED ONLY — the seed refuses remote databases, and these accounts exist only in dev and CI.
+ * e2e/support/auth.ts derives the same value.
+ */
+export function devTrustToken(slug: string, phone: string): string {
+  return createHash('sha256').update(`remix-dev-trust|${slug}|${phone}`).digest('base64url');
+}
+const sha256Hex = (value: string) => createHash('sha256').update(value).digest('hex');
+/** Long enough that a local dev database seeded once keeps working (production trust: 30 days). */
+const DEV_TRUST_DAYS = 365;
+const twoStepRoles: readonly StaffRole[] = TWO_STEP_ROLES;
 const CHUNK = 500;
 /** Billing months the seeded enrolments start in (first of the month). */
 const START_MONTHS = [
@@ -122,6 +140,23 @@ async function seedTenant(
         s.roles.map((role) => ({ tenantId, userId: staffIds[i] ?? '', role })),
       ),
     );
+
+  const trustedUntil = new Date(Date.now() + DEV_TRUST_DAYS * 24 * 60 * 60 * 1000);
+  const trusted = spec.staff.flatMap((s, i) =>
+    s.roles.some((role) => twoStepRoles.includes(role))
+      ? [
+          {
+            tenantId,
+            userId: staffIds[i] ?? '',
+            tokenHash: sha256Hex(randomBytes(32).toString('base64url')),
+            label: 'Seeded dev computer',
+            trustTokenHash: sha256Hex(devTrustToken(spec.slug, s.phone)),
+            trustedUntil,
+          },
+        ]
+      : [],
+  );
+  if (trusted.length > 0) await tx.insert(devices).values(trusted);
 
   // Classes and weekly schedules.
   const classRows = await tx
