@@ -24,7 +24,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260924.1",
+    "@cloudflare/workers-types": "^5.20260930.1",
     "@remix/config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.14",

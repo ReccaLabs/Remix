@@ -41,7 +41,7 @@ importers:
         version: 2.2.1
       drizzle-orm:
         specifier: ^0.45.3
-        version: 0.45.3(@cloudflare/workers-types@5.20260924.1)(@types/pg@8.23.1)(pg@8.23.1)
+        version: 0.45.3(@cloudflare/workers-types@5.20260930.1)(@types/pg@8.23.1)(pg@8.23.1)
       helmet:
         specifier: ^8.3.0
         version: 8.3.0
@@ -150,8 +150,8 @@ importers:
         version: 19.3.0(react@19.3.0)
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20260924.1
-        version: 5.20260924.1
+        specifier: ^5.20260930.1
+        version: 5.20260930.1
       '@remix/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -298,7 +298,7 @@ importers:
         version: link:../types
       drizzle-orm:
         specifier: ^0.45.3
-        version: 0.45.3(@cloudflare/workers-types@5.20260924.1)(@types/pg@8.23.1)(pg@8.23.1)
+        version: 0.45.3(@cloudflare/workers-types@5.20260930.1)(@types/pg@8.23.1)(pg@8.23.1)
       pg:
         specifier: ^8.23.1
         version: 8.23.1
@@ -508,8 +508,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@cloudflare/workers-types@5.20260924.1':
-    resolution: {integrity: sha512-puvr63PrfAFIkdh3FInGEgS0VTQ49WYNYDC2Eupd+qvwWwGpSRjxJD5Iz22oNHCmV1UEcsDz+OtGF++01vUloA==}
+  '@cloudflare/workers-types@5.20260930.1':
+    resolution: {integrity: sha512-ZUHwK/kG4GD6owwHY+Le+QYq/LO+R0f8b51cE3+IXe4bcKefKWIVYYqsUrKwSTo9su1LSIxKEfqui4r7LrxU1Q==}
 
   '@csstools/color-helpers@6.1.2':
     resolution: {integrity: sha512-grhRy3OKmniaAEKXMjua5z/EODX0MSqBGjunw8+j/3HQjOnahs2AGhvEOIYVUWcU6ScApbhLhVrQTX8XqrMrow==}
@@ -5743,7 +5743,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@cloudflare/workers-types@5.20260924.1': {}
+  '@cloudflare/workers-types@5.20260930.1': {}
 
   '@csstools/color-helpers@6.1.2': {}
 
@@ -7735,9 +7735,9 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.15
 
-  drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260924.1)(@types/pg@8.23.1)(pg@8.23.1):
+  drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260930.1)(@types/pg@8.23.1)(pg@8.23.1):
     optionalDependencies:
-      '@cloudflare/workers-types': 5.20260924.1
+      '@cloudflare/workers-types': 5.20260930.1
       '@types/pg': 8.23.1
       pg: 8.23.1
 
