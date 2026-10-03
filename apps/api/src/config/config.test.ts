@@ -6,6 +6,7 @@ const PRODUCTION = {
   NODE_ENV: 'production',
   TENANT_BASE_DOMAINS: 'remix.lk',
   TRUST_PROXY: '10.0.0.0/8',
+  VALKEY_URL: 'redis://valkey:6379',
 };
 
 describe('loadConfig', () => {
@@ -43,6 +44,14 @@ describe('loadConfig', () => {
 
   it('treats an empty DATABASE_URL as unset', () => {
     expect(loadConfig({ DATABASE_URL: '' }).databaseUrl).toBeUndefined();
+  });
+
+  it('reads VALKEY_URL; empty or missing is unset outside production', () => {
+    expect(loadConfig({ VALKEY_URL: 'redis://127.0.0.1:6379' }).valkeyUrl).toBe(
+      'redis://127.0.0.1:6379',
+    );
+    expect(loadConfig({ VALKEY_URL: '' }).valkeyUrl).toBeUndefined();
+    expect(loadConfig({}).valkeyUrl).toBeUndefined();
   });
 
   it('defaults COOKIE_SECURE to true in production', () => {
@@ -91,6 +100,8 @@ describe('loadConfig', () => {
     [{ PLATFORM_HOSTS: 'admin.remix.lk:443' }, 'PLATFORM_HOSTS'],
     [{ COOKIE_SECURE: 'yes' }, 'COOKIE_SECURE'],
     [{ DATABASE_URL: 'mysql://x@y/z' }, 'DATABASE_URL'],
+    [{ VALKEY_URL: 'http://valkey:6379' }, 'VALKEY_URL'],
+    [{ ...PRODUCTION, VALKEY_URL: '' }, 'VALKEY_URL'],
     [{ ...PRODUCTION, COOKIE_SECURE: 'false' }, 'COOKIE_SECURE'],
     [{ NODE_ENV: 'production', TRUST_PROXY: '10.0.0.0/8' }, 'TENANT_BASE_DOMAINS'],
   ])('fails fast on %o', (env, variable) => {

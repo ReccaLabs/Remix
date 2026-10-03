@@ -12,6 +12,7 @@ allowBuilds:
   '@swc/core': false
   cpu-features: false
   esbuild: false
+  msgpackr-extract: false
   protobufjs: false
   ssh2: false
   unrs-resolver: false

@@ -75,6 +75,14 @@ const envSchema = z
       .url({ protocol: /^postgres(ql)?$/ })
       .optional()
       .or(z.literal('').transform(() => undefined)),
+    /**
+     * Valkey/Redis connection string: rate limits (C6) and BullMQ jobs (ADR 0012). Required in
+     * production; in development and tests the API falls back to the in-memory limiter without it.
+     */
+    VALKEY_URL: z
+      .url({ protocol: /^rediss?$/ })
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
   })
   .transform((env) => ({
     ...env,
@@ -96,6 +104,13 @@ const envSchema = z
         message: 'must list the edge proxy / web node addresses in production',
       });
     }
+    if (!env.VALKEY_URL) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['VALKEY_URL'],
+        message: 'required in production (rate limits and job queues)',
+      });
+    }
     if (env.TENANT_BASE_DOMAINS.includes('localhost')) {
       ctx.addIssue({
         code: 'custom',
@@ -114,6 +129,8 @@ export interface AppConfig {
   platformHosts: readonly string[];
   cookieSecure: boolean;
   databaseUrl: string | undefined;
+  /** Valkey connection string; undefined only outside production. */
+  valkeyUrl: string | undefined;
 }
 
 /** Thrown when the environment is invalid. Lists variable names and reasons, never values. */
@@ -156,6 +173,7 @@ export function loadConfig(
     platformHosts: e.PLATFORM_HOSTS,
     cookieSecure: e.COOKIE_SECURE,
     databaseUrl: e.DATABASE_URL,
+    valkeyUrl: e.VALKEY_URL,
   };
 }
 

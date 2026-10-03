@@ -12,7 +12,12 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { contextOf, type RequestContext } from '../context/request-context';
 import { AppException } from '../errors/app-exception';
 import { clientIpKey } from './client-ip-key';
-import { RATE_LIMITER, type RateLimiter } from './rate-limiter';
+import {
+  RATE_LIMITER,
+  RateLimiterUnavailableError,
+  type RateLimitDecision,
+  type RateLimiter,
+} from './rate-limiter';
 
 export interface RateLimitRule {
   /** Stable rule name, part of the key: `login-phone`, `login-ip`. */
@@ -26,6 +31,12 @@ export interface RateLimitRule {
    * requests share one fixed bucket, so a body crafted to defeat the extractor still counts.
    */
   by: 'ip' | 'user' | ((req: Request) => string | null | undefined);
+  /**
+   * What to do when the limiter backend (Valkey) is down. Default `'deny'` (fail closed: 503):
+   * correct for login, OTP and everything that guards money or SMS. Only a low-risk rule may
+   * choose `'allow'`; it is then skipped and a warning is logged.
+   */
+  onOutage?: 'deny' | 'allow';
 }
 
 const RATE_LIMITS = 'remix:rateLimits';
@@ -94,11 +105,29 @@ export class RateLimitGuard implements CanActivate {
         this.warnNoClientIp();
         continue;
       }
-      const decision = await this.limiter.consume(
-        rateLimitKey(ctx, rule, value),
-        rule.limit,
-        rule.windowSec,
-      );
+      let decision: RateLimitDecision;
+      try {
+        decision = await this.limiter.consume(
+          rateLimitKey(ctx, rule, value),
+          rule.limit,
+          rule.windowSec,
+        );
+      } catch (error) {
+        if (!(error instanceof RateLimiterUnavailableError)) throw error;
+        if (rule.onOutage === 'allow') {
+          this.logger.warn({ rule: rule.name }, 'Rate limiter unavailable: rule skipped (allow)');
+          continue;
+        }
+        this.logger.error({ rule: rule.name }, 'Rate limiter unavailable: request refused');
+        throw new AppException(
+          'INTERNAL',
+          503,
+          'Service temporarily unavailable. Try again shortly.',
+          {
+            headers: { 'retry-after': '5' },
+          },
+        );
+      }
       if (!decision.allowed) {
         throw new AppException('RATE_LIMITED', 429, 'Too many attempts. Try again later.', {
           headers: { 'retry-after': String(decision.resetSec) },

@@ -74,3 +74,15 @@ We build authentication ourselves, following the session model in 03-architectur
 - Tests: token hashing and lookup; rotation, the grace window and reuse revocation; expiry at 12 h and 30 days; a tenant-A cookie on tenant B's host → 401; device limit (J-01); password change revokes everything; impersonation expires at 30 min (J-11); an unknown phone runs the dummy verify.
 - Logs redact `cookie`, `set-cookie`, `authorization` and `password` fields. Auth responses send `Cache-Control: no-store`.
 - Device limits raise the cost of account sharing; they don't make it impossible, because cookies can be copied. T2 also relies on watermarks and Zoom name lock.
+
+## Addendum (2026-10-03) — SMS one-time codes
+
+Settles the OTP half of AUTH-02 / AUTH-05 / AUTH-09 for Phase 2. The numbers are `OTP_RULES` and `LOGIN_LIMITS` in `packages/types/src/api/auth.ts`; if they change there, this section changes with them.
+
+- **Code:** 6 digits from `crypto.randomInt`, per purpose (`password_reset`, `first_password`, `unlock`). A new code for the same phone and purpose invalidates the previous one.
+- **Lifetime and guesses:** valid for 10 minutes; 5 wrong guesses burn the code (the user must request a new one). A used code is deleted, never reusable.
+- **Sending limits:** a new code no sooner than 45 s after the last, at most 3 per phone per 15 minutes. Counted by the Valkey limiter and enforced before anything is queued, with per-IP and per-tenant quotas on top (SMS-fraud risk T7). These limits fail **closed** if Valkey is down: no code is sent.
+- **Storage:** only `HMAC-SHA-256(server secret, tenantId | phone | purpose | code)` is stored, compared with `crypto.timingSafeEqual`. The key is a dedicated server secret, not the session secret. A 6-digit code has too little entropy for a plain hash to survive a database dump; the HMAC key is what makes offline guessing impossible.
+- **Numbers:** only Sri Lankan mobiles `+947XXXXXXXX` (`sriLankaMobile`) can receive codes; anything else is rejected at validation before any send.
+- **No enumeration:** the request endpoints always answer 202 with the same body and similar timing whether or not the phone has an account, and whether or not a send was suppressed by a limit. The limiter counts the phone regardless of existence.
+- **Development:** the mock SMS provider logs each message (including the code) and keeps it in its call recorder so developers and e2e tests can read it. It is never bound when `NODE_ENV=production`.

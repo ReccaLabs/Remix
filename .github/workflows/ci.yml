@@ -19,6 +19,18 @@ jobs:
     name: Lint · typecheck · test · build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # The API's `valkey` test project (rate limiter, BullMQ jobs) needs a real Valkey; it fails
+    # the run when none answers on 127.0.0.1:6379. Same image as infra/docker/compose.yaml.
+    services:
+      valkey:
+        image: valkey/valkey:8.1-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -185,13 +197,19 @@ jobs:
             docker exec smoke-db pg_isready -h 127.0.0.1 -U postgres -d remix >/dev/null 2>&1 && break
             sleep 1
           done
+          docker run -d --name smoke-valkey --network smoke valkey/valkey:8.1-alpine
+          for _ in $(seq 1 30); do
+            docker exec smoke-valkey valkey-cli ping >/dev/null 2>&1 && break
+            sleep 1
+          done
           docker run -d --name api-smoke --network smoke -p 127.0.0.1:4000:4000 \
+            -e VALKEY_URL=redis://smoke-valkey:6379 \
             -e DATABASE_URL=postgres://remix_app:remix_app_dev_password@smoke-db:5432/remix \
             -e TENANT_BASE_DOMAINS=remix.lk -e PLATFORM_HOSTS=admin.remix.lk \
             -e TRUST_PROXY=uniquelocal \
             "$IMAGE"
           for _ in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:4000/health/ready; then
+            if curl -fsS http://127.0.0.1:4000/health/ready | tee /dev/stderr | grep -q '"valkey":"ok"'; then
               echo; curl -fsS http://127.0.0.1:4000/health; echo; exit 0
             fi
             sleep 1

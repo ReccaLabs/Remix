@@ -12,10 +12,11 @@ import { LoggerModule, Logger as PinoNestLogger } from 'nestjs-pino';
 import type { DestinationStream } from 'pino';
 import { loggerParams } from './common/logging/logger';
 import { APP_CONFIG, type AppConfig } from './config/config';
+import { WorkerJobsModule } from './jobs/jobs.module';
 
 /**
- * Keeps the worker process alive until shutdown. BullMQ workers (ADR 0012) will hold their own
- * Valkey connections open; until then this timer is the only handle, and it doubles as a
+ * Keeps the worker process alive until shutdown. BullMQ workers (ADR 0012) hold their own
+ * Valkey connections open; without VALKEY_URL (dev/tests) this timer is the only handle, and it doubles as a
  * debug heartbeat.
  */
 @Injectable()
@@ -47,7 +48,10 @@ export class WorkerModule {
   static forRoot(options: WorkerOptions): DynamicModule {
     return {
       module: WorkerModule,
-      imports: [LoggerModule.forRoot(loggerParams(options.config, options.logDestination))],
+      imports: [
+        LoggerModule.forRoot(loggerParams(options.config, options.logDestination)),
+        WorkerJobsModule.forRoot(options.config),
+      ],
       providers: [{ provide: APP_CONFIG, useValue: options.config }, WorkerLifecycle],
     };
   }

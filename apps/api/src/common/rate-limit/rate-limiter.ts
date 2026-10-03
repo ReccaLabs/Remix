@@ -12,11 +12,20 @@ export interface RateLimitDecision {
  * `limit` per `windowSec`. Keys are built by the rate-limit guard and always start with
  * `t:<tenantId>:` (cache-key rule, 03-architecture §3).
  *
- * In-memory now; the Valkey implementation (`INCR` + `EXPIRE NX` in one round trip) replaces it
- * when the queue/cache module lands, so limits hold across API instances.
+ * Production uses `ValkeyRateLimiter` (shared across API nodes). {@link InMemoryRateLimiter}
+ * is for unit tests and for development without `VALKEY_URL`; it is per process and must not
+ * be used where more than one API node serves traffic.
  */
 export interface RateLimiter {
   consume(key: string, limit: number, windowSec: number): Promise<RateLimitDecision>;
+}
+
+/** Thrown when the limiter backend (Valkey) cannot answer. The guard decides, per rule, to fail closed or open. */
+export class RateLimiterUnavailableError extends Error {
+  constructor(cause: unknown) {
+    super('Rate limiter backend unavailable', { cause });
+    this.name = 'RateLimiterUnavailableError';
+  }
 }
 
 /** DI token for {@link RateLimiter}. */
@@ -36,7 +45,7 @@ interface Window {
  *   flushing a victim's counter by creating junk keys would hand an attacker fresh attempts;
  * - when the map is still full, a *new* key fails closed (the request is rate limited) while
  *   existing keys keep counting. Legitimate new keys wait at most until the next sweep or the
- *   end of a window; the Valkey limiter (TTL-based) replaces this when it lands.
+ *   end of a window (the Valkey limiter is TTL-based and has no such bound).
  */
 export class InMemoryRateLimiter implements RateLimiter {
   private readonly windows = new Map<string, Window>();
