@@ -12,6 +12,7 @@
 | 4 | [04-quality.md](04-quality.md) | NFRs, Definition of Ready/Done (story → release), test strategy + critical journeys, threat model, release process |
 | 5 | [05-roadmap.md](05-roadmap.md) | Phases 1–10 with exit criteria, timeline, long-lead tracks, design gaps, risks, ADR backlog |
 | — | [phase-1.md](phase-1.md) | Phase 1 execution board: tracks, branches, ownership, decisions, status |
+| — | [phase-1-report-si.md](phase-1-report-si.md) | Phase 1 වාර්තාව සිංහලෙන් — හැදුවේ මොනවද, PRs/branches/Docker පැහැදිලි කිරීම, ඊළඟ පියවර |
 
 Related: [DEVELOPMENT.md](../../DEVELOPMENT.md) (stack, security checklist §5) · [DESIGN.md](../../DESIGN.md) (design system, screen → route map) · [CLAUDE.md](../../CLAUDE.md) (rules for AI assistants) · [docs/decisions/](../decisions/) (ADRs).
 
