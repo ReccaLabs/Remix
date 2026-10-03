@@ -1,7 +1,7 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-  - "e2e"
+  - 'apps/*'
+  - 'packages/*'
+  - 'e2e'
 # Dependency install scripts are denied unless listed true here (supply-chain hardening).
 # These ship prebuilt binaries via optional platform packages, so scripts are not needed.
 # @remix/db dev tools: esbuild (drizzle-kit, tsx) uses its platform package; ssh2 and its
@@ -28,3 +28,18 @@ minimumReleaseAgeExclude:
   - next-intl@4.14.7
   - turbo@2.11.4
   - use-intl@4.14.7
+
+# Security overrides for vulnerable transitive dependencies (CI runs `pnpm audit --audit-level high`).
+# Remove an entry once the parent package ships the fixed version itself.
+overrides:
+  # GHSA-5j98-mcp5-4vw2: glob CLI command injection, fixed in 10.5.0. Via testcontainers → archiver.
+  'glob@>=10.2.0 <10.5.0': ^10.5.0
+  # GHSA-67mh-4wv8-2f99: esbuild dev-server request leak, fixed in 0.25.0. Via drizzle-kit → @esbuild-kit.
+  'esbuild@<0.25.0': ^0.25.0
+
+auditConfig:
+  ignoreGhsas:
+    # braces ≤ 3.0.3 stack-exhaustion DoS on crafted brace patterns; no patched version exists yet.
+    # Reached only through build/lint tooling (micromatch) that expands our own static globs, never
+    # user input, and it is not in the API image. Re-check when braces publishes a fix.
+    - GHSA-vfj7-8cjw-p6xm

@@ -8,8 +8,9 @@ import { Hero } from '@/components/home/hero';
 import { PricingBand } from '@/components/home/pricing-band';
 import { Problems } from '@/components/home/problems';
 import { ScreensTour } from '@/components/home/screens-tour';
+import { JsonLd } from '@/components/seo/json-ld';
 import { toLocale } from '@/i18n/routing';
-import { jsonLd, pageMetadata } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 import { SITE } from '@/lib/site';
 
 type Props = { params: Promise<{ locale: string }> };
@@ -73,10 +74,7 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
-      />
+      <JsonLd data={structuredData} />
       <Hero />
       <Problems />
       <Features />

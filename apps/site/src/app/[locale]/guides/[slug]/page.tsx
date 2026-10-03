@@ -5,11 +5,12 @@ import { notFound } from 'next/navigation';
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
 import { GuideCard, GuideMeta, guideHref } from '@/components/guides/guide-card';
 import { GuidesCta } from '@/components/guides/guides-cta';
+import { JsonLd } from '@/components/seo/json-ld';
 import { loadGuideBody } from '@/content/guides/content';
 import { getGuide, GUIDES } from '@/content/guides/guides';
 import { Link } from '@/i18n/navigation';
 import { toLocale } from '@/i18n/routing';
-import { jsonLd, pageMetadata } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 import { ROUTES, SITE } from '@/lib/site';
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
@@ -121,10 +122,7 @@ export default async function GuidePage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
-      />
+      <JsonLd data={structuredData} />
       <article aria-labelledby="guide-title">
         <Container className="pt-8 sm:pt-12">
           <nav aria-label={t('article.breadcrumbLabel')}>

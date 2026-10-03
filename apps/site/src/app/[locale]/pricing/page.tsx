@@ -9,8 +9,9 @@ import { PlanCards } from '@/components/pricing/plan-cards';
 import { PricingCta } from '@/components/pricing/pricing-cta';
 import { faqValues, PRICING_FAQ, PricingFaq } from '@/components/pricing/pricing-faq';
 import { PricingHero } from '@/components/pricing/pricing-hero';
+import { JsonLd } from '@/components/seo/json-ld';
 import { toLocale } from '@/i18n/routing';
-import { jsonLd, pageMetadata } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 import { ROUTES, SITE } from '@/lib/site';
 
 type Props = { params: Promise<{ locale: string }> };
@@ -77,10 +78,7 @@ export default async function PricingPage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
-      />
+      <JsonLd data={structuredData} />
       <BillingProvider>
         <PricingHero />
         <PlanCards />

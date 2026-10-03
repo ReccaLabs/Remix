@@ -4,8 +4,9 @@ import { AboutHero } from '@/components/about/about-hero';
 import { Pilot } from '@/components/about/pilot';
 import { Story } from '@/components/about/story';
 import { Values } from '@/components/about/values';
+import { JsonLd } from '@/components/seo/json-ld';
 import { toLocale } from '@/i18n/routing';
-import { jsonLd, pageMetadata } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 import { ROUTES, SITE } from '@/lib/site';
 
 type Props = { params: Promise<{ locale: string }> };
@@ -57,10 +58,7 @@ export default async function AboutPage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
-      />
+      <JsonLd data={structuredData} />
       <AboutHero />
       <Story />
       <Values />
