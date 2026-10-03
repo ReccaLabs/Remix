@@ -14,6 +14,12 @@ export const ERROR_CODES = [
   'INVALID_CREDENTIALS',
   'ACCOUNT_DISABLED',
   'DEVICE_LIMIT',
+  'TWO_STEP_REQUIRED',
+  'CODE_INVALID',
+  'ACCOUNT_LOCKED',
+  'PASSWORD_CHANGE_REQUIRED',
+  'INVITE_INVALID',
+  'PLAN_LIMIT',
   'RATE_LIMITED',
   'CSRF_REJECTED',
   'CONFLICT',
@@ -36,6 +42,11 @@ export const problemSchema = z.object({
   errors: z.array(z.object({ path: z.string(), message: z.string() })).optional(),
   /** Correlates with server logs; safe to show to support staff. */
   requestId: z.string().optional(),
+  /**
+   * Follow-up step for `DEVICE_LIMIT` and `TWO_STEP_REQUIRED` (see `deviceLimitChallengeSchema`,
+   * `twoStepChallengeSchema` in ./auth). Kept `unknown` here; the caller parses it by `code`.
+   */
+  challenge: z.unknown().optional(),
 });
 export type Problem = z.infer<typeof problemSchema>;
 

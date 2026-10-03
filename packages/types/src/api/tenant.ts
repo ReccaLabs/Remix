@@ -52,6 +52,8 @@ export const tenantPublicSchema = z.object({
   timezone: z.string(),
   brandColor: brandColorSchema.nullable(),
   logoUrl: z.url().nullable(),
+  /** TEN-03 (Phase 2). */
+  faviconUrl: z.url().nullable().default(null),
 });
 export type TenantPublic = z.infer<typeof tenantPublicSchema>;
 

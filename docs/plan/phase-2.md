@@ -151,3 +151,18 @@ platform staff login with TOTP · institutes list · create institute (replaces 
 
 1. **Irusha:** merge the green Dependabot PRs (#32, #31, #29, #18); turn on branch protection + squash-only (C2); decide on B9 (early platform admin). No server needed until Phase 8.
 2. **Claude:** start wave 0 (P2-0) on your go-ahead.
+
+## B12. Contracts (P2-0, landed first)
+
+Every Phase 2 endpoint is in `packages/types/src/api/routes.ts`; schemas in `auth.ts` (OTP, device limit, 2-step, invites, "Me"), `students.ts`, `staff.ts`, `classes.ts` (admin part), `imports.ts`, `admin.ts` (dashboard, theme, general settings) and `common.ts`. `packages/types/src/permissions.ts` is the role → permission table (`can()`, `isClassScoped()`) used by API guards and, for visibility only, by the admin UI. The typed client now supports `:id` path params and query strings: `api.call(name, body?, { params, query })`.
+
+| Flow | Decision encoded in the contract |
+| --- | --- |
+| AUTH-03 device limit | Student login on a 3rd device → 403 `DEVICE_LIMIT` whose `challenge` is `deviceLimitChallengeSchema` (single-use token, 5 min, device list); `resolveDeviceLimit` signs one device out and finishes the login. |
+| AUTH-05 2-step | Owner/admin/cashier on an untrusted device → 401 `TWO_STEP_REQUIRED` with `twoStepChallengeSchema` (SMS already sent); `verifyTwoStep` with optional 30-day trust. |
+| AUTH-02/07/09 codes | One OTP service; purposes `password_reset`, `first_password`, `unlock`. `requestOtp` never reveals whether a phone exists; `verifyOtp` returns a 10-min one-time ticket for `setPassword` (for `unlock` it clears the lockout). |
+| Students added by staff/import | Start `invited` (no password); the student sets one with a `first_password` code. |
+| Invites | Token only in the link fragment and POST bodies (`previewInvite`, `acceptInvite`), never in a URL path/query. |
+| Import | Browser parses CSV/xlsx and maps columns; `previewStudentImport` validates synchronously (dry run); `commitStudentImport` queues a job on `imports` and returns it; poll `getImportJob`. The job re-validates every row. |
+| Theme | Brand colour must keep white text ≥ 4.5:1 (`hasReadableContrast`); logo/favicon are https URLs until the Phase 4 upload pipeline. |
+| Later-phase figures | Money/attendance/lesson numbers are in the profile, class and dashboard shapes as `null` until Phases 3–5; UI shows "—". |
