@@ -136,8 +136,11 @@ owners. The API audits any login that still uses a temporary password as
 ## Isolation suite
 
 `pnpm --filter @remix/db test` runs unit tests and the isolation suite (`test:unit`,
-`test:isolation` separately). The suite needs Docker: Testcontainers starts
-`postgres:18-alpine`, creates the four roles, runs the real migrations as `remix_owner`, and
+`test:isolation` separately). The suite needs Postgres: it creates a fresh `remix_test_<id>` database
+on the dev stack's Postgres (`TEST_DATABASE_URL` overrides the superuser URL; local hosts only) and
+drops it afterwards, or starts a Testcontainers `postgres:18-alpine` when none is reachable
+(`TEST_DATABASE=container` forces it; see `src/testing.ts`). It creates the four roles if missing,
+runs the real migrations as `remix_owner`, and
 checks the catalog (RLS everywhere, policies, composite FKs, index order, exact grants, no
 `BYPASSRLS`, no PUBLIC privileges, pinned `SECURITY DEFINER` functions) plus a generated
 cross-tenant test per table (read, insert, update, move, delete, `TRUNCATE`, composite FKs, no

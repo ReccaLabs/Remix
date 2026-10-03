@@ -1,0 +1,50 @@
+# Local staging overlay: the PRODUCTION images of apps/api and apps/web on top of the dev stack.
+# DEV MACHINE ONLY (dev credentials, ports on 127.0.0.1). Used by `pnpm stack:prod`:
+#
+#   docker compose -f infra/docker/compose.yaml -f infra/docker/compose.prod.yaml up -d --build
+#
+# Tenant hosts work as in `pnpm dev`: http://<slug>.localhost:${WEB_PORT:-3001}. The web image is
+# built with the /api/v1 rewrite (WEB_API_REWRITE) pointing at the api container, standing in
+# for the edge proxy that routes /api/v1 in real production (ADR 0003).
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    image: remix-api:local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # `development` on purpose: the API refuses TENANT_BASE_DOMAINS=localhost and insecure
+      # cookies when NODE_ENV=production. Everything else is the production image and bundle.
+      NODE_ENV: development
+      PORT: '4000'
+      DATABASE_URL: postgres://remix_app:remix_app_dev_password@postgres:5432/remix
+      TENANT_BASE_DOMAINS: localhost
+      PLATFORM_HOSTS: admin.localhost
+      # The web container reaches the API over the compose network (RFC 1918 ranges).
+      TRUST_PROXY: uniquelocal
+      COOKIE_SECURE: 'false'
+    ports:
+      - '127.0.0.1:${API_PORT:-4000}:4000'
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      args:
+        WEB_API_REWRITE: 'true'
+        API_INTERNAL_URL: http://api:4000
+    image: remix-web:local
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_INTERNAL_URL: http://api:4000
+      TENANT_BASE_DOMAINS: localhost
+      PLATFORM_HOSTS: admin.localhost
+    ports:
+      - '127.0.0.1:${WEB_PORT:-3001}:3001'
+    restart: unless-stopped

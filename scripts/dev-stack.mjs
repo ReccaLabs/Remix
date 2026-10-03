@@ -1,7 +1,7 @@
 // pnpm dev:stack — start the local infra (Postgres 18, Valkey, Mailpit, S3) detached and wait
 // until every healthcheck passes. Idempotent: re-running with the stack up is a no-op.
 // `pnpm dev:stack down` stops it (data is kept; `pnpm dev:stack down -v` wipes the volumes).
-import { compose, fail, must, run } from './lib.mjs';
+import { checkPorts, compose, fail, must, run, STACK_PORTS } from './lib.mjs';
 
 const [action, ...rest] = process.argv.slice(2);
 
@@ -13,6 +13,7 @@ if (info.code !== 0) fail('Docker is not available. Install and start Docker, th
 if (action === 'down') {
   await must(compose(['down', ...rest]), 'docker compose down failed.');
 } else {
+  await checkPorts(STACK_PORTS);
   console.log('Starting the dev stack (waiting for healthy services)...');
   await must(
     compose(['up', '-d', '--wait', '--wait-timeout', '180']),

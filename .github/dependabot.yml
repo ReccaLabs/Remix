@@ -16,6 +16,15 @@ updates:
       # Types must match the Node runtime we ship (Node 24, .nvmrc); bump with the runtime.
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
+      # TypeScript 7: typescript-eslint rejects it ("does not support TS 7.0", PR #30) and the
+      # next build/E2E broke with it. Planned upgrade, not a drive-by bump.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+      # ESLint 10 is planned work (Phase 2 C7, together with eslint-config-next support).
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
     # A dependency joins the first group that matches it.
     groups:
       # @nestjs/* packages must share one version or the API fails to start.

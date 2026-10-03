@@ -2,14 +2,16 @@
 // Git Bash / PowerShell on Windows and on Linux CI. Everything here is DEV ONLY.
 import { spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { createServer } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const composeFile = resolve(root, 'infra/docker/compose.yaml');
+export const composeProdFile = resolve(root, 'infra/docker/compose.prod.yaml');
 
 /** Host port of a compose service: environment, else infra/docker/.env, else the default. */
-function composePort(name, fallback) {
+export function composePort(name, fallback) {
   if (process.env[name]) return process.env[name];
   const envFile = resolve(root, 'infra/docker/.env');
   if (existsSync(envFile)) {
@@ -63,9 +65,62 @@ export function run(command, args, { env, capture = false } = {}) {
   });
 }
 
-export function compose(args, options) {
-  return run('docker', ['compose', '-f', composeFile, ...args], options);
+/** `docker compose` against the dev stack; `prod` adds the local-staging overlay (web + API images). */
+export function compose(args, options = {}) {
+  const { prod = false, ...runOptions } = options;
+  const files = prod ? [composeFile, composeProdFile] : [composeFile];
+  return run('docker', ['compose', ...files.flatMap((f) => ['-f', f]), ...args], runOptions);
 }
+
+/** True when nothing holds or reserves 127.0.0.1:port (where Docker publishes). */
+function portIsFree(port) {
+  return new Promise((done) => {
+    const server = createServer();
+    server.once('error', () => done(false));
+    server.listen({ port, host: '127.0.0.1', exclusive: true }, () =>
+      server.close(() => done(true)),
+    );
+  });
+}
+
+/**
+ * Stops with a clear message when a host port a not-yet-running service needs is taken, instead
+ * of Docker's generic "not healthy" / "ports are not available". `needs` lists
+ * `{ service, env, port, what }`; services that already run keep their ports and are skipped.
+ */
+export async function checkPorts(needs, options = {}) {
+  const running = await compose(['ps', '--services', '--status', 'running'], {
+    ...options,
+    capture: true,
+  });
+  const up = new Set(running.stdout.split(/\r?\n/).filter(Boolean));
+  const problems = [];
+  for (const { service, env, port, what } of needs) {
+    if (up.has(service)) continue;
+    const number = Number(composePort(env, String(port)));
+    if (await portIsFree(number)) continue;
+    problems.push(
+      `  - port ${number} (${what}) is in use or reserved. Find the owner:  netstat -ano | findstr :${number}\n` +
+        `    then stop that program, or move ${what} by setting ${env}=<free port> in infra/docker/.env`,
+    );
+  }
+  if (problems.length === 0) return;
+  fail(
+    `Cannot start the stack, these host ports are not available:\n${problems.join('\n')}\n\n` +
+      'On Windows a port can also be reserved by Hyper-V/WSL while no program uses it; check\n' +
+      '  netstat -ano | findstr :<port>   and   netsh interface ipv4 show excludedportrange protocol=tcp\n' +
+      'then pick another port in infra/docker/.env (copy infra/docker/.env.example).',
+  );
+}
+
+/** Host ports the dev stack publishes. */
+export const STACK_PORTS = [
+  { service: 'postgres', env: 'POSTGRES_PORT', port: 5432, what: 'Postgres' },
+  { service: 'valkey', env: 'VALKEY_PORT', port: 6379, what: 'Valkey' },
+  { service: 'mailpit', env: 'MAILPIT_SMTP_PORT', port: 1025, what: 'Mailpit SMTP' },
+  { service: 'mailpit', env: 'MAILPIT_UI_PORT', port: 8025, what: 'Mailpit UI' },
+  { service: 's3', env: 'S3_PORT', port: 8333, what: 'S3 storage' },
+];
 
 export function fail(message) {
   console.error(`\n${message}\n`);

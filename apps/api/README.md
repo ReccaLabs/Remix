@@ -13,7 +13,7 @@ pnpm --filter @remix/api start       # node dist/main.js
 pnpm --filter @remix/api start:worker
 pnpm --filter @remix/api test        # Vitest: unit + e2e (in-memory doubles) + integration (Postgres in Docker)
 pnpm --filter @remix/api exec vitest run --project unit          # no Docker needed
-pnpm --filter @remix/api exec vitest run --project integration   # Testcontainers Postgres 18
+pnpm --filter @remix/api exec vitest run --project integration   # fresh database on the dev stack's Postgres (Testcontainers if it is down)
 pnpm --filter @remix/api lint        # ESLint (typescript-eslint strict-type-checked)
 pnpm --filter @remix/api typecheck
 docker build -f apps/api/Dockerfile -t remix-api .   # from the repo root

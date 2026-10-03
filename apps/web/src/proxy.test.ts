@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 beforeAll(() => {
   vi.stubEnv('API_INTERNAL_URL', 'http://localhost:4000');
@@ -97,6 +97,15 @@ describe('proxy', () => {
 });
 
 describe('proxy session refresh', () => {
+  // Freeze the clock: token ages are computed from Date.now() and a second boundary crossed
+  // mid-test used to make these assertions flaky (Dependabot #28).
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   const now = () => Math.floor(Date.now() / 1000);
   const token = (age: number) => `${now() - age}.q4D8xV2mZp9LkT3sW7nYb1cR5fH0jG6a`;
   const url = 'http://kamalphysics.localhost:3001/app';
