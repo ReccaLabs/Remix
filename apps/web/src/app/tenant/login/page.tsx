@@ -73,7 +73,24 @@ export default async function StudentLoginPage({
           </IntlIsland>
 
           <div className="text-muted flex flex-col gap-2 text-center text-sm">
-            <p className="m-0">{t('forgot')}</p>
+            <p className="m-0">
+              {t.rich('forgot', {
+                link: (chunks) => (
+                  <Link href={TENANT_PATHS.studentForgot} className="font-medium">
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </p>
+            <p className="m-0">
+              {t.rich('firstTime', {
+                link: (chunks) => (
+                  <Link href={TENANT_PATHS.studentFirst} className="font-medium">
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </p>
             <p className="m-0">
               {t.rich('staffLink', {
                 link: (chunks) => (

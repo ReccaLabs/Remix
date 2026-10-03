@@ -1,6 +1,6 @@
 import { ApiError, ERROR_CODES, type ErrorCode } from '@remix/types/api';
 import { describe, expect, it } from 'vitest';
-import { loginErrorFor, parseRetryAfter, rateLimitError } from './login-errors';
+import { codeStepErrorFor, loginErrorFor, parseRetryAfter, rateLimitError } from './login-errors';
 
 const apiError = (code: ErrorCode, status = 400) =>
   new ApiError({ type: 'about:blank', title: code, status, code });
@@ -14,7 +14,9 @@ describe('loginErrorFor', () => {
     expect(loginErrorFor(apiError('TENANT_UNAVAILABLE', 403))).toEqual({
       key: 'tenantUnavailable',
     });
-    expect(loginErrorFor(apiError('DEVICE_LIMIT', 409))).toEqual({ key: 'deviceLimit' });
+    expect(loginErrorFor(apiError('DEVICE_LIMIT', 403))).toEqual({ key: 'deviceLimit' });
+    expect(loginErrorFor(apiError('ACCOUNT_LOCKED', 423))).toEqual({ key: 'accountLocked' });
+    expect(loginErrorFor(apiError('CODE_INVALID', 400))).toEqual({ key: 'codeInvalid' });
   });
 
   it('never distinguishes an unknown phone from a wrong password', () => {
@@ -51,6 +53,32 @@ describe('loginErrorFor', () => {
     for (const code of ERROR_CODES) {
       expect(loginErrorFor(apiError(code)).key).toBeTruthy();
     }
+  });
+});
+
+describe('codeStepErrorFor', () => {
+  const withErrors = (path: string) =>
+    new ApiError({
+      type: 'about:blank',
+      title: 'x',
+      status: 400,
+      code: 'VALIDATION_FAILED',
+      errors: [{ path, message: 'x' }],
+    });
+
+  it('maps the common-password rejection and expired tickets', () => {
+    expect(codeStepErrorFor(withErrors('newPassword'), 'password')).toEqual({
+      key: 'commonPassword',
+    });
+    expect(codeStepErrorFor(apiError('CODE_INVALID'), 'password')).toEqual({
+      key: 'ticketExpired',
+    });
+    expect(codeStepErrorFor(apiError('CODE_INVALID'), 'verify')).toEqual({ key: 'codeInvalid' });
+    expect(codeStepErrorFor(withErrors('code'), 'verify')).toEqual({ key: 'codeInvalid' });
+    expect(codeStepErrorFor(apiError('RATE_LIMITED', 429), 'request', 40)).toEqual({
+      key: 'rateLimitedSeconds',
+      values: { seconds: 40 },
+    });
   });
 });
 

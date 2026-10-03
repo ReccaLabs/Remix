@@ -285,7 +285,7 @@ describe('sessions (ADR 0004) against Postgres', () => {
     it('suspension locks students out at once; billing-only staff keep session, refresh, logout', async () => {
       const inst = await f.tenant('active');
       const student = await f.student(inst);
-      const staff = await f.staff(inst, ['owner']);
+      const staff = await f.staff(inst, ['teacher']);
       const s = await login(inst, student);
       const st = await login(inst, staff, 'staff');
 
@@ -318,7 +318,7 @@ describe('sessions (ADR 0004) against Postgres', () => {
 
     it('cancellation: staff sessions end too; logout still works', async () => {
       const inst = await f.tenant('active');
-      const staff = await f.staff(inst, ['owner']);
+      const staff = await f.staff(inst, ['teacher']);
       const st = await login(inst, staff, 'staff');
       await f.setTenantStatus(inst, 'cancelled');
       t.tenantCache.clear();

@@ -203,7 +203,8 @@ describe('login (AUTH-01, AUTH-05) against Postgres', () => {
 
   describe('staff login', () => {
     it('signs in by email (any case) or phone and returns roles from staff_roles', async () => {
-      const staff = await f.staff(tenant, ['owner', 'teacher'], {
+      // Teacher + gatekeeper: roles without the SMS two-step (that is two-step-invite.int).
+      const staff = await f.staff(tenant, ['gatekeeper', 'teacher'], {
         email: 'kamal.owner@example.test',
         name: 'Kamal Jayasinghe',
       });
@@ -217,7 +218,7 @@ describe('login (AUTH-01, AUTH-05) against Postgres', () => {
         tenantId: tenant.id,
         kind: 'staff',
         displayName: 'Kamal Jayasinghe',
-        roles: ['owner', 'teacher'],
+        roles: ['teacher', 'gatekeeper'],
         locale: 'en',
       });
       expect(byEmail.body.impersonated).toBe(false);
@@ -229,7 +230,7 @@ describe('login (AUTH-01, AUTH-05) against Postgres', () => {
       expect(byPhone.status).toBe(200);
       const cookie = `remix_session=${cookieValue(setCookies(byPhone).get('remix_session'))}`;
       const me = await client(t, tenant.host).get(SESSION, cookie);
-      expect(me.body.user.roles).toEqual(['owner', 'teacher']);
+      expect(me.body.user.roles).toEqual(['teacher', 'gatekeeper']);
     });
 
     it('a student cannot sign in at the staff endpoint; garbage identifiers are generic', async () => {
@@ -300,7 +301,7 @@ describe('login (AUTH-01, AUTH-05) against Postgres', () => {
       async (status, studentStatus, code, staffStatus) => {
         const other = await f.tenant(status);
         const student = await f.student(other);
-        const staff = await f.staff(other, ['owner']);
+        const staff = await f.staff(other, ['teacher']);
         const s = await client(t, other.host).post(STUDENT_LOGIN, {
           phone: student.phone,
           password: PASSWORD,
@@ -482,7 +483,7 @@ describe('login (AUTH-01, AUTH-05) against Postgres', () => {
       expect(Number(blocked.headers['retry-after'])).toBeGreaterThan(0);
       // The limiter only ever holds hashed, tenant-prefixed keys.
       for (const key of t.limiter.keys()) {
-        expect(key).toMatch(/^t:[0-9a-f-]{36}:rl:login-(id|ip):[A-Za-z0-9_-]{32}$/);
+        expect(key).toMatch(/^t:[0-9a-f-]{36}:(rl:login-(id|ip)|login-fail):[A-Za-z0-9_-]{32}$/);
         expect(key).not.toContain('198.51');
         expect(key).not.toContain('+947');
       }
@@ -492,8 +493,8 @@ describe('login (AUTH-01, AUTH-05) against Postgres', () => {
   describe('audit trail and logs', () => {
     it('flags a login that still uses a temporary password (S-05), and only that one', async () => {
       const flagged = await f.tenant('active');
-      const owner = await f.staff(flagged, ['owner'], { email: 'temp.owner@example.test' });
-      const colleague = await f.staff(flagged, ['cashier']);
+      const owner = await f.staff(flagged, ['teacher'], { email: 'temp.owner@example.test' });
+      const colleague = await f.staff(flagged, ['gatekeeper']);
       await db
         .update(schema.tenantUsers)
         .set({ mustChangePassword: true })

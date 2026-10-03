@@ -9,7 +9,17 @@ export type AuditAction =
   | 'auth.login.failed'
   | 'auth.login.temporary_password'
   | 'auth.logout'
-  | 'session.reuse_detected';
+  | 'session.reuse_detected'
+  // Phase 2 (AUTH-02/03/04/05/07/08/09)
+  | 'auth.lockout'
+  | 'auth.unlock'
+  | 'auth.password.set'
+  | 'auth.password.changed'
+  | 'auth.password.reset_by_staff'
+  | 'auth.device.signed_out'
+  | 'auth.device.trusted'
+  | 'auth.two_step.verified'
+  | 'staff.invite.accepted';
 
 export interface AuditEntry {
   action: AuditAction;

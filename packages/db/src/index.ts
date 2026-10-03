@@ -28,4 +28,11 @@ export {
 } from './counters';
 export { runMigrations } from './migrate';
 export { ARGON2ID_OPTIONS, hashPassword } from './password';
-export { ACTOR_KINDS, USER_STATUSES, type ActorKind, type UserStatus } from './schema/enums';
+export {
+  ACTOR_KINDS,
+  AUTH_TICKET_KINDS,
+  USER_STATUSES,
+  type ActorKind,
+  type AuthTicketKind,
+  type UserStatus,
+} from './schema/enums';

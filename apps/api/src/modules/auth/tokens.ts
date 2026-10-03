@@ -39,6 +39,15 @@ export function isDeviceToken(raw: string | undefined): raw is string {
 }
 
 /**
+ * A single-use bearer ticket (device-limit, two-step, password), trust cookie or invite token:
+ * 256 random bits, base64url. Like session tokens, only its SHA-256 is stored.
+ */
+export const newOpaqueToken = newDeviceToken;
+
+/** Strict shape check before hashing a presented ticket; anything else is simply invalid. */
+export const isOpaqueToken = isDeviceToken;
+
+/**
  * SHA-256 (hex) — what the database stores instead of the token. A fast hash is enough for a
  * 256-bit random value, and a database dump yields no usable token (ADR 0004).
  */

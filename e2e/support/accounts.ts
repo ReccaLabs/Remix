@@ -14,9 +14,22 @@ export const NIMALI = {
   classes: ['2027 A/L Physics Theory', '2027 A/L Revision'],
 } as const;
 
-export const KAMAL = { name: 'Kamal Jayasinghe', email: 'kamal@kamalphysics.test' } as const;
-export const SUNIL = { name: 'Sunil Perera', email: 'sunil@kamalphysics.test' } as const;
-export const CLOSED_OWNER = { name: 'Chaminda Silva', phone: '077 000 3300' } as const;
+/** `seedPhone`: E.164, for the seeded trusted computer of two-step roles (support/auth.ts). */
+export const KAMAL = {
+  name: 'Kamal Jayasinghe',
+  email: 'kamal@kamalphysics.test',
+  seedPhone: '+94770001180',
+} as const;
+export const SUNIL = {
+  name: 'Sunil Perera',
+  email: 'sunil@kamalphysics.test',
+  seedPhone: '+94770001181',
+} as const;
+export const CLOSED_OWNER = {
+  name: 'Chaminda Silva',
+  phone: '077 000 3300',
+  seedPhone: '+94770003300',
+} as const;
 
 /** Class names of the Kamal Physics seed (packages/db/src/seed/data.ts). */
 export const KAMAL_CLASSES = [

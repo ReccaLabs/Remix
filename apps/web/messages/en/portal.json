@@ -61,7 +61,37 @@
     "title": "Coming soon",
     "pay": "Paying class fees online will be here soon. Until then, please pay at the institute.",
     "live": "Joining live classes from here is coming soon.",
-    "me": "Your devices, password and language settings will be here soon.",
     "backHome": "Back to home"
+  },
+  "me": {
+    "title": "Me",
+    "devicesTitle": "Devices",
+    "devicesUsed": "{count} of {limit} used",
+    "devicesIntro": "Your account works on {limit} devices at a time to protect your teacher's lessons.",
+    "thisDevice": "This device",
+    "lastUsed": "Last used {when}",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…",
+    "signOutLabel": "Sign out {device}",
+    "signedOut": "{device} was signed out.",
+    "noOtherDevices": "No other devices are signed in.",
+    "passwordTitle": "Change password",
+    "passwordIntro": "Changing it signs you out everywhere else.",
+    "savePassword": "Change password",
+    "savingPassword": "Changing…",
+    "passwordChanged": "Password changed. Your other devices were signed out.",
+    "currentWrong": "Your current password is wrong.",
+    "languageTitle": "Language",
+    "languageHint": "The portal is in English for now. Sinhala and Tamil arrive after native review; we'll remember your choice.",
+    "languageSaved": "Language saved.",
+    "accountTitle": "Account",
+    "signOutFailed": "We couldn't sign that device out. Check your internet connection and try again.",
+    "languageFailed": "We couldn't save your language. Check your internet connection and try again.",
+    "devicesLoadFailed": "We couldn't load your devices. Refresh the page to try again."
+  },
+  "languages": {
+    "en": "English",
+    "si": "සිංහල",
+    "ta": "தமிழ்"
   }
 }

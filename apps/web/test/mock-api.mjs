@@ -10,6 +10,7 @@
 //   POST /api/v1/auth/logout            always 204
 //   GET  /api/v1/me/classes
 //   GET  /api/v1/_debug/headers         echoes the request headers (forwarding checks)
+//   + Phase 2 auth (SMS codes, device limit, 2-step, invites, Me): see mock-api-auth.mjs
 //
 // Behaves like the API where the web app depends on it: tenant from X-Forwarded-Host, host-only
 // `remix_session` cookie `<unixSeconds>.<random>` (plain-HTTP dev name), problem+json errors with
@@ -20,6 +21,7 @@
 // already due for rotation, to watch the proxy refresh them) · MOCK_LATENCY_MS (0).
 import { randomBytes, randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
+import { DEV_INVITE_TOKEN, handleAuthRoute } from './mock-api-auth.mjs';
 
 const PORT = Number(process.env.MOCK_API_PORT ?? 4000);
 const BACKDATE = Number(process.env.MOCK_TOKEN_BACKDATE_SECONDS ?? 0);
@@ -260,6 +262,8 @@ function csrfRejected(req, res) {
 }
 
 async function readJson(req) {
+  // A feature module (mock-api-<area>.mjs) may already have read the body.
+  if ('parsedBody' in req) return req.parsedBody;
   let raw = '';
   for await (const chunk of req) {
     raw += chunk;
@@ -436,6 +440,7 @@ async function handle(req, res) {
   if (pathname === '/api/v1/_debug/headers') return json(res, 200, req.headers);
 
   const route = `${req.method} ${pathname}`;
+  if ((await handleAuthRoute(route, req, res, KIT)) !== false) return;
   switch (route) {
     case 'GET /api/v1/tenant': {
       const t = tenantOf(req);
@@ -495,9 +500,38 @@ async function handle(req, res) {
   }
 }
 
+/** What feature mock modules may use (Phase 2: mock-api-auth.mjs). */
+const KIT = {
+  TENANTS,
+  USERS,
+  DEV_PASSWORD,
+  LIFETIME_S,
+  STAY_LIFETIME_S,
+  sessions,
+  now,
+  send,
+  json,
+  problem,
+  cookieHeader,
+  readCookie,
+  tenantOf,
+  csrfRejected,
+  readJson,
+  normalisePhone,
+  newToken,
+  sessionBody,
+  sessionCookie,
+  currentSession,
+};
+
 createServer((req, res) => {
   handle(req, res).catch((err) => {
     console.error('mock API error', err);
     if (!res.headersSent) problem(res, 500, 'INTERNAL');
   });
-}).listen(PORT, () => console.log(`mock API on http://localhost:${PORT}`));
+}).listen(PORT, () => {
+  console.log(`mock API on http://localhost:${PORT}`);
+  console.log(
+    `dev staff invite: http://kamalphysics.localhost:3001/admin/invite#${DEV_INVITE_TOKEN}`,
+  );
+});

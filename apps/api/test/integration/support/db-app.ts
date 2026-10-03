@@ -12,6 +12,10 @@ import { configureApp } from '../../../src/bootstrap';
 import { InMemoryRateLimiter, RATE_LIMITER } from '../../../src/common/rate-limit/rate-limiter';
 import { CLOCK, ManualClock } from '../../../src/common/time/clock';
 import { loadConfig } from '../../../src/config/config';
+import { MockSmsProvider } from '../../../src/integrations/sms/sms.mock';
+import { JOB_PRODUCER } from '../../../src/jobs/job-producer';
+import { createSmsProcessor } from '../../../src/jobs/sms/sms.processor';
+import { InlineJobProducer } from '../../../src/jobs/testing/inline-jobs';
 import { TENANT_CACHE } from '../../../src/modules/tenancy/db-tenant-resolver';
 import type { InMemoryTenantCache } from '../../../src/modules/tenancy/tenant-cache';
 import { LogCapture } from '../../fixtures/test-app';
@@ -28,6 +32,10 @@ export interface DbTestApp {
   limiter: InMemoryRateLimiter;
   tenantCache: InMemoryTenantCache;
   logs: LogCapture;
+  /** The `sms` queue, run inline by the real processor into {@link sms}. */
+  jobs: InlineJobProducer;
+  /** Messages the SMS worker would have sent (filled by `jobs.drain()`). */
+  sms: MockSmsProvider;
   close(): Promise<void>;
 }
 
@@ -54,6 +62,8 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
   const logs = new LogCapture();
   const clock = new ManualClock(START);
   const limiter = new InMemoryRateLimiter(() => clock.nowMs());
+  const sms = new MockSmsProvider();
+  const jobs = new InlineJobProducer({ sms: createSmsProcessor(sms) });
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule.forRoot({ config, logDestination: logs })],
   })
@@ -61,6 +71,8 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
     .useValue(clock)
     .overrideProvider(RATE_LIMITER)
     .useValue(limiter)
+    .overrideProvider(JOB_PRODUCER)
+    .useValue(jobs)
     .compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({
     bodyParser: false,
@@ -75,6 +87,8 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
     limiter,
     tenantCache: app.get<InMemoryTenantCache>(TENANT_CACHE),
     logs,
+    jobs,
+    sms,
     close: () => app.close(),
   };
 }
@@ -131,10 +145,10 @@ export class Factory {
     tenant: TenantFixture,
     opts: {
       phone?: string;
-      status?: 'active' | 'disabled';
+      status?: 'active' | 'disabled' | 'invited';
       archived?: boolean;
       name?: string;
-      passwordHash?: string;
+      passwordHash?: string | null;
     } = {},
   ): Promise<UserFixture> {
     const phone = opts.phone ?? uniquePhone();
@@ -145,7 +159,10 @@ export class Factory {
         kind: 'student',
         phone,
         displayName: opts.name ?? 'Nimali Perera',
-        passwordHash: opts.passwordHash ?? (await this.hash()),
+        passwordHash:
+          opts.passwordHash === null
+            ? null
+            : (opts.passwordHash ?? (opts.status === 'invited' ? null : await this.hash())),
         status: opts.status ?? 'active',
       })
       .returning({ id: schema.tenantUsers.id });
@@ -162,9 +179,14 @@ export class Factory {
   async staff(
     tenant: TenantFixture,
     roles: StaffRole[],
-    opts: { email?: string; status?: 'active' | 'disabled'; name?: string } = {},
+    opts: {
+      email?: string;
+      status?: 'active' | 'disabled';
+      name?: string;
+      phone?: string | null;
+    } = {},
   ): Promise<UserFixture> {
-    const phone = uniquePhone();
+    const phone = opts.phone === undefined ? uniquePhone() : opts.phone;
     const email = opts.email ?? `staff-${tag()}@example.test`;
     const [user] = await this.db
       .insert(schema.tenantUsers)
@@ -184,7 +206,7 @@ export class Factory {
         .insert(schema.staffRoles)
         .values(roles.map((role) => ({ tenantId: tenant.id, userId: user.id, role })));
     }
-    return { id: user.id, phone, email };
+    return { id: user.id, phone: phone ?? '', email };
   }
 
   async klass(
@@ -297,6 +319,8 @@ export function cookieValue(line: string | undefined): string {
 export interface Client {
   get(path: string, cookie?: string): request.Test;
   post(path: string, body?: object, cookie?: string): request.Test;
+  patch(path: string, body?: object, cookie?: string): request.Test;
+  del(path: string, cookie?: string): request.Test;
 }
 
 /** A random documentation-range client IP, so tests don't share the per-IP login budget. */
@@ -320,6 +344,22 @@ export function client(t: DbTestApp, host: string): Client {
         .set('X-Forwarded-For', randomIp())
         .set('Content-Type', 'application/json');
       return (cookie ? req.set('Cookie', cookie) : req).send(JSON.stringify(body));
+    },
+    patch: (path, body = {}, cookie) => {
+      const req = request(t.server)
+        .patch(path)
+        .set('Host', host)
+        .set('X-Forwarded-For', randomIp())
+        .set('Content-Type', 'application/json');
+      return (cookie ? req.set('Cookie', cookie) : req).send(JSON.stringify(body));
+    },
+    del: (path, cookie) => {
+      const req = request(t.server)
+        .delete(path)
+        .set('Host', host)
+        .set('X-Forwarded-For', randomIp())
+        .set('Content-Type', 'application/json');
+      return (cookie ? req.set('Cookie', cookie) : req).send('{}');
     },
   };
 }

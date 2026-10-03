@@ -4,6 +4,7 @@ import {
   check,
   foreignKey,
   index,
+  integer,
   pgTable,
   smallint,
   text,
@@ -35,6 +36,11 @@ export const tenantUsers = pgTable(
     displayName: text('display_name').notNull(),
     status: userStatus('status').notNull().default('active'),
     locale: appLocale('locale').notNull().default('en'),
+    /** Consecutive wrong passwords since the last successful sign-in or unlock (AUTH-09). */
+    failedLoginCount: integer('failed_login_count').notNull().default(0),
+    /** Set after `LOGIN_LIMITS.lockoutAfterFailures`; cleared by an `unlock` SMS code. */
+    lockedAt: instant('locked_at'),
+    lastSignInAt: instant('last_sign_in_at'),
     ...timestamps(),
   },
   (t) => [
@@ -54,6 +60,7 @@ export const tenantUsers = pgTable(
       sql`${t.status} <> 'active' OR ${t.passwordHash} IS NOT NULL`,
     ),
     check('tenant_users_display_name_length', sql`char_length(${t.displayName}) BETWEEN 1 AND 120`),
+    check('tenant_users_failed_login_count_range', sql`${t.failedLoginCount} BETWEEN 0 AND 1000`),
   ],
 );
 

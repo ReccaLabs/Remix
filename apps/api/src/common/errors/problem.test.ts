@@ -51,6 +51,16 @@ describe('toProblem', () => {
     expect(r.headers).toEqual({ 'retry-after': '5' });
   });
 
+  it('carries a challenge member only when the exception has one', () => {
+    const challenge = { token: 't'.repeat(43), devices: [], expiresAt: '2026-10-15T04:35:00Z' };
+    const withChallenge = toProblem(
+      new AppException('DEVICE_LIMIT', 403, 'Too many devices', { challenge }),
+      'r',
+    );
+    expect(withChallenge.problem.challenge).toEqual(challenge);
+    expect('challenge' in toProblem(new AppException('FORBIDDEN', 403), 'r').problem).toBe(false);
+  });
+
   it('maps a ZodError to 400 with dot paths', () => {
     const schema = z.strictObject({ phone: z.string(), address: z.object({ city: z.string() }) });
     const error = schema.safeParse({ phone: 1, address: { city: 2 }, extra: true }).error;

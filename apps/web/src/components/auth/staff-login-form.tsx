@@ -2,24 +2,28 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Checkbox, Field, Input, PasswordInput } from '@remix/ui';
-import { staffLoginRequestSchema, type StaffLoginRequest } from '@remix/types/api';
+import {
+  staffLoginRequestSchema,
+  twoStepChallengeSchema,
+  type StaffLoginRequest,
+  type TwoStepChallenge,
+} from '@remix/types/api';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { FormAlert } from '@/components/form-alert';
 import { LoginErrorText } from './login-error-text';
+import { TwoStepStep } from './two-step-step';
 import { useLoginSubmit } from './use-login-submit';
 
 type Output = z.output<typeof staffLoginRequestSchema>;
 
 /**
- * AUTH-05 basic staff login (Staff Login 15a/15c): phone or email + password. Validated with the
- * API's schema, posted same-origin, then a full load of `redirectTo`.
- *
- * 2-step SMS (Phase 2, Staff Login 15b/15d): when the login response asks for a code, this form
- * becomes step 1 of two. Add a `step` state here ('credentials' | 'code') and render the code
- * step (6-digit input, resend timer, "trust this computer") instead of navigating — the API
- * contract for that challenge lands with AUTH-05 phase 2.
+ * AUTH-05 staff login (Staff Login 15a/15c): phone or email + password. Validated with the API's
+ * schema, posted same-origin, then a full load of `redirectTo`. When the API answers
+ * TWO_STEP_REQUIRED (owner/admin/cashier on an untrusted computer) the form becomes the code step
+ * (Staff Login 15b/15d).
  */
 export function StaffLoginForm({ redirectTo }: { redirectTo: string }) {
   const t = useTranslations('auth');
@@ -31,10 +35,33 @@ export function StaffLoginForm({ redirectTo }: { redirectTo: string }) {
     resolver: zodResolver(staffLoginRequestSchema),
     defaultValues: { identifier: '', password: '', staySignedIn: false },
   });
-  const { error, navigating, submit } = useLoginSubmit(redirectTo);
+  const { error, setError, navigating, submit } = useLoginSubmit(redirectTo);
+  const [twoStep, setTwoStep] = useState<TwoStepChallenge | null>(null);
   const busy = isSubmitting || navigating;
 
-  const onSubmit = handleSubmit((values) => submit((api) => api.call('staffLogin', values)));
+  const onSubmit = handleSubmit((values) =>
+    submit(
+      (api) => api.call('staffLogin', values),
+      (err) => {
+        // Only staff login answers FORBIDDEN, for a 2-step role without a mobile number.
+        if (err.problem.code === 'FORBIDDEN') {
+          setError({ key: 'twoStepNoPhone' });
+          return true;
+        }
+        if (err.problem.code !== 'TWO_STEP_REQUIRED') return false;
+        const challenge = twoStepChallengeSchema.safeParse(err.problem.challenge);
+        if (!challenge.success) return false;
+        setTwoStep(challenge.data);
+        return true;
+      },
+    ),
+  );
+
+  if (twoStep) {
+    return (
+      <TwoStepStep challenge={twoStep} redirectTo={redirectTo} onBack={() => setTwoStep(null)} />
+    );
+  }
 
   const passwordError = errors.password
     ? errors.password.type === 'too_big'

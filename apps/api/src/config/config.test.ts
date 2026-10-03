@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ConfigError, loadConfig } from './config';
+import { ConfigError, DEV_AUTH_CODE_SECRET, loadConfig } from './config';
 
 /** The smallest valid production environment. */
 const PRODUCTION = {
@@ -111,6 +111,24 @@ describe('loadConfig', () => {
     } catch (error) {
       expect((error as ConfigError).issues.join('\n')).toContain(variable);
     }
+  });
+
+  it('AUTH_CODE_SECRET: dev fallback, required for the production API, never the dev value', () => {
+    expect(loadConfig({}).authCodeSecret).toBe(DEV_AUTH_CODE_SECRET);
+    const secret = 'x'.repeat(40);
+    expect(loadConfig({ AUTH_CODE_SECRET: secret }).authCodeSecret).toBe(secret);
+    expect(() => loadConfig({ AUTH_CODE_SECRET: 'short' })).toThrow(ConfigError);
+    const prodApi = { ...PRODUCTION, DATABASE_URL: 'postgres://app@db/remix' };
+    expect(() => loadConfig(prodApi, { requireDatabase: true })).toThrow(/AUTH_CODE_SECRET/);
+    expect(() =>
+      loadConfig({ ...prodApi, AUTH_CODE_SECRET: DEV_AUTH_CODE_SECRET }, { requireDatabase: true }),
+    ).toThrow(/AUTH_CODE_SECRET/);
+    expect(
+      loadConfig({ ...prodApi, AUTH_CODE_SECRET: secret }, { requireDatabase: true })
+        .authCodeSecret,
+    ).toBe(secret);
+    // The worker (no database modules) does not need it.
+    expect(() => loadConfig(PRODUCTION)).not.toThrow();
   });
 
   it('never echoes values (they may be secrets)', () => {

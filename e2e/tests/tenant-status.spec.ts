@@ -31,7 +31,7 @@ test.describe('TEN-06 suspended institute', () => {
   });
 
   test('the owner logs in and gets only the billing notice', async ({ page }) => {
-    await loginStaff(page, 'closedacademy', CLOSED_OWNER.phone, PASSWORD);
+    await loginStaff(page, 'closedacademy', CLOSED_OWNER.phone, PASSWORD, CLOSED_OWNER.seedPhone);
 
     await expect(
       page.getByRole('heading', { level: 1, name: "Closed Academy's account is suspended" }),

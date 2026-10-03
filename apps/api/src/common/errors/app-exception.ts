@@ -8,6 +8,11 @@ export interface AppExceptionOptions {
   errors?: FieldError[];
   /** Extra response headers (e.g. `Retry-After`). */
   headers?: Record<string, string>;
+  /**
+   * Follow-up step for `DEVICE_LIMIT` / `TWO_STEP_REQUIRED` (the problem's `challenge` member).
+   * Must already match its contract schema (`deviceLimitChallengeSchema`, `twoStepChallengeSchema`).
+   */
+  challenge?: unknown;
 }
 
 /**
@@ -22,6 +27,7 @@ export class AppException extends Error {
   readonly detail: string | undefined;
   readonly errors: FieldError[] | undefined;
   readonly headers: Record<string, string>;
+  readonly challenge: unknown;
 
   constructor(
     readonly code: ErrorCode,
@@ -37,6 +43,7 @@ export class AppException extends Error {
     this.detail = options.detail;
     this.errors = options.errors;
     this.headers = options.headers ?? {};
+    this.challenge = options.challenge;
   }
 }
 

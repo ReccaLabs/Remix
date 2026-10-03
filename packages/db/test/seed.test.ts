@@ -1,7 +1,8 @@
+import { createHash } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 import { resolveTenantByHost } from '../src/resolve';
-import { seed } from '../src/seed';
+import { devTrustToken, seed } from '../src/seed';
 import { withTenant } from '../src/tenant';
 import { connectAll, rows } from './support';
 
@@ -72,6 +73,21 @@ describe('dev seed', () => {
       ),
     );
     expect(counter).toEqual([{ value: 2800 }]);
+  });
+
+  it('gives two-step staff (owner/admin/cashier) a trusted dev computer; teachers none', async () => {
+    const trusted = await rows<{ phone: string; trust_token_hash: string }>(
+      db.owner,
+      sql`select u.phone, d.trust_token_hash from devices d
+          join tenant_users u on u.id = d.user_id join tenants t on t.id = d.tenant_id
+          where t.slug = 'kamalphysics' and d.trust_token_hash is not null
+            and d.trusted_until > now() order by u.phone`,
+    );
+    expect(trusted.map((r) => r.phone)).toEqual(['+94770001180', '+94770001181', '+94770001182']);
+    const expected = createHash('sha256')
+      .update(devTrustToken('kamalphysics', '+94770001180'))
+      .digest('hex');
+    expect(trusted[0]?.trust_token_hash).toBe(expected);
   });
 
   it('seeds a verified and an unverified custom domain, and a suspended tenant', async () => {
