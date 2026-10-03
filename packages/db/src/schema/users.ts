@@ -13,7 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { id, instant, tenantId, timestamps } from './columns';
-import { appLocale, medium, staffRole, userKind, userStatus } from './enums';
+import { appLocale, consentMethod, medium, staffRole, userKind, userStatus } from './enums';
 import { tenants } from './tenants';
 
 /**
@@ -65,7 +65,8 @@ export const tenantUsers = pgTable(
 );
 
 /**
- * Staff role grants. `class_scope` limits a teacher to the listed classes (null = all classes).
+ * Staff role grants. `class_scope` limits a teacher to the listed classes; null (or empty) means
+ * only the classes the teacher is assigned to — never "all classes" (the API's `visibleClassIds`).
  * Array elements cannot carry foreign keys; RLS still hides other tenants' classes.
  */
 export const staffRoles = pgTable(
@@ -101,10 +102,29 @@ export const students = pgTable(
     /** Year the student sits the A/L exam, e.g. 2027. */
     alYear: smallint('al_year'),
     medium: medium('medium'),
+    /** PAR-03 — the student is a minor; parental consent below is then mandatory. */
+    under18: boolean('under18').notNull().default(false),
+    consentGivenBy: text('consent_given_by'),
+    consentMethod: consentMethod('consent_method'),
+    consentRecordedAt: instant('consent_recorded_at'),
+    consentRecordedBy: uuid('consent_recorded_by'),
     archivedAt: instant('archived_at'),
     ...timestamps(),
   },
   (t) => [
+    foreignKey({
+      name: 'students_consent_recorded_by_fk',
+      columns: [t.tenantId, t.consentRecordedBy],
+      foreignColumns: [tenantUsers.tenantId, tenantUsers.id],
+    }),
+    check(
+      'students_under18_has_consent',
+      sql`NOT ${t.under18} OR (${t.consentGivenBy} IS NOT NULL AND ${t.consentMethod} IS NOT NULL AND ${t.consentRecordedAt} IS NOT NULL)`,
+    ),
+    check(
+      'students_consent_given_by_length',
+      sql`char_length(${t.consentGivenBy}) BETWEEN 1 AND 120`,
+    ),
     foreignKey({
       name: 'students_user_fk',
       columns: [t.tenantId, t.userId],

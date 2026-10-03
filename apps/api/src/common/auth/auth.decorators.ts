@@ -1,4 +1,5 @@
 import { createParamDecorator, type ExecutionContext, SetMetadata } from '@nestjs/common';
+import type { Permission } from '@remix/types';
 import type { Request } from 'express';
 import { contextOf } from '../context/request-context';
 import type { ResolvedTenant } from '../tenant/tenant-resolver';
@@ -22,6 +23,18 @@ export const Public = (options: PublicOptions = {}): MethodDecorator & ClassDeco
 /** Route needs a session holding at least one of `roles` (403 otherwise). */
 export const Roles = (...roles: [Role, ...Role[]]): MethodDecorator & ClassDecorator =>
   SetMetadata(REQUIRED_ROLES, roles);
+
+export const REQUIRED_PERMISSIONS = 'remix:permissions';
+
+/**
+ * Route needs a staff session whose roles grant ALL of these permissions (`can()` from
+ * `@remix/types`, the same table the admin UI uses to hide controls). Deny by default: students
+ * and platform sessions are always refused with 403 `FORBIDDEN`. Resource scope (a teacher sees
+ * only their classes) is applied in the service, not here.
+ */
+export const RequirePermission = (
+  ...permissions: [Permission, ...Permission[]]
+): MethodDecorator & ClassDecorator => SetMetadata(REQUIRED_PERMISSIONS, permissions);
 
 export const REQUIRED_KINDS = 'remix:kinds';
 

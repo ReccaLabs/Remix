@@ -1,16 +1,55 @@
 import { sql } from 'drizzle-orm';
-import { check, foreignKey, index, pgTable, text, unique, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  check,
+  foreignKey,
+  index,
+  pgTable,
+  text,
+  unique,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { id, instant, tenantId, timestamps } from './columns';
-import { staffRole } from './enums';
+import { guardianRelation, staffRole } from './enums';
 import { tenants } from './tenants';
-import { tenantUsers } from './users';
+import { students, tenantUsers } from './users';
+
+/**
+ * PAR-01 — parents/guardians of a student (up to 3, enforced by the API). Linked straight to the
+ * student: relation and SMS opt-in are facts about that one link, and siblings sharing a phone
+ * are de-duplicated when SMS is sent (Phase 6), so a separate join table would only add joins.
+ */
+export const guardians = pgTable(
+  'guardians',
+  {
+    id: id(),
+    tenantId: tenantId().references(() => tenants.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull(),
+    name: text('name').notNull(),
+    relation: guardianRelation('relation').notNull(),
+    /** E.164, same rule as `tenant_users.phone`. */
+    phone: text('phone').notNull(),
+    /** Receives fee and attendance SMS (Phases 3/5). */
+    smsOptIn: boolean('sms_opt_in').notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    foreignKey({
+      name: 'guardians_student_fk',
+      columns: [t.tenantId, t.studentId],
+      foreignColumns: [students.tenantId, students.userId],
+    }).onDelete('cascade'),
+    unique('guardians_tenant_id_id_key').on(t.tenantId, t.id),
+    unique('guardians_tenant_student_phone_key').on(t.tenantId, t.studentId, t.phone),
+    index('guardians_tenant_student_idx').on(t.tenantId, t.studentId),
+    check('guardians_phone_e164', sql`${t.phone} ~ '^[+][1-9][0-9]{7,14}$'`),
+    check('guardians_name_length', sql`char_length(${t.name}) BETWEEN 1 AND 120`),
+  ],
+);
 
 /**
  * STF-01 / AUTH-07 — a pending staff invitation. Only the SHA-256 of the 256-bit token is stored;
  * the raw token goes to the invitee's SMS/email and nowhere else. Expires after 72 h.
- *
- * Shape agreed with track P2-B (people), which owns this table; whichever branch merges second
- * keeps one definition.
  */
 export const staffInvites = pgTable(
   'staff_invites',

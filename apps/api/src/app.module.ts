@@ -4,6 +4,7 @@ import type { Redis } from 'ioredis';
 import { LoggerModule } from 'nestjs-pino';
 import type { DestinationStream } from 'pino';
 import { AuthGuard } from './common/auth/auth.guard';
+import { PermissionGuard } from './common/auth/permission.guard';
 import { RolesGuard } from './common/auth/roles.guard';
 import {
   NullSessionAuthenticator,
@@ -29,6 +30,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { DbSessionAuthenticator } from './modules/auth/db-session-authenticator';
 import { ClassesModule } from './modules/classes/classes.module';
 import { DbModule } from './modules/db/db.module';
+import { PeopleModule } from './modules/people/people.module';
 import { DbTenantResolver } from './modules/tenancy/db-tenant-resolver';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 
@@ -95,6 +97,7 @@ class CoreModule {
         { provide: APP_GUARD, useClass: TenantAccessGuard },
         { provide: APP_GUARD, useClass: RateLimitGuard },
         { provide: APP_GUARD, useClass: RolesGuard },
+        { provide: APP_GUARD, useClass: PermissionGuard },
         { provide: APP_INTERCEPTOR, useClass: EndpointInterceptor },
         { provide: APP_FILTER, useClass: ProblemFilter },
         EndpointVerifier,
@@ -116,7 +119,13 @@ export class AppModule {
         HealthModule,
         JobsModule.forRoot(options.config),
         ...(database
-          ? [DbModule.forRoot(options.config), TenancyModule, AuthModule, ClassesModule]
+          ? [
+              DbModule.forRoot(options.config),
+              TenancyModule,
+              AuthModule,
+              ClassesModule,
+              PeopleModule,
+            ]
           : []),
       ],
     };

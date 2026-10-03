@@ -1,0 +1,139 @@
+{
+  "meta": {
+    "title": "Staff and roles"
+  },
+  "title": "Staff and roles",
+  "subtitle": "Invite people, choose what each person can do, and limit teachers to their classes.",
+  "loadError": {
+    "title": "We couldn't load your staff",
+    "body": "Check your internet connection and try again.",
+    "retry": "Try again"
+  },
+  "you": "you",
+  "usage": {
+    "label": "Seats on your plan",
+    "teachers": "Teachers",
+    "cashiers": "Cashier logins",
+    "of": "{used} of {limit}",
+    "unlimited": "{used} (no limit)",
+    "full": "All seats are in use"
+  },
+  "tableHeading": "People",
+  "tableCaption": "Staff and pending invitations",
+  "inviteButton": "Invite someone",
+  "columns": {
+    "name": "Name",
+    "role": "Role",
+    "classes": "Classes",
+    "status": "Status",
+    "twoStep": "SMS code on new devices",
+    "lastSignIn": "Last signed in",
+    "actions": "Actions"
+  },
+  "ownClasses": "Only classes they teach",
+  "expires": "Invitation expires {date}",
+  "twoStep": {
+    "required": "Required",
+    "notRequired": "Not needed"
+  },
+  "status": {
+    "active": "Active",
+    "invited": "Invited",
+    "disabled": "Disabled"
+  },
+  "roles": {
+    "owner": "Owner",
+    "admin": "Admin",
+    "teacher": "Teacher",
+    "cashier": "Cashier",
+    "gatekeeper": "Gate staff"
+  },
+  "actions": {
+    "revoke": "Revoke",
+    "revokeFor": "Revoke the invitation for {name}",
+    "edit": "Edit",
+    "editFor": "Change the role of {name}",
+    "disable": "Disable",
+    "disableFor": "Disable {name}",
+    "enable": "Enable",
+    "enableFor": "Enable {name}"
+  },
+  "empty": {
+    "title": "No staff yet",
+    "body": "Invite your first teacher, cashier or administrator."
+  },
+  "confirm": {
+    "cancel": "Cancel",
+    "revoke": {
+      "title": "Revoke the invitation for {name}?",
+      "body": "The link stops working. You can invite them again later.",
+      "confirm": "Revoke invitation",
+      "done": "Invitation for {name} revoked"
+    },
+    "disable": {
+      "title": "Disable {name}?",
+      "body": "They are signed out at once and cannot log in until you enable them again.",
+      "confirm": "Disable",
+      "done": "{name} disabled"
+    },
+    "enable": {
+      "title": "Enable {name}?",
+      "body": "They can log in again with their existing password.",
+      "confirm": "Enable",
+      "done": "{name} enabled"
+    }
+  },
+  "invite": {
+    "title": "Invite someone",
+    "body": "They get a link by text or email, valid for 72 hours, to set up their login.",
+    "fields": {
+      "name": "Full name",
+      "role": "Role",
+      "phone": "Phone number",
+      "email": "Email address"
+    },
+    "roleHint": {
+      "owner": "Everything, including staff, roles and settings.",
+      "admin": "Day-to-day running: students, classes and imports. No staff or settings.",
+      "teacher": "Sees the students and classes they are assigned to.",
+      "cashier": "Reads students and classes. Fee collection arrives in a later release.",
+      "gatekeeper": "Reads the student list at the door."
+    },
+    "phoneHint": "This role confirms new devices with an SMS code, so a phone number is needed.",
+    "optional": "optional",
+    "cancel": "Cancel",
+    "send": "Send invitation",
+    "sending": "Sending…",
+    "sent": "Invitation sent to {name}",
+    "errors": {
+      "name": "Enter the person's name.",
+      "phone": "Enter a Sri Lankan mobile number, for example 077 123 4567.",
+      "phoneRequired": "A phone number is needed for this role.",
+      "email": "Enter a valid email address.",
+      "taken": "Someone at your institute already uses this phone number or email, or has been invited."
+    }
+  },
+  "edit": {
+    "title": "Change role for {name}",
+    "body": "Saving sets this role and replaces any other role they had.",
+    "role": "Role",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "{name} updated"
+  },
+  "scope": {
+    "legend": "Classes this teacher can see",
+    "hint": "Tick none to show only the classes they teach.",
+    "none": "No classes yet."
+  },
+  "errors": {
+    "forbidden": "Only owners can change staff, or you've been signed out.",
+    "conflict": "That can't be done: the institute must keep at least one active owner, or this person's details are already used.",
+    "planLimit": "Your plan has no free seat for this role. Upgrade your plan or free a seat first.",
+    "validation": "Some details aren't valid. Check the form and try again.",
+    "rateLimited": "Too many requests. Wait a minute and try again.",
+    "notFound": "We couldn't find that person. They may have been removed.",
+    "network": "We couldn't reach the server. Check your internet connection and try again.",
+    "unexpected": "Something went wrong. Please try again."
+  }
+}

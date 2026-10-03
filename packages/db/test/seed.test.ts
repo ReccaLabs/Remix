@@ -90,6 +90,43 @@ describe('dev seed', () => {
     expect(trusted[0]?.trust_token_hash).toBe(expected);
   });
 
+  it('seeds people data: invited students, guardians, minors with consent, a scoped teacher, a pending invite', async () => {
+    const kamal = await resolveTenantByHost(db.app, 'kamalphysics.localhost', {
+      baseDomains: ['localhost'],
+    });
+    if (!kamal) throw new Error('kamalphysics missing');
+    const [counts] = await withTenant(db.app, kamal.id, (tx) =>
+      rows<{
+        invited: number;
+        no_password: number;
+        guardians: number;
+        minors: number;
+        bad_minors: number;
+        scoped: number;
+        invites: number;
+      }>(
+        tx,
+        sql`select
+          (select count(*)::int from tenant_users where status = 'invited') as invited,
+          (select count(*)::int from tenant_users where status = 'invited' and password_hash is null) as no_password,
+          (select count(*)::int from guardians) as guardians,
+          (select count(*)::int from students where under18) as minors,
+          (select count(*)::int from students where under18 and consent_method is null) as bad_minors,
+          (select count(*)::int from staff_roles where role = 'teacher' and class_scope is not null) as scoped,
+          (select count(*)::int from staff_invites where accepted_at is null and revoked_at is null) as invites`,
+      ),
+    );
+    expect(counts).toMatchObject({
+      invited: 6,
+      no_password: 6,
+      bad_minors: 0,
+      scoped: 1,
+      invites: 1,
+    });
+    expect(counts?.guardians).toBeGreaterThanOrEqual(2000);
+    expect(counts?.minors).toBeGreaterThan(0);
+  });
+
   it('seeds a verified and an unverified custom domain, and a suspended tenant', async () => {
     const opts = { baseDomains: ['localhost'] };
     expect((await resolveTenantByHost(db.app, 'kamalphysics.test', opts))?.slug).toBe(

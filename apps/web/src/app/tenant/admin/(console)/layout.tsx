@@ -1,6 +1,7 @@
+import { can } from '@remix/types';
 import { tenantAccess, type SessionResponse } from '@remix/types/api';
 import { ShellTenant } from '@remix/ui';
-import { BookOpen, LayoutDashboard, Menu, Users, Wallet } from 'lucide-react';
+import { BookOpen, LayoutDashboard, Menu, Settings, Users, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
@@ -59,6 +60,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     { href: ADMIN_PATHS.students, label: t('nav.students'), icon: <Users /> },
     { href: ADMIN_PATHS.classes, label: t('nav.classes'), icon: <BookOpen /> },
     { href: ADMIN_PATHS.fees, label: t('nav.fees'), icon: <Wallet /> },
+    // Owners manage staff and roles (STF-01); everyone else has nothing to open here yet.
+    ...(can(session.user.roles, 'staff.manage')
+      ? [{ href: ADMIN_PATHS.staff, label: t('nav.settings'), icon: <Settings /> }]
+      : []),
   ];
   const mobileNav: FrameNavItem[] = [
     { href: ADMIN_PATHS.home, label: t('nav.home'), icon: <LayoutDashboard />, exact: true },

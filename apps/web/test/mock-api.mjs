@@ -22,6 +22,7 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { DEV_INVITE_TOKEN, handleAuthRoute } from './mock-api-auth.mjs';
+import { handlePeople } from './mock-api-people.mjs';
 
 const PORT = Number(process.env.MOCK_API_PORT ?? 4000);
 const BACKDATE = Number(process.env.MOCK_TOKEN_BACKDATE_SECONDS ?? 0);
@@ -496,6 +497,24 @@ async function handle(req, res) {
     }
 
     default:
+      // Phase 2 people routes (students, staff): test/mock-api-people.mjs.
+      if (
+        await handlePeople({
+          req,
+          res,
+          pathname,
+          json,
+          send,
+          problem,
+          readJson,
+          csrfRejected,
+          tenantOf,
+          currentSession,
+          USERS,
+          CLASSES,
+        })
+      )
+        return;
       return problem(res, 404, 'NOT_FOUND');
   }
 }

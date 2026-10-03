@@ -32,6 +32,8 @@ export const ADMIN_PATHS = {
   fees: '/admin/fees',
   classes: '/admin/classes',
   more: '/admin/more',
+  /** Settings → Staff and roles (STF-01..03), owners only. */
+  staff: '/admin/settings/staff',
 } as const;
 
 export const PLATFORM_PATHS = {

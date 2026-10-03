@@ -19,7 +19,20 @@ export type AuditAction =
   | 'auth.device.signed_out'
   | 'auth.device.trusted'
   | 'auth.two_step.verified'
-  | 'staff.invite.accepted';
+  | 'staff.invite.accepted'
+  // People (Phase 2, track B): archive, role and settings changes.
+  | 'student.create'
+  | 'student.update'
+  | 'student.archive'
+  | 'student.reactivate'
+  | 'student.move_class'
+  | 'student.devices_sign_out'
+  | 'staff.invite'
+  | 'staff.invite_revoke'
+  | 'staff.role_change'
+  | 'staff.scope_change'
+  | 'staff.disable'
+  | 'staff.enable';
 
 export interface AuditEntry {
   action: AuditAction;
@@ -32,6 +45,8 @@ export interface AuditEntry {
    * use {@link maskIdentifier}.
    */
   after?: Record<string, unknown>;
+  /** Previous values of what changed (same PII rules as `after`). */
+  before?: Record<string, unknown>;
   at: Date;
 }
 
@@ -44,20 +59,29 @@ export interface AuditEntry {
 @Injectable()
 export class AuditService {
   async record(tx: Tx, tenantId: string, entry: AuditEntry): Promise<void> {
+    await this.recordMany(tx, tenantId, [entry]);
+  }
+
+  /** One INSERT for several entries (bulk actions write one row per affected entity). */
+  async recordMany(tx: Tx, tenantId: string, entries: readonly AuditEntry[]): Promise<void> {
+    if (entries.length === 0) return;
     const ctx = currentContext();
     const ip = ctx?.clientIp && isIP(ctx.clientIp) ? ctx.clientIp : null;
-    await tx.insert(schema.auditLogs).values({
-      tenantId,
-      actorId: entry.actorId,
-      actorKind: entry.actorKind,
-      action: entry.action,
-      entity: entry.entity,
-      entityId: entry.entityId,
-      after: entry.after ?? null,
-      ip,
-      requestId: ctx?.requestId ?? null,
-      createdAt: entry.at,
-    });
+    await tx.insert(schema.auditLogs).values(
+      entries.map((entry) => ({
+        tenantId,
+        actorId: entry.actorId,
+        actorKind: entry.actorKind,
+        action: entry.action,
+        entity: entry.entity,
+        entityId: entry.entityId,
+        before: entry.before ?? null,
+        after: entry.after ?? null,
+        ip,
+        requestId: ctx?.requestId ?? null,
+        createdAt: entry.at,
+      })),
+    );
   }
 }
 

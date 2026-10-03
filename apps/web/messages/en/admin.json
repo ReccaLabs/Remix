@@ -15,7 +15,8 @@
     "fees": "Fees & payments",
     "feesShort": "Fees",
     "classes": "Classes",
-    "more": "More"
+    "more": "More",
+    "settings": "Staff and roles"
   },
   "shell": {
     "skipToContent": "Skip to content"
@@ -47,7 +48,9 @@
   },
   "more": {
     "title": "More",
-    "account": "Your account"
+    "account": "Your account",
+    "staffLink": "Staff and roles",
+    "staffHint": "Invite people, set roles and limit teachers to their classes."
   },
   "soon": {
     "title": "Coming soon",

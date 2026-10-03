@@ -54,6 +54,7 @@ export interface World {
   classId: string;
   scheduleId: string;
   enrollmentId: string;
+  guardianId: string;
   auditLogId: string;
   otpChallengeId: string;
   authTicketId: string;
@@ -136,6 +137,13 @@ const freshAuthTicket = (w: World): Row => ({
   kind: 'device_limit',
   token_hash: hash('g'),
   expires_at: inOneHour(),
+});
+const freshGuardian = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  student_id: w.studentUserId,
+  name: 'Fresh Guardian',
+  relation: 'father',
+  phone: '+94770000088',
 });
 const freshStaffInvite = (w: World): Row => ({
   tenant_id: w.tenantId,
@@ -245,6 +253,15 @@ export const TABLES = {
     crossTenantRefs: {
       class: (home, other) => ({ ...freshEnrollment(home), class_id: other.classId }),
       student: (home, other) => ({ ...freshEnrollment(home), student_id: other.studentUserId }),
+    },
+  },
+  guardians: {
+    access: 'full',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.guardianId }),
+    fresh: freshGuardian,
+    crossTenantRefs: {
+      student: (home, other) => ({ ...freshGuardian(home), student_id: other.studentUserId }),
     },
   },
   tenant_counters: {
@@ -451,6 +468,19 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       'enrollment',
     );
 
+    const guardian = one(
+      await tx
+        .insert(schema.guardians)
+        .values({
+          tenantId,
+          studentId: student.id,
+          name: 'Guardian',
+          relation: 'mother',
+          phone: '+94770000066',
+        })
+        .returning({ id: schema.guardians.id }),
+      'guardian',
+    );
     await tx.insert(schema.tenantCounters).values({ tenantId, kind: 'student', value: 1 });
     const audit = one(
       await tx
@@ -525,6 +555,7 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       classId: klass.id,
       scheduleId: schedule.id,
       enrollmentId: enrollment.id,
+      guardianId: guardian.id,
       auditLogId: audit.id,
       otpChallengeId: otp.id,
       authTicketId: ticket.id,
