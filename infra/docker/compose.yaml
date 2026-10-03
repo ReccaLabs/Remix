@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
 
   valkey:
-    image: valkey/valkey:8.1-alpine
+    image: valkey/valkey:9.1-alpine
     command: ['valkey-server', '--save', '60', '1', '--appendonly', 'no']
     ports:
       - '127.0.0.1:${VALKEY_PORT:-6379}:6379'
