@@ -14,7 +14,7 @@ import { NEXT_PARAM, safeNextPath } from '@/lib/safe-next';
 import { getSession, getTenant } from '@/server/api';
 
 /**
- * AUTH-05 (basic) — institute staff login (Staff Login 15a desktop, 15c phone). Staff of a
+ * AUTH-05 — institute staff login (2-step code step: Staff Login 15b/15d, in the form) (Staff Login 15a desktop, 15c phone). Staff of a
  * suspended institute can still sign in (billing only, TEN-06); a cancelled one is unavailable.
  */
 
@@ -68,7 +68,15 @@ export default async function StaffLoginPage({
             <StaffLoginForm redirectTo={redirectTo} />
           </IntlIsland>
 
-          <p className="text-muted m-0 text-[13px]">{t('forgot')}</p>
+          <p className="text-muted m-0 text-[13px]">
+            {t.rich('forgot', {
+              link: (chunks) => (
+                <Link href={TENANT_PATHS.staffForgot} className="font-medium">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
           <div className="bg-canvas text-ink-2 flex gap-2.5 rounded-md p-3 text-[13px]">
             <Info aria-hidden size={16} className="mt-0.5 flex-none" />
             <p className="m-0">

@@ -13,8 +13,16 @@ export type LoginError =
   | { key: 'rateLimitedMinutes'; values: { minutes: number } }
   | { key: 'rateLimited' }
   | { key: 'tenantUnavailable' }
-  /** Placeholder until the AUTH-03 device-choice flow (Phase 2). */
+  /** DEVICE_LIMIT without a usable challenge (the form normally shows the device chooser). */
   | { key: 'deviceLimit' }
+  /** AUTH-09 — the message links to the SMS unlock flow. */
+  | { key: 'accountLocked' }
+  /** AUTH-05 — a two-step role whose account has no mobile number (403 FORBIDDEN at staff login). */
+  | { key: 'twoStepNoPhone' }
+  /** AUTH-02/05 — wrong, expired or burnt SMS code or ticket. */
+  | { key: 'codeInvalid' }
+  | { key: 'ticketExpired' }
+  | { key: 'commonPassword' }
   | { key: 'network' }
   | { key: 'unexpected' };
 
@@ -65,6 +73,10 @@ export function loginErrorFor(err: unknown, retryAfterSeconds: number | null = n
         return { key: 'tenantUnavailable' };
       case 'DEVICE_LIMIT':
         return { key: 'deviceLimit' };
+      case 'ACCOUNT_LOCKED':
+        return { key: 'accountLocked' };
+      case 'CODE_INVALID':
+        return { key: 'codeInvalid' };
       default:
         return { key: 'unexpected' };
     }
@@ -75,4 +87,25 @@ export function loginErrorFor(err: unknown, retryAfterSeconds: number | null = n
     return { key: 'network' };
   }
   return { key: 'unexpected' };
+}
+
+/**
+ * Errors of the SMS-code steps (AUTH-02/05/07/09), which are not a login: a server-side
+ * validation failure on `newPassword` is the common-password check, and a spent or expired
+ * ticket at the password step means "start again".
+ */
+export function codeStepErrorFor(
+  err: unknown,
+  step: 'request' | 'verify' | 'password',
+  retryAfterSeconds: number | null = null,
+): LoginError {
+  if (err instanceof ApiError) {
+    const { code, errors } = err.problem;
+    if (code === 'VALIDATION_FAILED' && errors?.some((e) => e.path === 'newPassword')) {
+      return { key: 'commonPassword' };
+    }
+    if (code === 'CODE_INVALID' && step === 'password') return { key: 'ticketExpired' };
+    if (code === 'VALIDATION_FAILED') return { key: step === 'verify' ? 'codeInvalid' : 'unexpected' };
+  }
+  return loginErrorFor(err, retryAfterSeconds);
 }

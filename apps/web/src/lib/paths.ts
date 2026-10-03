@@ -6,6 +6,14 @@ export const TENANT_PATHS = {
   home: '/',
   studentLogin: '/login',
   staffLogin: '/admin/login',
+  /** AUTH-02/07/09 SMS-code flows (phone → code → new password). */
+  studentForgot: '/login/forgot',
+  studentFirst: '/login/first',
+  studentUnlock: '/login/unlock',
+  staffForgot: '/admin/login/forgot',
+  staffUnlock: '/admin/login/unlock',
+  /** AUTH-07 — the token travels only in the fragment: `/admin/invite#<token>`. */
+  staffInvite: '/admin/invite',
 } as const;
 
 /** Student portal (DESIGN.md §4.2). Bottom tabs: Home · Classes · Pay · Live · Me. */

@@ -2,11 +2,18 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Checkbox, Field, PasswordInput, PhoneInput } from '@remix/ui';
-import { studentLoginRequestSchema, type StudentLoginRequest } from '@remix/types/api';
+import {
+  deviceLimitChallengeSchema,
+  studentLoginRequestSchema,
+  type DeviceLimitChallenge,
+  type StudentLoginRequest,
+} from '@remix/types/api';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { FormAlert } from '@/components/form-alert';
+import { DeviceLimitStep } from './device-limit-step';
 import { LoginErrorText } from './login-error-text';
 import { useLoginSubmit } from './use-login-submit';
 
@@ -15,7 +22,8 @@ type Output = z.output<typeof studentLoginRequestSchema>;
 /**
  * AUTH-01 student login (Student Login 1a/1d): phone + password + "stay signed in". Validated
  * with the API's own schema before sending, posted same-origin, then a full load of
- * `redirectTo` so the portal renders with the new session cookie.
+ * `redirectTo` so the portal renders with the new session cookie. A third device gets the
+ * device chooser (AUTH-03, Student Login 1c) instead of an error.
  */
 export function StudentLoginForm({ redirectTo }: { redirectTo: string }) {
   const t = useTranslations('auth');
@@ -29,9 +37,31 @@ export function StudentLoginForm({ redirectTo }: { redirectTo: string }) {
     defaultValues: { phone: '', password: '', staySignedIn: false },
   });
   const { error, navigating, submit } = useLoginSubmit(redirectTo);
+  const [deviceLimit, setDeviceLimit] = useState<DeviceLimitChallenge | null>(null);
   const busy = isSubmitting || navigating;
 
-  const onSubmit = handleSubmit((values) => submit((api) => api.call('studentLogin', values)));
+  const onSubmit = handleSubmit((values) =>
+    submit(
+      (api) => api.call('studentLogin', values),
+      (err) => {
+        if (err.problem.code !== 'DEVICE_LIMIT') return false;
+        const challenge = deviceLimitChallengeSchema.safeParse(err.problem.challenge);
+        if (!challenge.success) return false;
+        setDeviceLimit(challenge.data);
+        return true;
+      },
+    ),
+  );
+
+  if (deviceLimit) {
+    return (
+      <DeviceLimitStep
+        challenge={deviceLimit}
+        redirectTo={redirectTo}
+        onCancel={() => setDeviceLimit(null)}
+      />
+    );
+  }
 
   const phoneError = errors.phone
     ? getValues('phone').trim() === ''
