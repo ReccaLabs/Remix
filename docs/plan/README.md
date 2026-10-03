@@ -34,7 +34,7 @@ Update this table at every phase boundary (and feature statuses in 02-features.m
 | Phase | Name | Release | Status | Target (est.) |
 | --- | --- | --- | --- | --- |
 | 0 | remix.lk marketing site | R0 | ✅ Built — launch tasks pending (D1, Turnstile, legal review, deploy) | done |
-| 1 | Foundation & walking skeleton | — | ✅ Built — staging deploy pending ([board](phase-1.md)) | weeks 1–4 |
+| 1 | Foundation & walking skeleton | — | ✅ Done 3 Oct 2026 ([board](phase-1.md)) | weeks 1–4 |
 | 2 | People & classes | R1 | ⬜ Next — [plan](phase-2.md) | weeks 5–7 |
 | 3 | Money (fees, PayHere, slips, cash) | R1 | ⬜ | weeks 8–11 |
 | 4 | Learning (protected video, tutes) | R1 | ⬜ | weeks 12–14 |

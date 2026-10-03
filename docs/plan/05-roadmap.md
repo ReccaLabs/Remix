@@ -1,6 +1,8 @@
 # 05 · Roadmap — phases, milestones, risks, decisions
 
-> Part of the [ReMix development plan](README.md). Each phase delivers a **working, demoable slice on staging** with explicit exit criteria. A phase is closed only when its exit criteria and the phase Definition of Done ([04-quality.md §3.3](04-quality.md#33-phase)) are met. This supersedes the phase table in DEVELOPMENT.md §4.
+> Part of the [ReMix development plan](README.md). Each phase delivers a **working, demoable slice on staging** with explicit exit criteria.
+
+> **Environments decision (3 Oct 2026):** until the pilot, **"staging" means local staging** — the production Docker images of web and API running with the full stack on the developer machine (`pnpm stack:prod`), exposed through a Cloudflare Tunnel whenever a provider (PayHere, Zoom, Bunny) must call back. The Hetzner staging and production servers move to **Phase 8**. Why: nothing needs to be public before pilots, it saves the hosting cost meanwhile, and the same images are later deployed unchanged. A phase is closed only when its exit criteria and the phase Definition of Done ([04-quality.md §3.3](04-quality.md#33-phase)) are met. This supersedes the phase table in DEVELOPMENT.md §4.
 
 Estimates assume 2–3 full-stack developers with AI assistants (see [01-product.md §5](01-product.md#5-assumptions-and-constraints)). They are estimates, re-planned at the end of every phase.
 
@@ -21,7 +23,7 @@ Parallel from week 1: legal (PDPA) · Zoom Marketplace review · PayHere pilot m
 | Milestone | Week (est.) | Meaning |
 | --- | --- | --- |
 | M0 ✅ | done | remix.lk live-ready (Phase 0) |
-| M1 Walking skeleton | 4 | A student of a seeded tenant logs in on its subdomain and sees their class — through web → api → RLS DB, deployed to staging |
+| M1 Walking skeleton ✅ | 4 | A student of a seeded tenant logs in on its subdomain and sees their class — through web → api → RLS DB (verified locally; Hetzner staging moved to Phase 8) |
 | M2 First money | 11 | Card + slip + cash payments unlock months end to end on staging |
 | M3 Teach & learn | 17 | Protected lessons and Zoom live classes with attendance work end to end |
 | M4 Feature-complete R1 | 23 | All R1 Musts done; platform admin + billing work |
@@ -58,7 +60,7 @@ Marketing site, demo/trial form, security headers, CI. **Remaining before public
 | Platform | CLI `pnpm tenant:create` (slug, name, plan, owner phone) until the platform UI exists |
 
 **Exit criteria (M1):**
-- [ ] On staging, `kamal.staging.remix.lk` serves the portal; a seeded student logs in and sees their classes list from the API
+- [x] A seeded student logs in on the institute's host and sees their classes list from the API — verified end to end locally by the Playwright journeys (Hetzner staging moved to Phase 8, see the environments decision above)
 - [ ] Isolation suite green for all tables; a deliberately broken policy makes CI fail (verified once)
 - [ ] ADRs 0003–0007 (✅ accepted 2 Oct 2026), 0012, 0013 accepted
 - [ ] One-command local setup documented (`pnpm dev` brings up everything)
@@ -158,6 +160,7 @@ Marketing site, demo/trial form, security headers, CI. **Remaining before public
 
 | Track | Work |
 | --- | --- |
+| Infrastructure | Hetzner staging + production servers, Kamal deploy, Cloudflare in front, Sentry — moved here from Phase 1 (3 Oct 2026); deploy the same images verified on local staging |
 | Reliability | Production HA Postgres + standby, PgBouncer, WAL archiving offsite, restore drill, failover test |
 | Performance | k6 Saturday scenario on production-like infra; fix hotspots; cache tenant lookups/public sites |
 | Security | DEVELOPMENT.md §5 Musts 100%; ZAP + manual review / pen test; secrets rotation; staff 2FA audit |

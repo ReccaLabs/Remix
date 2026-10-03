@@ -21,7 +21,7 @@
 | Security | Independent review: S-01 (High) … S-07 and N-1 … N-3 fixed with tests | [phase-1.md](phase-1.md) |
 | Local dev | `pnpm dev` = Docker stack + migrate + seed + site/web/api | README |
 
-**Phase 1 exit criteria:** isolation suite ✅ · login → classes end to end ✅ (locally) · ADRs 0003–0007 ✅ · one-command setup ✅ · **staging deploy ⬜** · ADRs 0012/0013 ⬜.
+**Phase 1 exit criteria:** isolation suite ✅ · login → classes end to end ✅ (locally) · ADRs 0003–0007 ✅ · one-command setup ✅. **Phase 1 is closed.** ADRs 0012/0013 move to Phase 2 wave 0; the Hetzner staging server moves to Phase 8 (A4).
 
 ## A2. Repository housekeeping (done 3 Oct)
 
@@ -44,13 +44,24 @@
 
 | # | Item | Owner | Why it matters |
 | --- | --- | --- | --- |
-| C1 | **Staging server** — Hetzner VM, Kamal deploy, `staging.remix.lk`, Sentry DSNs | Irusha (accounts) + Claude (config) | Last Phase 1 exit criterion; every later phase demos on staging |
+| C1 | **Local staging** (`pnpm stack:prod`): production Docker images of web + API with the full stack on the dev machine | Claude (P2-0) | Phase demos run on it until Hetzner (A4) |
 | C2 | **Protect `main`** — require PR + all CI checks; allow only "Squash and merge" | Irusha (GitHub settings) | DEVELOPMENT.md §5.7 "Must"; keeps history one commit per PR |
 | C3 | ADR 0012 (jobs: BullMQ, Valkey, cron locks) and ADR 0013 (observability) | Claude | Phase 2 needs a queue for SMS codes and CSV import |
 | C4 | Shared local test database (one Postgres, fresh DB per test run) instead of a container per run | Claude | Faster tests, no more Docker overload on the dev laptop |
 | C5 | `pnpm dev` explains blocked Windows ports (6379 / 1025) instead of "not healthy" | Claude | Every Windows developer hits it |
 | C6 | Valkey-backed rate limiter (replaces in-memory) | Claude | Limits must hold across API nodes before pilots |
 | C7 | NestJS 12 and ESLint 10 upgrades | Claude | Planned majors closed from Dependabot |
+
+## A4. Environments until the pilot (decision, 3 Oct 2026)
+
+| Environment | Where | Used for | When |
+| --- | --- | --- | --- |
+| **Development** | Laptop: Docker (Postgres, Valkey, Mailpit, S3) + `pnpm dev` | Building features, hot reload | Now |
+| **Local staging** | Laptop: the **production Docker images** of web + API + the same stack (`pnpm stack:prod`) | Phase demos, E2E, "will it work on a server?" | From Phase 2 wave 0 |
+| Local staging + **Cloudflare Tunnel** | Temporary public HTTPS address to the laptop | PayHere sandbox notify, Zoom and Bunny webhooks | Phases 3–5 |
+| **Hetzner staging + production** | Cloud servers, Kamal deploy, Cloudflare, Sentry | Pilot institutes (24/7) | **Phase 8** |
+
+Nothing needs to be public before pilots, the hosting cost is saved meanwhile, and the images verified locally are deployed to Hetzner unchanged. Recorded in [05-roadmap.md](05-roadmap.md).
 
 ---
 
@@ -83,7 +94,7 @@ Out of scope (later phases): fees and payments (Phase 3), lessons (4), Zoom and 
 - [ ] Classes CRUD with schedules; timetable feeds the dashboard "Today's classes"
 - [ ] Institute theme colour/logo applied to portal and admin
 - [ ] Every new table has RLS + isolation tests; every new endpoint has a cross-tenant test
-- [ ] Demo on staging (needs C1)
+- [ ] Demo on **local staging** (`pnpm stack:prod`) with the journeys above green
 
 ## B4. New data (each with `tenant_id`, RLS, factory, isolation test)
 
@@ -108,7 +119,7 @@ Lessons from Phase 1 applied: **at most 2 agents at once**, one shared test data
 
 | Wave | Track | Model | Delivers |
 | --- | --- | --- | --- |
-| 0 | **P2-0 Foundations** (lead) | — / Sonnet | C3 ADR 0012 + OTP addendum, C4 shared test DB, C5 port message, C6 Valkey limiter, fix Dependabot #28/#30, contracts for all Phase 2 endpoints in `packages/types/src/api` |
+| 0 | **P2-0 Foundations** (lead) | — / Sonnet | **C1 local staging (`pnpm stack:prod`)**, C3 ADR 0012 + OTP addendum, C4 shared test DB, C5 port message, C6 Valkey limiter, fix Dependabot #28/#30, contracts for all Phase 2 endpoints in `packages/types/src/api` |
 | 1 | **P2-A Auth completion** | **Opus** (security) | AUTH-02/03/04/07/08/09: OTP challenges, 2-device limit + device list, staff invite + first login, admin device sign-out, lockout; API + web screens |
 | 1 | **P2-B People** | Sonnet | STU-01/02/03/05/07, PAR-01/03, STF-01/02/03: students + guardians + staff APIs and admin screens, permission tests |
 | 2 | **P2-C Classes & timetable** | Sonnet | CLS-01…06, halls, enrolments with fee overrides, timetable → dashboard "Today's classes", TEN-03 theme |
@@ -133,10 +144,10 @@ platform staff login with TOTP · institutes list · create institute (replaces 
 | No designs for import wizard / staff settings | Build from existing patterns; screenshot review before merge |
 | SMS fraud on OTP endpoints (T7) | `+947` only, per-phone/IP/tenant quotas, Turnstile after failures, Valkey limiter (C6) |
 | CSV import with bad or malicious data (T12) | Size/row limits, strict Zod per row, no formulas executed, dry run before commit |
-| Staging not ready | Phase 2 can be built and tested locally; the phase **closes** only after the staging demo |
+| Laptop is the only environment | Local staging runs the real production images; E2E runs on it; CI runs everything again on GitHub for every PR |
 | Usage limits / laptop load | ≤ 2 agents, shared test DB, tracks sized to one session |
 
 ## B11. Next actions
 
-1. **Irusha:** merge the green Dependabot PRs (#32, #31, #29, #18); turn on branch protection + squash-only (C2); start the staging server (C1); decide on B9.
+1. **Irusha:** merge the green Dependabot PRs (#32, #31, #29, #18); turn on branch protection + squash-only (C2); decide on B9 (early platform admin). No server needed until Phase 8.
 2. **Claude:** start wave 0 (P2-0) on your go-ahead.

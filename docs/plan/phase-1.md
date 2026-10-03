@@ -78,8 +78,8 @@ await withTenant(db, tenant.id, async (tx) => tx.select().from(schema.classes));
 | G · CI + E2E | ✅ merged — isolation suite, image scan, Trivy, SHA-pinned actions; 34 Playwright journey runs green |
 | S · Security review | ✅ two passes — S-01 (High) … S-07 and N-1 … N-3 fixed with tests |
 
-**Phase 1 exit criteria (M1):** isolation suite + broken-policy check ✅ · login → classes end to end ✅ (locally) · ADRs 0003–0007 ✅ · one-command `pnpm dev` ✅ · **open:** staging server deploy (owner: Hetzner + Kamal + Sentry), ADRs 0012 (jobs) and 0013 (observability).
+**Phase 1 exit criteria (M1):** isolation suite + broken-policy check ✅ · login → classes end to end ✅ (locally) · ADRs 0003–0007 ✅ · one-command `pnpm dev` ✅ · ADRs 0012 (jobs) and 0013 (observability) move to Phase 2 wave 0. **Phase 1 is closed (3 Oct 2026).** The Hetzner staging server moved to Phase 8; until then local staging is used ([roadmap environments decision](05-roadmap.md)).
 
 Agent models are chosen per track by risk: Opus for auth, RLS and security review; Sonnet for well-specified implementation; Haiku for mechanical edits.
 
-**Not doable from a dev machine (owner action needed):** Hetzner staging server + Kamal deploy, Sentry project DSNs, Zoom Marketplace submission, PayHere/Text.lk/Bunny accounts — see [05-roadmap.md §3](05-roadmap.md#3-parallel-long-lead-tracks-start-week-1).
+**Not doable from a dev machine (owner action needed, by Phase 8):** Hetzner servers + Kamal deploy, Sentry project DSNs, Zoom Marketplace submission, PayHere/Text.lk/Bunny accounts — see [05-roadmap.md §3](05-roadmap.md#3-parallel-long-lead-tracks-start-week-1).
