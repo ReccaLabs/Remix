@@ -5,9 +5,10 @@ import { FeaturedGuide } from '@/components/guides/featured-guide';
 import { guideHref } from '@/components/guides/guide-card';
 import { GuideList } from '@/components/guides/guide-list';
 import { GuidesCta } from '@/components/guides/guides-cta';
+import { JsonLd } from '@/components/seo/json-ld';
 import { GUIDES } from '@/content/guides/guides';
 import { toLocale } from '@/i18n/routing';
-import { jsonLd, pageMetadata } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 import { ROUTES, SITE } from '@/lib/site';
 
 type Props = { params: Promise<{ locale: string }> };
@@ -54,10 +55,7 @@ export default async function GuidesPage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }}
-      />
+      <JsonLd data={structuredData} />
       <section aria-labelledby="guides-title">
         <Container className="flex flex-col gap-5 pb-10 pt-12 sm:pt-[72px]">
           <Eyebrow>{t('hero.eyebrow')}</Eyebrow>

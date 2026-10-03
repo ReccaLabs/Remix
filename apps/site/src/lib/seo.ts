@@ -42,7 +42,16 @@ export function pageMetadata({
   };
 }
 
-/** Serialise JSON-LD safely (prevents `</script>` breaking out of the tag). */
+/**
+ * Serialise JSON-LD for an inline <script>. Escapes `<` (so `</script>` can't close the tag), `>`
+ * and `&` (no HTML-comment or entity tricks) and U+2028/U+2029 (line separators some parsers treat
+ * as newlines). The result is still valid JSON with the same meaning.
+ */
 export function jsonLd(data: Record<string, unknown>): string {
-  return JSON.stringify(data).replace(/</g, '\\u003c');
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
