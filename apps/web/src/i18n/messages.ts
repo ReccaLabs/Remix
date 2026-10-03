@@ -1,6 +1,7 @@
 import type admin from '../../messages/en/admin.json';
 import type auth from '../../messages/en/auth.json';
 import type common from '../../messages/en/common.json';
+import type importMessages from '../../messages/en/import.json';
 import type errors from '../../messages/en/errors.json';
 import type platform from '../../messages/en/platform.json';
 import type portal from '../../messages/en/portal.json';
@@ -20,6 +21,7 @@ export const NAMESPACES = [
   'platform',
   'students',
   'staff',
+  'import',
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -34,6 +36,7 @@ export interface Messages {
   platform: typeof platform;
   students: typeof students;
   staff: typeof staff;
+  import: typeof importMessages;
 }
 
 declare module 'next-intl' {

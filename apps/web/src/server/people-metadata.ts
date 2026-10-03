@@ -24,3 +24,10 @@ export async function staffMetadata(): Promise<Metadata> {
   const t = await getTranslations('staff.meta');
   return { title: t('title'), ...NO_INDEX };
 }
+
+export async function importMetadata(): Promise<Metadata> {
+  const tenant = await getTenant();
+  if (tenantAccess(tenant.status).staff !== 'full') return unavailableMetadata();
+  const t = await getTranslations('import.meta');
+  return { title: t('title'), ...NO_INDEX };
+}

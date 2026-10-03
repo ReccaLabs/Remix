@@ -22,6 +22,7 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { DEV_INVITE_TOKEN, handleAuthRoute } from './mock-api-auth.mjs';
+import { handleImport } from './mock-api-import.mjs';
 import { handlePeople } from './mock-api-people.mjs';
 
 const PORT = Number(process.env.MOCK_API_PORT ?? 4000);
@@ -497,7 +498,11 @@ async function handle(req, res) {
     }
 
     default:
-      // Phase 2 people routes (students, staff): test/mock-api-people.mjs.
+      // Phase 2 student import: test/mock-api-import.mjs; people routes (students, staff): test/mock-api-people.mjs.
+      if (
+        await handleImport({ req, res, pathname, json, problem, csrfRejected, tenantOf, currentSession, USERS, CLASSES })
+      )
+        return;
       if (
         await handlePeople({
           req,
