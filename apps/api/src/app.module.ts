@@ -1,5 +1,6 @@
 import { type DynamicModule, Global, Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
+import type { Redis } from 'ioredis';
 import { LoggerModule } from 'nestjs-pino';
 import type { DestinationStream } from 'pino';
 import { AuthGuard } from './common/auth/auth.guard';
@@ -12,6 +13,8 @@ import { ProblemFilter } from './common/errors/problem.filter';
 import { loggerParams } from './common/logging/logger';
 import { RateLimitGuard } from './common/rate-limit/rate-limit.guard';
 import { InMemoryRateLimiter, RATE_LIMITER } from './common/rate-limit/rate-limiter';
+import { ValkeyRateLimiter } from './common/rate-limit/valkey-rate-limiter';
+import { VALKEY, ValkeyModule } from './common/valkey/valkey';
 import { CsrfGuard } from './common/security/csrf.guard';
 import { TenantAccessGuard } from './common/tenant/tenant-access.guard';
 import { TenantGuard } from './common/tenant/tenant.guard';
@@ -21,6 +24,7 @@ import { EndpointInterceptor } from './common/validation/endpoint.interceptor';
 import { EndpointVerifier } from './common/validation/endpoint-verifier';
 import { APP_CONFIG, type AppConfig } from './config/config';
 import { HealthModule } from './health/health.module';
+import { JobsModule } from './jobs/jobs.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DbSessionAuthenticator } from './modules/auth/db-session-authenticator';
 import { ClassesModule } from './modules/classes/classes.module';
@@ -50,7 +54,11 @@ class CoreModule {
   static forRoot({ config, logDestination, database = true }: AppModuleOptions): DynamicModule {
     return {
       module: CoreModule,
-      imports: [LoggerModule.forRoot(loggerParams(config, logDestination)), DiscoveryModule],
+      imports: [
+        LoggerModule.forRoot(loggerParams(config, logDestination)),
+        DiscoveryModule,
+        ...(config.valkeyUrl ? [ValkeyModule.forRoot(config)] : []),
+      ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
 
@@ -65,7 +73,15 @@ class CoreModule {
         database
           ? { provide: SESSION_AUTHENTICATOR, useExisting: DbSessionAuthenticator }
           : { provide: SESSION_AUTHENTICATOR, useClass: NullSessionAuthenticator },
-        { provide: RATE_LIMITER, useFactory: () => new InMemoryRateLimiter() },
+        // Valkey limiter when VALKEY_URL is set (required in production, C6); the in-memory one
+        // only for development without Valkey and for tests.
+        config.valkeyUrl
+          ? {
+              provide: RATE_LIMITER,
+              useFactory: (client: Redis) => new ValkeyRateLimiter(client),
+              inject: [VALKEY],
+            }
+          : { provide: RATE_LIMITER, useFactory: () => new InMemoryRateLimiter() },
         { provide: CLOCK, useValue: systemClock },
 
         // ── Request pipeline ─────────────────────────────────────────────────────────────
@@ -98,6 +114,7 @@ export class AppModule {
       imports: [
         CoreModule.forRoot({ ...options, database }),
         HealthModule,
+        JobsModule.forRoot(options.config),
         ...(database
           ? [DbModule.forRoot(options.config), TenancyModule, AuthModule, ClassesModule]
           : []),
