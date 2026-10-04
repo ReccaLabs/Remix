@@ -7,5 +7,6 @@ export * from './students';
 export * from './staff';
 export * from './imports';
 export * from './admin';
+export * from './fees';
 export * from './routes';
 export * from './client';

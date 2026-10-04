@@ -16,17 +16,32 @@ export const PERMISSIONS = [
   'enrollments.write',
   'staff.manage',
   'settings.manage',
+  // Phase 3 - money (ADR 0008).
+  'fees.read',
+  'fees.collect',
+  'fees.reverse',
+  'fees.settings',
+  'sms.send',
+  'sms.wallet',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const ALL: readonly Permission[] = PERMISSIONS;
+const OWNER_ONLY: readonly Permission[] = [
+  'staff.manage',
+  'settings.manage',
+  'fees.reverse',
+  'fees.settings',
+  'sms.wallet',
+];
 
 export const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>> = {
   owner: ALL,
-  // Admins run the institute day to day but cannot change staff or institute settings.
-  admin: ALL.filter((p) => p !== 'staff.manage' && p !== 'settings.manage'),
+  // Admins run the institute day to day but cannot change staff, settings or money rules, and
+  // cannot reverse payments (FEE-11: owner only).
+  admin: ALL.filter((p) => !OWNER_ONLY.includes(p)),
   teacher: ['dashboard.view', 'students.read', 'classes.read'],
-  cashier: ['dashboard.view', 'students.read', 'classes.read'],
+  cashier: ['dashboard.view', 'students.read', 'classes.read', 'fees.read', 'fees.collect'],
   gatekeeper: ['students.read'],
 };
 

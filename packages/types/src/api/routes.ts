@@ -47,6 +47,42 @@ import {
   updateEnrollmentSchema,
 } from './classes';
 import { idParamsSchema } from './common';
+import {
+  approveSlipSchema,
+  cashPaymentSchema,
+  checkoutResponseSchema,
+  checkoutStatusSchema,
+  createCheckoutSchema,
+  feeSettingsSchema,
+  listInvoicesQuerySchema,
+  listInvoicesResponseSchema,
+  listPaymentsQuerySchema,
+  listPaymentsResponseSchema,
+  listSlipsQuerySchema,
+  listSlipsResponseSchema,
+  manualPaymentSchema,
+  myFeesResponseSchema,
+  paymentSchema,
+  payhereSettingsSchema,
+  receiptSchema,
+  rejectSlipSchema,
+  reminderPreviewSchema,
+  reminderTargetSchema,
+  reversePaymentSchema,
+  sendRemindersResponseSchema,
+  sendRemindersSchema,
+  signedUrlSchema,
+  slipSchema,
+  slipUploadRequestSchema,
+  slipUploadResponseSchema,
+  smsTopUpRequestSchema,
+  smsWalletSchema,
+  studentFeesSchema,
+  submitSlipSchema,
+  updateFeeSettingsSchema,
+  updatePayhereSettingsSchema,
+} from './fees';
+
 import { importJobSchema, importPreviewResponseSchema, studentImportSchema } from './imports';
 import {
   inviteStaffSchema,
@@ -395,6 +431,190 @@ export const API = {
     path: '/api/v1/admin/settings/general',
     request: updateGeneralSettingsSchema,
     response: generalSettingsSchema,
+  },
+  // ----- Phase 3: money (ADR 0008/0009). Permissions in ROLE_PERMISSIONS. -----------------------
+  // PayHere notify is POST /api/v1/webhooks/payhere/:tenantSlug (form-encoded, `payhereNotifySchema`):
+  // server-to-server only, exempt from the CSRF guard, never called by this client.
+
+  /** FEE-03/10 - the signed-in student's open months, payments, slips and pay options. */
+  myFees: { method: 'GET', path: '/api/v1/me/fees', response: myFeesResponseSchema },
+  /** FEE-04 - PayHere checkout for whole open months. 409 ALREADY_PAID if a line is paid. */
+  createCheckout: {
+    method: 'POST',
+    path: '/api/v1/me/payments/checkout',
+    request: createCheckoutSchema,
+    response: checkoutResponseSchema,
+  },
+  /** The return page polls this; the browser redirect itself proves nothing. */
+  checkoutStatus: {
+    method: 'GET',
+    path: '/api/v1/me/payments/checkout/:id',
+    params: idParamsSchema,
+    response: checkoutStatusSchema,
+  },
+  /** FEE-05 - presigned PUT for a slip photo (ADR 0009). */
+  requestSlipUpload: {
+    method: 'POST',
+    path: '/api/v1/me/slips/upload',
+    request: slipUploadRequestSchema,
+    response: slipUploadResponseSchema,
+  },
+  submitSlip: {
+    method: 'POST',
+    path: '/api/v1/me/slips',
+    request: submitSlipSchema,
+    response: slipSchema,
+  },
+  /** FEE-09 - the student's own receipt, or any receipt for staff with `fees.read`. */
+  receiptPdf: {
+    method: 'GET',
+    path: '/api/v1/receipts/:id/pdf',
+    params: idParamsSchema,
+    response: signedUrlSchema,
+  },
+
+  /** FEE-02 */
+  listInvoices: {
+    method: 'GET',
+    path: '/api/v1/admin/invoices',
+    query: listInvoicesQuerySchema,
+    response: listInvoicesResponseSchema,
+  },
+  /** FEE-02/12 - cost preview before sending (MSG-02 wallet). */
+  previewReminders: {
+    method: 'POST',
+    path: '/api/v1/admin/invoices/reminders/preview',
+    request: reminderTargetSchema,
+    response: reminderPreviewSchema,
+  },
+  /** 409 INSUFFICIENT_BALANCE when the wallet cannot cover the cost; nothing is queued then. */
+  sendReminders: {
+    method: 'POST',
+    path: '/api/v1/admin/invoices/reminders/send',
+    request: sendRemindersSchema,
+    response: sendRemindersResponseSchema,
+  },
+  /** FEE-07/10 - cash counter and the profile Payments tab. */
+  studentFees: {
+    method: 'GET',
+    path: '/api/v1/admin/students/:id/fees',
+    params: idParamsSchema,
+    response: studentFeesSchema,
+  },
+  listPayments: {
+    method: 'GET',
+    path: '/api/v1/admin/payments',
+    query: listPaymentsQuerySchema,
+    response: listPaymentsResponseSchema,
+  },
+  getPayment: {
+    method: 'GET',
+    path: '/api/v1/admin/payments/:id',
+    params: idParamsSchema,
+    response: paymentSchema,
+  },
+  /** FEE-07 - idempotent on `idempotencyKey`: a retry returns the existing payment. */
+  recordCashPayment: {
+    method: 'POST',
+    path: '/api/v1/admin/payments/cash',
+    request: cashPaymentSchema,
+    response: paymentSchema,
+  },
+  /** FEE-08 */
+  recordManualPayment: {
+    method: 'POST',
+    path: '/api/v1/admin/payments/manual',
+    request: manualPaymentSchema,
+    response: paymentSchema,
+  },
+  /** FEE-11 - owner only; returns the reversal payment. 409 CONFLICT if already reversed. */
+  reversePayment: {
+    method: 'POST',
+    path: '/api/v1/admin/payments/:id/reverse',
+    params: idParamsSchema,
+    request: reversePaymentSchema,
+    response: paymentSchema,
+  },
+  /** FEE-09 - data for the 80 mm print layout and reprint. */
+  getReceipt: {
+    method: 'GET',
+    path: '/api/v1/admin/receipts/:id',
+    params: idParamsSchema,
+    response: receiptSchema,
+  },
+  /** FEE-06 - oldest first. */
+  listSlips: {
+    method: 'GET',
+    path: '/api/v1/admin/slips',
+    query: listSlipsQuerySchema,
+    response: listSlipsResponseSchema,
+  },
+  getSlip: {
+    method: 'GET',
+    path: '/api/v1/admin/slips/:id',
+    params: idParamsSchema,
+    response: slipSchema,
+  },
+  /** Signed URL (<= 10 min) of the processed slip image. */
+  slipImage: {
+    method: 'GET',
+    path: '/api/v1/admin/slips/:id/image',
+    params: idParamsSchema,
+    response: signedUrlSchema,
+  },
+  /** Creates a `slip` payment for the expected amount (ADR 0008 section 5). */
+  approveSlip: {
+    method: 'POST',
+    path: '/api/v1/admin/slips/:id/approve',
+    params: idParamsSchema,
+    request: approveSlipSchema,
+    response: slipSchema,
+  },
+  rejectSlip: {
+    method: 'POST',
+    path: '/api/v1/admin/slips/:id/reject',
+    params: idParamsSchema,
+    request: rejectSlipSchema,
+    response: slipSchema,
+  },
+
+  /** SET-02 - owner only; the secret is write-only. */
+  getPayhereSettings: {
+    method: 'GET',
+    path: '/api/v1/admin/settings/payhere',
+    response: payhereSettingsSchema,
+  },
+  updatePayhereSettings: {
+    method: 'PATCH',
+    path: '/api/v1/admin/settings/payhere',
+    request: updatePayhereSettingsSchema,
+    response: payhereSettingsSchema,
+  },
+  /** SET-02 "Test payment (LKR 10)" - a checkout paid by the owner, not tied to a student. */
+  testPayhere: {
+    method: 'POST',
+    path: '/api/v1/admin/settings/payhere/test',
+    response: checkoutResponseSchema,
+  },
+  /** SET-03, FEE-09 receipt template, FEE-12 due day and reminders. */
+  getFeeSettings: {
+    method: 'GET',
+    path: '/api/v1/admin/settings/fees',
+    response: feeSettingsSchema,
+  },
+  updateFeeSettings: {
+    method: 'PATCH',
+    path: '/api/v1/admin/settings/fees',
+    request: updateFeeSettingsSchema,
+    response: feeSettingsSchema,
+  },
+  /** MSG-02 */
+  smsWallet: { method: 'GET', path: '/api/v1/admin/sms/wallet', response: smsWalletSchema },
+  /** "Buy SMS": Recca staff invoice and credit it (platform billing is Phase 7). */
+  requestSmsTopUp: {
+    method: 'POST',
+    path: '/api/v1/admin/sms/wallet/top-up',
+    request: smsTopUpRequestSchema,
   },
 } as const satisfies Record<string, EndpointDef>;
 
