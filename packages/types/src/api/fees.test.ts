@@ -3,6 +3,8 @@ import { can } from '../permissions';
 import { ADDONS } from '../pricing';
 import {
   cashPaymentSchema,
+  invoiceListItemSchema,
+  listInvoicesResponseSchema,
   idempotencyKeySchema,
   manualPaymentSchema,
   payhereNotifySchema,
@@ -52,7 +54,12 @@ describe('payment requests', () => {
   });
 
   it('accepts whole cents only and caps lines', () => {
-    const base = { studentId: ID, lineIds: [ID], cashReceivedCents: 250000, idempotencyKey: ATTEMPT };
+    const base = {
+      studentId: ID,
+      lineIds: [ID],
+      cashReceivedCents: 250000,
+      idempotencyKey: ATTEMPT,
+    };
     expect(cashPaymentSchema.safeParse(base).success).toBe(true);
     expect(cashPaymentSchema.safeParse({ ...base, cashReceivedCents: 2500.5 }).success).toBe(false);
     expect(cashPaymentSchema.safeParse({ ...base, cashReceivedCents: -1 }).success).toBe(false);
@@ -175,5 +182,53 @@ describe('registry', () => {
       expect(API[name].method).toBe('POST');
       expect('request' in API[name]).toBe(true);
     }
+  });
+});
+
+describe('aggregate bounds (sums are not capped like a single class fee)', () => {
+  const item = {
+    id: ID,
+    number: 'KP-I-26-10-KP-0001',
+    studentId: ID,
+    studentNo: 'KP-0001',
+    studentName: 'Sample Student',
+    month: '2026-10-01',
+    dueOn: '2026-10-05',
+    paidCents: 0,
+    status: 'unpaid',
+    slipWaiting: false,
+  };
+
+  it('accepts an invoice of two maximum class fees', () => {
+    expect(invoiceListItemSchema.safeParse({ ...item, totalCents: 120_000_000 }).success).toBe(
+      true,
+    );
+  });
+
+  it('accepts list totals for 2,000 students at LKR 2,500', () => {
+    const res = {
+      page: 1,
+      pageSize: 25,
+      total: 2000,
+      items: [],
+      totals: { totalCents: 500_000_000, paidCents: 0 },
+    };
+    expect(listInvoicesResponseSchema.safeParse(res).success).toBe(true);
+  });
+
+  it('still rejects fractions and negatives in totals', () => {
+    expect(invoiceListItemSchema.safeParse({ ...item, totalCents: 1.5 }).success).toBe(false);
+    expect(invoiceListItemSchema.safeParse({ ...item, totalCents: -1 }).success).toBe(false);
+  });
+
+  it('accepts cash received above one class fee', () => {
+    expect(
+      cashPaymentSchema.safeParse({
+        studentId: ID,
+        lineIds: [ID],
+        cashReceivedCents: 300_000_000,
+        idempotencyKey: ATTEMPT,
+      }).success,
+    ).toBe(true);
   });
 });
