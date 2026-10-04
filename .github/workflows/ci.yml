@@ -94,7 +94,7 @@ jobs:
       - name: Database unit tests and isolation suite
         run: pnpm --filter @remix/db test
 
-  # Phase 1 walking-skeleton journeys (e2e/): Chromium -> built web app -> built API -> Postgres 18
+  # Phase 1 + Phase 2 journeys (e2e/): Chromium -> built web app -> built API -> Postgres 18
   # with RLS and the dev seed. Postgres comes from infra/docker/compose.yaml rather than a
   # `services:` container: only compose mounts postgres/init (the four roles and the remix
   # database, which the migrations insist on), and that mount needs the checked-out repo. Only the
@@ -134,6 +134,7 @@ jobs:
       - name: Install Chromium
         run: pnpm --filter @remix/e2e exec playwright install --with-deps chromium
 
+      # playwright.testDir includes every journey, on desktop and phone projects.
       - name: Run the journeys
         run: pnpm e2e
         env:

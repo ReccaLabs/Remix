@@ -1,4 +1,8 @@
-import { API_PORT, WEB_PORT } from './support/env';
+import { spawn } from 'node:child_process';
+import { createWriteStream } from 'node:fs';
+import { once } from 'node:events';
+import { resolve } from 'node:path';
+import { API_PORT, WEB_PORT, repoRoot } from './support/env';
 
 /**
  * Fails early, with the command that fixes it, when the stack is not what the journeys assume:
@@ -20,7 +24,7 @@ async function tenantFromApi(slug: string): Promise<{ status: number; body: unkn
   return { status: res.status, body: await res.json().catch(() => null) };
 }
 
-export default async function globalSetup(): Promise<void> {
+export default async function globalSetup(): Promise<void | (() => Promise<void>)> {
   const expected = [
     ['kamalphysics', 'active'],
     ['royalscience', 'active'],
@@ -63,5 +67,22 @@ export default async function globalSetup(): Promise<void> {
       `The web app has no /api/v1 rewrite to the API. Rebuild it with WEB_API_REWRITE=true.
 ${SETUP_HINT}`,
     );
+  }
+  if (process.env.E2E_EXTERNAL_STACK === 'true') {
+    // Local staging uses the same dev logging mock, inside the production API image.
+    const log = createWriteStream(resolve(repoRoot, 'e2e/mock-sms.log'), { flags: 'w' });
+    const logs = spawn(
+      'docker',
+      ['logs', '--follow', '--since', '1s', process.env.E2E_API_CONTAINER ?? 'remix-api-1'],
+      { stdio: ['ignore', 'pipe', 'pipe'] },
+    );
+    logs.stdout.pipe(log);
+    logs.stderr.pipe(log, { end: false });
+    return async () => {
+      const stopped = once(logs, 'exit');
+      logs.kill();
+      await stopped;
+      log.end();
+    };
   }
 }
