@@ -64,6 +64,20 @@
       "when": 1791037335525,
       "tag": "0008_import_jobs_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791076787243,
+      "tag": "0009_classes_halls",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791076799281,
+      "tag": "0010_classes_halls_rls",
+      "breakpoints": true
     }
   ]
 }
