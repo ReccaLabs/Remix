@@ -82,7 +82,8 @@ test.afterAll(async ({ browser }, info) => {
     await ctx.addCookies(ownerCookies);
     const page = await ctx.newPage();
     await page.goto(tenantUrl(SLUG, '/admin'));
-    await apiRequest(page, '/api/v1/auth/logout', 'POST');
+    const signedOut = await apiRequest(page, '/api/v1/auth/logout', 'POST');
+    expect(signedOut.status).toBe(204);
   } finally {
     ownerCookies = undefined;
     await ctx.close();
@@ -94,9 +95,9 @@ async function apiRequest(page: Page, path: string, method = 'GET', data?: unkno
     async ({ path, method, data }) => {
       const res = await fetch(path, {
         method,
-        ...(data === undefined
+        ...(method === 'GET'
           ? {}
-          : { headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) }),
+          : { headers: { 'content-type': 'application/json' }, body: JSON.stringify(data ?? {}) }),
       });
       return { status: res.status, body: await res.json().catch(() => null) };
     },
