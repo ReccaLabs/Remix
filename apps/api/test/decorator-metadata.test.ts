@@ -1,3 +1,5 @@
+// Nest 12's compile() lazily loads the adapter even for a DI-only testing module.
+import '@nestjs/platform-express';
 import { Inject, Injectable, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { describe, expect, it } from 'vitest';
@@ -30,8 +32,12 @@ describe('decorator metadata', () => {
     @Module({ providers: [Dep, Consumer, { provide: 'TOKEN', useValue: 'x' }] })
     class M {}
     const ref = await Test.createTestingModule({ imports: [M] }).compile();
-    expect(ref.get(Consumer).dep.name).toBe('dep');
-    expect(ref.get(Consumer).token).toBe('x');
+    try {
+      expect(ref.get(Consumer).dep.name).toBe('dep');
+      expect(ref.get(Consumer).token).toBe('x');
+    } finally {
+      await ref.close();
+    }
   });
 });
 
