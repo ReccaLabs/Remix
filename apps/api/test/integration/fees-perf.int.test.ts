@@ -56,6 +56,7 @@ describe('invoice generation scale (FEE-01)', () => {
       await Promise.all(tenants.slice(i, i + 4).map((tenant) => feesOf(t).generateInvoices(tenant.id, '2026-10')));
     }
     const elapsed = performance.now() - started;
+    // eslint-disable-next-line no-console -- the measured figure is the point of this test
     console.info(`fees perf: ${TENANTS} tenants x ${STUDENTS} students (${STUDENTS * 3} lines each) in ${(elapsed / 1000).toFixed(1)} s`);
     expect(elapsed).toBeLessThan(BUDGET_MS);
     for (const tenant of tenants) {

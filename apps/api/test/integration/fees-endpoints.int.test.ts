@@ -225,10 +225,10 @@ describe('fee read and reversal endpoints (FEE-01, FEE-11) against Postgres', ()
         'NOT_FOUND',
       );
       const inv = await b.get('/api/v1/admin/invoices');
-      expect(inv.body.items.map((i: { studentId: string }) => i.studentId)).toEqual([otherStudent.id]);
+      expect((inv.body.items as { studentId: string }[]).map((i) => i.studentId)).toEqual([otherStudent.id]);
       expect(inv.body.total).toBe(1);
       const pays = await b.get('/api/v1/admin/payments');
-      expect(pays.body.items.map((p: { id: string }) => p.id)).toEqual([otherPaymentId]);
+      expect((pays.body.items as { id: string }[]).map((p) => p.id)).toEqual([otherPaymentId]);
       expect((await b.get(`/api/v1/admin/payments?studentId=${student.id}`)).body.items).toEqual([]);
       expect((await b.get(`/api/v1/admin/invoices?classId=${classId}`)).body.items).toEqual([]);
       // And A is untouched by all of it.

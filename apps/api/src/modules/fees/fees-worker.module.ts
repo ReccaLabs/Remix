@@ -20,14 +20,14 @@ class FeesJobs implements OnApplicationBootstrap, OnApplicationShutdown {
   constructor(@Inject(APP_CONFIG) private readonly config: AppConfig, registry: ProcessorRegistry,
     @Inject(DB) db: Db, @Inject(JOB_PRODUCER) jobs: JobProducer, @Inject(CLOCK) clock: Clock) {
     registry.register('fees', createFeesProcessor(db, jobs, clock,
-      (tenantId, invoiceIds) => this.logger.error({ tenantId, invoiceIds }, 'Fee projection drift repaired')));
+      (tenantId, invoiceIds) => { this.logger.error({ tenantId, invoiceIds }, 'Fee projection drift repaired'); }));
   }
   async onApplicationBootstrap(): Promise<void> {
     if (!this.config.valkeyUrl) return;
     this.connection = new Redis(this.config.valkeyUrl, { maxRetriesPerRequest: null });
-    this.connection.on('error', error => this.logger.warn({ err: error.message }, 'Fees scheduler connection error'));
+    this.connection.on('error', error => { this.logger.warn({ err: error.message }, 'Fees scheduler connection error'); });
     this.queue = new Queue('fees', { connection: this.connection, prefix: JOBS_PREFIX });
-    this.queue.on('error', error => this.logger.warn({ err: error.message }, 'Fees scheduler error'));
+    this.queue.on('error', error => { this.logger.warn({ err: error.message }, 'Fees scheduler error'); });
     try {
       await this.queue.upsertJobScheduler('fees-monthly', FEES_SCHEDULES.monthly,
         { name: 'fees', data: { kind: 'monthly_tick', tenantId: FEES_SYSTEM_TENANT }, opts: DEFAULT_JOB_OPTIONS });

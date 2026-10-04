@@ -37,9 +37,9 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
     return {
       added,
       producer: {
-        add: async (_queue: string, payload: { tenantId: string; kind: string; month?: string }) => {
+        add: (_queue: string, payload: { tenantId: string; kind: string; month?: string }) => {
           added.push(payload);
-          return { jobId: 'x' };
+          return Promise.resolve({ jobId: 'x' });
         },
       },
     };
@@ -345,8 +345,9 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       const w = await world(1);
       const [l] = await lines(db, w.tenant.id);
       const events: string[] = [];
-      fees()['hooks'].registerPaymentCommitted(async (e) => {
+      fees()['hooks'].registerPaymentCommitted((e) => {
         if (e.tenantId === w.tenant.id) events.push(e.paymentId);
+        return Promise.resolve();
       });
       const results = await Promise.all(
         Array.from({ length: 10 }, () => cash(w.tenant, [l!.id], FEE, 'parallel')),
@@ -631,7 +632,7 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
   });
 
   describe('Asia/Colombo month boundaries', () => {
-    afterAll(() => t.clock.set(START));
+    afterAll(() => { t.clock.set(START); });
 
     it('the monthly tick bills the Colombo month: 23:59:59 on 31 Oct is October, midnight is November', async () => {
       const w = await world(1);
