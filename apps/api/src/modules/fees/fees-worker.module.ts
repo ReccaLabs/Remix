@@ -9,7 +9,7 @@ import { DEFAULT_JOB_OPTIONS, FEES_SYSTEM_TENANT, JOBS_PREFIX } from '../../jobs
 import { JOB_PRODUCER, type JobProducer } from '../../jobs/job-producer';
 import { JobsModule } from '../../jobs/jobs.module';
 import { ProcessorRegistry } from '../../jobs/processor-registry';
-import { DB, DbModule } from '../db/db.module';
+import { DB } from '../db/db.module';
 import { createFeesProcessor, FEES_SCHEDULES } from './fees-processor';
 
 @Injectable()
@@ -41,10 +41,11 @@ class FeesJobs implements OnApplicationBootstrap, OnApplicationShutdown {
   }
 }
 
+/** Needs the global `DB` that ImportWorkerModule's DbModule.forRoot provides (one pool, one readiness check). */
 @Module({})
 export class FeesWorkerModule {
   static forRoot(config: AppConfig): DynamicModule {
-    return { module: FeesWorkerModule, imports: [HealthModule, DbModule.forRoot(config), JobsModule.forRoot(config)],
+    return { module: FeesWorkerModule, imports: [HealthModule, JobsModule.forRoot(config)],
       providers: [{ provide: APP_CONFIG, useValue: config }, { provide: CLOCK, useValue: systemClock }, FeesJobs] };
   }
 }
