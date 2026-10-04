@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { schema, type Db } from '@remix/db';
 import {
+  teachersResponseSchema,
   classDetailSchema,
   classStudentsResponseSchema,
   listClassesResponseSchema,
@@ -121,6 +122,58 @@ describe('admin classes (CLS-01/02/03) against Postgres', () => {
   afterAll(async () => {
     await t.close();
     await db.$client.end();
+  });
+
+  describe('GET /admin/teachers ? CLS-02', () => {
+    it('owner and admin see only active staff with the teacher role, including unassigned teachers', async () => {
+      const unassigned = await f.staff(tenant, ['teacher'], { name: 'Unassigned Teacher' });
+      const disabled = await f.staff(tenant, ['teacher'], { name: 'Disabled Teacher' });
+      await db
+        .update(schema.tenantUsers)
+        .set({ status: 'disabled' })
+        .where(eq(schema.tenantUsers.id, disabled.id));
+      const invited = await f.staff(tenant, ['teacher'], { name: 'Invited Teacher' });
+      await db
+        .update(schema.tenantUsers)
+        .set({ status: 'invited' })
+        .where(eq(schema.tenantUsers.id, invited.id));
+      for (const role of ['owner', 'admin'] as const) {
+        const res = await staff[role].api.get('/api/v1/admin/teachers');
+        expect(res.status).toBe(200);
+        expect(res.headers['cache-control']).toBe('no-store');
+        const { items } = teachersResponseSchema.parse(res.body);
+        expect(items.map((m) => m.id).sort()).toEqual([teacherId(), unassigned.id].sort());
+      }
+    });
+
+    it('denies teacher, cashier, gatekeeper, student and anonymous callers', async () => {
+      for (const role of ['teacher', 'cashier', 'gatekeeper'] as const) {
+        expectProblem(await staff[role].api.get('/api/v1/admin/teachers'), 403, 'FORBIDDEN');
+      }
+      expectProblem(await studentCookieApi.get('/api/v1/admin/teachers'), 403, 'FORBIDDEN');
+      expectProblem(
+        await api(t, tenant.host).get('/api/v1/admin/teachers'),
+        401,
+        'UNAUTHENTICATED',
+      );
+    });
+
+    it('never returns foreign teachers and refuses a session on a different tenant host', async () => {
+      const foreign = await f.staff(other, ['teacher'], { name: 'Foreign Teacher' });
+      const otherOwner = await f.staff(other, ['owner']);
+      const cookie = await signInStaff(t, other, otherOwner);
+      const otherApi = api(t, other.host, cookie);
+      const res = await otherApi.get('/api/v1/admin/teachers');
+      expect(res.status).toBe(200);
+      expect(teachersResponseSchema.parse(res.body).items).toEqual([
+        { id: foreign.id, displayName: 'Foreign Teacher' },
+      ]);
+      expectProblem(
+        await api(t, tenant.host, cookie).get('/api/v1/admin/teachers'),
+        401,
+        'UNAUTHENTICATED',
+      );
+    });
   });
 
   describe('GET /admin/classes — CLS-01', () => {

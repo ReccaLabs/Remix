@@ -22,7 +22,7 @@ import {
   validation,
 } from './class-support';
 
-const { classes, classSchedules, enrollments, halls, students, tenantUsers } = schema;
+const { classes, classSchedules, enrollments, halls, students, tenantUsers, staffRoles } = schema;
 
 type ListQuery = z.output<(typeof API.listClasses)['query']>;
 type CreateBody = EndpointBody<typeof API.createClass>;
@@ -54,6 +54,26 @@ export class ClassesService {
     @Inject(CLOCK) private readonly clock: Clock,
     private readonly audit: AuditService,
   ) {}
+
+  teachers(tenantId: string) {
+    return withTenant(this.db, tenantId, async (tx) => ({
+      items: await tx
+        .select({ id: tenantUsers.id, displayName: tenantUsers.displayName })
+        .from(tenantUsers)
+        .innerJoin(
+          staffRoles,
+          and(eq(staffRoles.tenantId, tenantUsers.tenantId), eq(staffRoles.userId, tenantUsers.id)),
+        )
+        .where(
+          and(
+            eq(tenantUsers.kind, 'staff'),
+            eq(tenantUsers.status, 'active'),
+            eq(staffRoles.role, 'teacher'),
+          ),
+        )
+        .orderBy(asc(tenantUsers.displayName), asc(tenantUsers.id)),
+    }));
+  }
 
   // ----- CLS-01 list -------------------------------------------------------------------------
 

@@ -135,7 +135,9 @@ export async function handleClasses(env) {
   const isPublic = pathname === '/api/v1/tenant/timetable';
   const isAdmin =
     parts[0] === 'admin' &&
-    (['classes', 'enrollments', 'timetable', 'halls', 'dashboard'].includes(parts[1] ?? '') ||
+    (['classes', 'teachers', 'enrollments', 'timetable', 'halls', 'dashboard'].includes(
+      parts[1] ?? '',
+    ) ||
       (parts[1] === 'settings' && ['theme', 'general'].includes(parts[2] ?? '')));
   if (!isPublic && !isAdmin) return false;
 
@@ -276,6 +278,20 @@ export async function handleClasses(env) {
       general.defaultLocale = body.defaultLocale;
     }
     return (json(res, 200, general), true);
+  }
+
+  if (area === 'teachers' && m === 'GET' && !a) {
+    if (!need('classes.write')) return true;
+    const items = USERS.filter(
+      (u) =>
+        u.tenant === tenant.slug &&
+        u.kind === 'staff' &&
+        (people.staff.get(u.id)?.status ?? 'active') === 'active' &&
+        (people.staff.get(u.id)?.roles ?? u.roles)?.includes('teacher'),
+    )
+      .map((u) => ({ id: u.id, displayName: u.displayName }))
+      .sort((x, y) => x.displayName.localeCompare(y.displayName));
+    return (json(res, 200, { items }), true);
   }
 
   // ----- halls ---------------------------------------------------------------------------

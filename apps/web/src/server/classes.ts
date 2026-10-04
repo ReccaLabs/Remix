@@ -11,7 +11,7 @@ import {
 import { notFound, redirect } from 'next/navigation';
 import { cache } from 'react';
 import { TENANT_PATHS } from '@/lib/paths';
-import { teachersOf, type ClassesQuery } from '@/lib/classes';
+import { type ClassesQuery } from '@/lib/classes';
 import { getApi, problemCode } from './api';
 import { getRequestContext } from './request';
 
@@ -76,25 +76,13 @@ export const loadHallOptions = cache(async (): Promise<Hall[]> => {
   }
 });
 
-/**
- * People who can teach a class. Listing staff needs `staff.manage` (owners); for everyone else
- * (admins) the teachers already assigned to classes are the best list the API offers.
- */
+/** Active teachers available to owners and admins creating or editing a class. */
 export const loadTeacherOptions = cache(async (): Promise<{ id: string; name: string }[]> => {
-  const api = await getApi();
   try {
-    const { items } = await api.call('listStaff');
-    return items
-      .filter((m) => m.status === 'active' && m.roles.includes('teacher'))
-      .map((m) => ({ id: m.id, name: m.displayName }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    const { items } = await (await getApi()).call('listTeachers');
+    return items.map((m) => ({ id: m.id, name: m.displayName }));
   } catch {
-    try {
-      const { items } = await api.call('listClasses', { query: {} });
-      return teachersOf(items);
-    } catch {
-      return [];
-    }
+    return [];
   }
 });
 

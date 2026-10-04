@@ -219,3 +219,8 @@ export const publicTimetableResponseSchema = z.object({
   weekStart: z.iso.date(),
   slots: z.array(timetableSlotSchema.omit({ studentCount: true })),
 });
+
+/** CLS-02: the teacher picker exposes only active teacher IDs and display names. */
+export const teachersResponseSchema = z.strictObject({
+  items: z.array(z.strictObject({ id: z.uuid(), displayName: z.string() })),
+});
