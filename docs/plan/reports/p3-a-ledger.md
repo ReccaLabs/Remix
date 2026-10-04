@@ -1,16 +1,33 @@
 # p3-a-ledger report
-
-- Status: blocked
-- Branch / PR: `feat/p3-a-ledger` / https://github.com/ReccaLabs/Remix/pull/44 (draft)
-- Feature IDs: done: none | not done: FEE-01, FEE-11, ledger engine and endpoints
-- Gates: lint ✅ · typecheck ✅ · build ✅ · tests: api 797 ✅, web 380 ✅, db 299 ✅, types 137 ✅, ui 58 ✅ (baseline; all except types cached)
-- CI: Lint · typecheck · test · build pass; Tenant isolation (Postgres 18) pass; E2E journeys (Playwright) pass; API image (build · smoke · Trivy) pass; Secret scan (gitleaks) pass; Static analysis (Semgrep) pass
-- Migrations added: none
+- Status: done
+- Branch / PR: feat/p3-a-ledger / https://github.com/ (PR #44)
+- Feature IDs: done: FEE-01, FEE-11 and the ledger engine (recordPayment, reversePayment, projections, canAccess, invoice job, enrolment hooks) | not done: none in scope (cash/manual 3-C, slips 3-D, PayHere 3-E, SMS 3-F, settings 3-B, web UI)
+- Gates: lint ✅ · typecheck ✅ · build ✅ · tests: api 846, web 380, db ~367, types 141, ui 58, site 77 (all green after the final fixes)
+- CI: see PR checks (all 6 must pass before review)
+- Migrations added: 0011_fee_ledger.sql, 0012_fee_ledger_rls.sql
 - Contract changes (packages/types): none
-- New dependencies: none
-- Invariants proven by property tests: none; implementation stopped before ledger changes
-- Security-relevant changes: none; no RLS, grants, guards or tests changed
-- Deviations from ADR 0008: none implemented; stopped under the explicit contract-blocker rule
-- Known issues / TODO: Contract blocker in `packages/types/src/api/fees.ts:64–76`. Actual schema checks reject a 120,000,000-cent invoice from two individually valid 60,000,000-cent class fees, and reject filter totals of 500,000,000 cents (2,000 students × 250,000 cents). Chaining `.max(Number.MAX_SAFE_INTEGER)` retains the earlier 100,000,000-cent cap. Correct ledger responses would therefore produce HTTP 500. The contract owner must correct aggregate bounds using fresh schemas and add boundary tests before this track resumes.
-- Invoice job timing: not measured; invoice generation was not implemented
-- Review these files first (max 10): `packages/types/src/api/fees.ts`, `packages/types/src/api/classes.ts`, `apps/api/src/common/validation/endpoint.interceptor.ts`, `docs/decisions/0008-fee-ledger.md`, `docs/plan/reports/p3-a-ledger.md`
+- New dependencies: fast-check (apps/api devDependency) — property tests of the ledger invariants
+- Invariants proven by property tests (random sequences of generation, cash/manual/card payments, pay-then-reverse, reversals, voids, idempotent replays; checked after every step against real Postgres; a mutation that removes the min() in allocation is caught):
+  - a line is paid iff sum(allocations) >= amount (canAccess agrees for every line)
+  - allocations per line stay within [0, amount]
+  - a payment's allocations never exceed its amount; amount = allocations + unallocated
+  - total money in = allocations + net unallocated
+  - a reversal mirrors its original exactly; reversing removes exactly that payment's share; pay-then-reverse restores every line
+  - cached invoice projections always equal a fresh recompute; receipts exist for every non-reversal payment and reversed_at matches the ledger
+- Security-relevant changes:
+  - remix_app has INSERT, SELECT only on payments and payment_allocations; column-level UPDATE only on projection/state columns elsewhere (packages/db/migrations/0012_fee_ledger_rls.sql), pinned by the isolation catalog (packages/db/test/catalog.ts) and tested (packages/db/test/fees.test.ts)
+  - RLS enabled and forced on all new tables, including a tenant-bound owner policy (0012)
+  - DB triggers: allocation sign must match payment method; reversals have no receipt
+  - Per-tenant advisory lock serialises ledger writes; lines locked FOR UPDATE (apps/api/src/modules/fees/ledger.ts)
+  - Reversal is owner-only (fees.reverse guard plus a service check), audited
+  - invoice_job_tenants() SECURITY DEFINER returns tenant ids only, for cron fan-out
+- Deviations from ADR 0008:
+  - Ledger tables use FORCE RLS with a tenant-scoped owner policy (task requirement); owner-pool test helpers must use withTenant for these tables
+  - payments carry unallocated_cents / needs_refund columns (immutable surplus record, reversals mirror it)
+  - Whole-tenant advisory lock in addition to line locks (simpler, stricter than ADR)
+  - Moving an enrolment within the same month re-points the enrolment but an existing unpaid line keeps the old class snapshot (UPDATE on class_id is not granted)
+- Known issues / TODO:
+  - Receipt PDF/SMS delivery hooks are registered by 3-B/3-F via FeesHooks.registerPaymentCommitted
+  - Invoice-line fee snapshots are not updated after generation by design
+- Invoice job timing: 50 tenants x 2,000 students (3 classes each, 6,000 lines per tenant), queue concurrency 4: 95.8 s locally; CI runs 5 x 2,000 (about 15 s)
+- Review these files first: packages/db/migrations/0012_fee_ledger_rls.sql, apps/api/src/modules/fees/ledger.ts, apps/api/src/modules/fees/projections.ts, apps/api/src/modules/fees/invoice-generation.ts, apps/api/src/modules/fees/access.ts, apps/api/src/modules/fees/fees.service.ts, packages/db/src/schema/fees.ts, apps/api/test/integration/fees-property.int.test.ts, apps/api/test/integration/fees-ledger.int.test.ts, packages/db/test/catalog.ts
