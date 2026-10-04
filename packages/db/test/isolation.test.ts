@@ -39,7 +39,7 @@ beforeAll(async () => {
 
 describe.each(TABLE_NAMES)('%s', (name) => {
   const t = spec(name);
-  const writable = t.access === 'full' || t.access === 'append';
+  const writable = t.access === 'full' || t.access === 'append' || t.access === 'projection';
   const table = sql.identifier(name);
 
   it("in tenant A's context, every visible row belongs to A", async () => {
@@ -58,7 +58,7 @@ describe.each(TABLE_NAMES)('%s', (name) => {
   });
 
   it('without a tenant context the table reads empty (app and readonly roles)', async () => {
-    expect(await count(db.owner, name)).toBeGreaterThan(0);
+    expect(await withTenant(db.owner, A.tenantId, (tx) => count(tx, name))).toBeGreaterThan(0);
     expect(await count(db.app, name)).toBe(0);
     expect(await count(db.readonly, name)).toBe(0);
   });
@@ -78,7 +78,7 @@ describe.each(TABLE_NAMES)('%s', (name) => {
     );
   });
 
-  if (writable) {
+  if (writable && !t.singleton) {
     it('control: the same kind of row for A itself is accepted (rolled back)', async () => {
       await rolledBack(
         withTenant(db.app, A.tenantId, async (tx) => {
@@ -147,7 +147,7 @@ describe.each(TABLE_NAMES)('%s', (name) => {
 
   for (const [ref, build] of Object.entries(t.crossTenantRefs ?? {})) {
     it(`composite FK rejects ${ref} pointing at tenant B (as owner and as app in A)`, async () => {
-      await expectPgError(db.owner.execute(insertRow(name, build(A, B))), '23503');
+      await expectPgError(withTenant(db.owner, A.tenantId, (tx) => tx.execute(insertRow(name, build(A, B)))), '23503');
       await expectPgError(
         withTenant(db.app, A.tenantId, (tx) => tx.execute(insertRow(name, build(A, B)))),
         '23503',
@@ -160,10 +160,9 @@ afterAll(async () => {
   // Nothing above may have changed tenant B: each of its rows is still there.
   for (const name of TABLE_NAMES) {
     const t = spec(name);
-    const found = await rows(
-      db.owner,
-      sql`select 1 from ${sql.identifier(name)} where ${whereKey(t.key(B))}`,
-    );
+    const found = await withTenant(db.owner, B.tenantId, (tx) => rows(
+      tx, sql`select 1 from ${sql.identifier(name)} where ${whereKey(t.key(B))}`,
+    ));
     expect(found, `${name}: tenant B's row`).toHaveLength(1);
   }
 });
