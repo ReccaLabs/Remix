@@ -27,6 +27,47 @@ async function owner(page: Page) {
 }
 const projectIndex = (name: string) => (name === 'mobile-chrome' ? 1 : 0);
 
+async function retireInviteFixtures(page: Page, name?: string) {
+  const staff = await apiGet<{
+    items: { id: string; displayName: string; phone: string | null; status: string }[];
+  }>(page, '/api/v1/admin/staff');
+  for (const member of staff.items) {
+    if (
+      !/^Invited (owner|cashier) [a-f0-9]{8}$/.test(member.displayName) ||
+      !member.phone?.startsWith('+94767') ||
+      (name !== undefined && member.displayName !== name)
+    )
+      continue;
+    if (member.status === 'invited') {
+      const res = await apiRequest(page, `/api/v1/admin/staff/invites/${member.id}`, 'DELETE');
+      expect(res.status).toBe(204);
+    } else if (member.status === 'active') {
+      const res = await apiRequest(page, `/api/v1/admin/staff/${member.id}`, 'PATCH', {
+        status: 'disabled',
+      });
+      expect(res.status).toBe(200);
+    }
+  }
+}
+
+async function expectReadOnly(page: Page, role: string) {
+  await page.goto(tenantUrl(SLUG, '/admin/students'));
+  await expect(page.getByRole('link', { name: 'Add student', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Import CSV', exact: true })).toHaveCount(0);
+  await page.goto(tenantUrl(SLUG, '/admin/classes'));
+  await expect(page.getByRole('link', { name: 'Create class', exact: true })).toHaveCount(0);
+  for (const path of [
+    '/api/v1/admin/classes',
+    '/api/v1/admin/students',
+    '/api/v1/admin/staff/invites',
+    '/api/v1/admin/imports/students/commit',
+  ]) {
+    const res = await apiRequest(page, path, 'POST', {});
+    expect(res.status, `${role}: ${path}`).toBe(403);
+    expect(res.body.code).toBe('FORBIDDEN');
+  }
+}
+
 test.beforeEach(async ({ page }, info) => {
   const ip = createHash('sha256').update(`${info.testId}:${info.retry}`).digest();
   await page.context().setExtraHTTPHeaders({
@@ -203,6 +244,8 @@ test.describe('Phase 2 closeout journeys', () => {
   }, info) => {
     await owner(page);
     test.slow(); // Two invitations and six complete sign-in/sign-out flows.
+    // Repeated staging demos must not leave test cashiers occupying the plan's seats.
+    await retireInviteFixtures(page);
     for (const [index, role] of (['owner', 'cashier'] as const).entries()) {
       const phone = `+9476${String(7_000_000 + projectIndex(info.project.name) * 100_000 + Math.floor(Math.random() * 80_000) + index).padStart(7, '0')}`;
       const name = `Invited ${role} ${randomUUID().slice(0, 8)}`;
@@ -213,7 +256,11 @@ test.describe('Phase 2 closeout journeys', () => {
       await dialog.getByLabel('Role', { exact: true }).selectOption(role);
       await dialog.getByLabel('Phone number').fill(phone);
       const offset = smsOffset();
+      const createdInvite = page.waitForResponse(
+        (res) => res.url().endsWith('/admin/staff/invites') && res.request().method() === 'POST',
+      );
       await dialog.getByRole('button', { name: 'Send invitation' }).click();
+      expect((await createdInvite).status()).toBe(201);
       const link = await deliveredSms(
         phone,
         offset,
@@ -250,12 +297,16 @@ test.describe('Phase 2 closeout journeys', () => {
         await expect(invited).toHaveURL(tenantUrl(SLUG, '/admin'));
         await expect(invited.getByRole('heading', { name: 'Check your phone' })).toHaveCount(0);
       } finally {
-        await ctx.close();
+        try {
+          await retireInviteFixtures(page, name);
+        } finally {
+          await ctx.close();
+        }
       }
     }
   });
 
-  test('permissions: teachers see their classes and students; cashier and teacher cannot write', async ({
+  test('permissions: teachers see only their classes and students, with no writes', async ({
     page,
   }) => {
     await loginStaff(page, SLUG, '+94770001183', PASSWORD);
@@ -285,28 +336,14 @@ test.describe('Phase 2 closeout journeys', () => {
     }
     expect(students.total).toBe(visible.size);
     expect(students.items.every((student) => visible.has(student.id))).toBe(true);
-    for (const role of ['teacher', 'cashier']) {
-      if (role === 'cashier') {
-        await logout(page);
-        await expect(page).toHaveURL(tenantUrl(SLUG, '/admin/login'));
-        await loginStaff(page, SLUG, '+94770001182', PASSWORD, '+94770001182');
-      }
-      await page.goto(tenantUrl(SLUG, '/admin/students'));
-      await expect(page.getByRole('link', { name: 'Add student', exact: true })).toHaveCount(0);
-      await expect(page.getByRole('link', { name: 'Import CSV', exact: true })).toHaveCount(0);
-      await page.goto(tenantUrl(SLUG, '/admin/classes'));
-      await expect(page.getByRole('link', { name: 'Create class', exact: true })).toHaveCount(0);
-      for (const path of [
-        '/api/v1/admin/classes',
-        '/api/v1/admin/students',
-        '/api/v1/admin/staff/invites',
-        '/api/v1/admin/imports/students/commit',
-      ]) {
-        const res = await apiRequest(page, path, 'POST', {});
-        expect(res.status, `${role}: ${path}`).toBe(403);
-        expect(res.body.code).toBe('FORBIDDEN');
-      }
-    }
+    await expectReadOnly(page, 'teacher');
+  });
+
+  test('permissions: cashiers have no write controls and write APIs return 403', async ({
+    page,
+  }) => {
+    await loginStaff(page, SLUG, '+94770001182', PASSWORD, '+94770001182');
+    await expectReadOnly(page, 'cashier');
   });
 
   test('TEN-03: theme settings apply colour and logo to admin and portal shells', async ({
