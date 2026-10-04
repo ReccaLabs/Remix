@@ -40,6 +40,11 @@ RUN pnpm --filter @remix/web build
 # ── runtime: the standalone server only, non-root ──
 FROM ${NODE_IMAGE} AS runtime
 ENV NODE_ENV=production PORT=3001 HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
+# Patch CVE-2026-103111 until the Node base image includes Debian's fixed PCRE2 package.
+RUN apt-get update -o APT::Update::Error-Mode=any \
+ && apt-get install -y --no-install-recommends --only-upgrade libpcre2-8-0 \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" ge 10.42-1+deb12u2 \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build --chown=node:node /repo/apps/web/.next/standalone ./
 COPY --from=build --chown=node:node /repo/apps/web/.next/static ./apps/web/.next/static
