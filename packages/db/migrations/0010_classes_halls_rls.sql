@@ -1,4 +1,4 @@
--- 0008_classes_halls_rls (hand-written) — row-level security and grants for `halls`
+-- 0010_classes_halls_rls (hand-written) — row-level security and grants for `halls`
 -- (0009_classes_halls), settings writes on the tenant row, and the resolver with `favicon_url`
 -- (TEN-03). Same pattern as 0002 (ADR 0005). Security code: changes need two reviewers.
 
