@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, inject, it } from 'vitest';
 import { createDb, verifyAppRole } from '../src/client';
-import { allocateNumbers } from '../src/counters';
+import { advanceCounter, allocateNumbers } from '../src/counters';
 import { classes } from '../src/schema';
 import { withTenant } from '../src/tenant';
 import { connectAll, expectPgError, RLS_VIOLATION, Rollback, rolledBack, rows } from './support';
@@ -135,6 +135,31 @@ describe('allocateNumbers (tenant_counters, ADR 0007)', () => {
     await expect(
       withTenant(db.app, A.tenantId, (tx) => allocateNumbers(tx, 'student', 0)),
     ).rejects.toThrow(RangeError);
+  });
+
+  it('serializes reservations with concurrent allocation and never lowers the counter', async () => {
+    const blocks = await Promise.all(
+      Array.from({ length: 8 }, (_, i) =>
+        withTenant(db.app, A.tenantId, async (tx) => {
+          await advanceCounter(tx, 'receipt', 100 + i, 'reservation');
+          return allocateNumbers(tx, 'receipt', 1, 'reservation');
+        }),
+      ),
+    );
+    expect(new Set(blocks.map((b) => b.first)).size).toBe(8);
+    const highest = Math.max(...blocks.map((b) => b.last));
+    await withTenant(db.app, A.tenantId, (tx) => advanceCounter(tx, 'receipt', 0, 'reservation'));
+    expect(
+      await withTenant(db.app, A.tenantId, (tx) =>
+        allocateNumbers(tx, 'receipt', 1, 'reservation'),
+      ),
+    ).toEqual({ first: highest + 1, last: highest + 1 });
+    expect(
+      await withTenant(db.app, B.tenantId, (tx) =>
+        allocateNumbers(tx, 'receipt', 1, 'reservation'),
+      ),
+    ).toEqual({ first: 1, last: 1 });
+    await expect(db.app.transaction((tx) => advanceCounter(tx, 'student', 100))).rejects.toThrow();
   });
 
   it("cannot bump another tenant's counter", async () => {
