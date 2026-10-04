@@ -3,7 +3,7 @@
 - Branch / PR: feat/p3-a-ledger / https://github.com/ReccaLabs/Remix/pull/44
 - Feature IDs: done: FEE-01, FEE-11 and the ledger engine (recordPayment, reversePayment, projections, canAccess, invoice job, enrolment hooks) | not done: none in scope (cash/manual 3-C, slips 3-D, PayHere 3-E, SMS 3-F, settings 3-B, web UI)
 - Gates: lint ✅ · typecheck ✅ · build ✅ · tests: api 846, web 380, db ~367, types 141, ui 58, site 77 (all green after the final fixes)
-- CI: see PR checks (all 6 must pass before review)
+- CI: Lint/typecheck/test/build pass · Secret scan pass · Semgrep pass · Tenant isolation (Postgres 18) pass · API image pass · E2E journeys pass
 - Migrations added: 0011_fee_ledger.sql, 0012_fee_ledger_rls.sql
 - Contract changes (packages/types): none
 - New dependencies: fast-check (apps/api devDependency) — property tests of the ledger invariants
