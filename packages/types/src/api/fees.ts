@@ -7,7 +7,13 @@ import { dateSchema, isoDateTime, monthSchema, pageMetaSchema, pageQuerySchema }
  * (`*Cents`). "Paid" is always derived from allocations; clients never send a status.
  */
 
+/** One month of one class (bounded like a class fee). */
 const cents = z.number().int().min(0).max(100_000_000);
+/**
+ * Sums: invoices with several classes, payments over several months, list totals, SMS costs.
+ * A fresh schema on purpose: chaining `.max()` onto `cents` would keep its lower cap.
+ */
+const totalCents = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 
 /** Client-generated per user action (e.g. one cash-counter submit); retries reuse it (ADR 0008 §4). */
 export const idempotencyKeySchema = z
@@ -61,8 +67,8 @@ export const invoiceListItemSchema = z.object({
   studentName: z.string(),
   month: monthSchema,
   dueOn: dateSchema,
-  totalCents: cents,
-  paidCents: cents,
+  totalCents: totalCents,
+  paidCents: totalCents,
   status: z.enum(INVOICE_STATUSES),
   slipWaiting: z.boolean(),
 });
@@ -72,8 +78,8 @@ export const listInvoicesResponseSchema = pageMetaSchema.extend({
   items: z.array(invoiceListItemSchema),
   /** Totals over the whole filter, not just this page. */
   totals: z.object({
-    totalCents: cents.max(Number.MAX_SAFE_INTEGER),
-    paidCents: cents.max(Number.MAX_SAFE_INTEGER),
+    totalCents: totalCents,
+    paidCents: totalCents,
   }),
 });
 export type ListInvoicesResponse = z.infer<typeof listInvoicesResponseSchema>;
@@ -90,8 +96,8 @@ export const paymentSchema = z.object({
   id: z.uuid(),
   method: z.enum(PAYMENT_METHODS),
   /** Negative only for reversals. */
-  amountCents: z.number().int().min(-100_000_000).max(100_000_000),
-  unallocatedCents: cents,
+  amountCents: z.number().int().min(-Number.MAX_SAFE_INTEGER).max(Number.MAX_SAFE_INTEGER),
+  unallocatedCents: totalCents,
   /** Card surplus the owner must refund by hand (ADR 0008 §4.4). */
   needsRefund: z.boolean(),
   studentId: z.uuid(),
@@ -120,7 +126,7 @@ export const cashPaymentSchema = z.strictObject({
   studentId: z.uuid(),
   lineIds,
   /** Cash handed over, printed on the receipt; must be ≥ the total. */
-  cashReceivedCents: cents,
+  cashReceivedCents: totalCents,
   idempotencyKey: idempotencyKeySchema,
 });
 export type CashPaymentRequest = z.input<typeof cashPaymentSchema>;
@@ -172,9 +178,9 @@ export const receiptSchema = z.object({
   paymentId: z.uuid(),
   issuedAt: isoDateTime,
   method: z.enum(PAYMENT_METHODS),
-  amountCents: cents,
-  cashReceivedCents: cents.nullable(),
-  changeCents: cents.nullable(),
+  amountCents: totalCents,
+  cashReceivedCents: totalCents.nullable(),
+  changeCents: totalCents.nullable(),
   studentNo: z.string(),
   studentName: z.string(),
   lines: z.array(z.object({ className: z.string(), month: monthSchema, amountCents: cents })),
@@ -226,7 +232,7 @@ export const submitSlipSchema = z.strictObject({
   uploadId: z.uuid(),
   lineIds,
   /** As written on the slip. */
-  amountCents: cents.min(1),
+  amountCents: totalCents.min(1),
   reference: z.string().trim().min(3).max(40),
   slipDate: dateSchema,
 });
@@ -239,9 +245,9 @@ export const slipSchema = z.object({
   studentNo: z.string(),
   studentName: z.string(),
   submittedAt: isoDateTime,
-  amountCents: cents,
+  amountCents: totalCents,
   /** Open amount of the selected lines now. */
-  expectedCents: cents,
+  expectedCents: totalCents,
   reference: z.string(),
   slipDate: dateSchema,
   lines: z.array(invoiceLineSchema),
@@ -452,7 +458,7 @@ export type ReminderTarget = z.input<typeof reminderTargetSchema>;
 export const reminderPreviewSchema = z.object({
   recipients: z.number().int().nonnegative(),
   segments: z.number().int().nonnegative(),
-  costCents: cents.max(Number.MAX_SAFE_INTEGER),
+  costCents: totalCents,
   balanceCents: z.number().int(),
   sampleText: z.string(),
 });
@@ -463,5 +469,5 @@ export const sendRemindersSchema = reminderTargetSchema.extend({
 });
 export const sendRemindersResponseSchema = z.object({
   queued: z.number().int().nonnegative(),
-  costCents: cents.max(Number.MAX_SAFE_INTEGER),
+  costCents: totalCents,
 });
