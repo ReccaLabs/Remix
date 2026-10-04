@@ -40,6 +40,40 @@ export async function allocateNumbers(
   return { first: row.value - count + 1, last: row.value };
 }
 
+/** Advance a counter without moving it backwards; also locks it until transaction commit. */
+export async function advanceCounter(
+  tx: Tx,
+  kind: CounterKind,
+  minimum: number,
+  period = '',
+): Promise<void> {
+  if (!Number.isSafeInteger(minimum) || minimum < 0) {
+    throw new RangeError('advanceCounter: minimum must be a non-negative safe integer');
+  }
+  await tx
+    .insert(tenantCounters)
+    .values({ tenantId: sql`public.app_tenant_id()`, kind, period, value: minimum })
+    .onConflictDoUpdate({
+      target: [tenantCounters.tenantId, tenantCounters.kind, tenantCounters.period],
+      set: { value: sql`greatest(${tenantCounters.value}, excluded.value)` },
+    });
+}
+
+/** Only canonical generated numbers reserve a counter position; arbitrary legacy IDs do not. */
+export function studentNumberFloor(prefix: string, numbers: readonly string[]): number {
+  let highest = 0;
+  for (const number of numbers) {
+    if (!number.startsWith(`${prefix}-`)) continue;
+    const suffix = number.slice(prefix.length + 1);
+    if (!/^\d+$/.test(suffix)) continue;
+    const value = Number(suffix);
+    if (Number.isSafeInteger(value) && formatStudentNo(prefix, value) === number) {
+      highest = Math.max(highest, value);
+    }
+  }
+  return highest;
+}
+
 /** `formatStudentNo('BR', 1042)` → "BR-1042"; numbers are zero-padded to at least 4 digits. */
 export function formatStudentNo(prefix: string, value: number): string {
   return `${prefix}-${String(value).padStart(4, '0')}`;

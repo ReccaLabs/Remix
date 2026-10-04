@@ -23,6 +23,15 @@ type ListQuery = z.output<(typeof API.listClasses)['query']>;
 export class AdminClassesController {
   constructor(private readonly classes: ClassesService) {}
 
+  @RequirePermission('classes.write')
+  @Header('cache-control', 'no-store')
+  @Endpoint(API.listTeachers)
+  teachers(
+    @CurrentTenant() tenant: ResolvedTenant,
+  ): Promise<EndpointResult<typeof API.listTeachers>> {
+    return this.classes.teachers(tenant.id);
+  }
+
   @RequirePermission('classes.read')
   @Header('cache-control', 'no-store')
   @Endpoint(API.listClasses)

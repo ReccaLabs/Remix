@@ -80,5 +80,7 @@ export async function loginStaff(
 
 /** The top bar's Log out (some pages, like Me, repeat it in the page body). */
 export async function logout(page: Page): Promise<void> {
+  // A hard navigation can reach the expected URL before the client button is hydrated.
+  await page.waitForLoadState('load');
   await page.getByRole('button', { name: 'Log out' }).first().click();
 }

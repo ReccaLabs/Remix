@@ -21,6 +21,8 @@ export {
 export { classifyHost, normaliseHost, type HostTarget } from './host';
 export {
   allocateNumbers,
+  advanceCounter,
+  studentNumberFloor,
   formatStudentNo,
   MAX_NUMBER_BLOCK,
   type CounterKind,

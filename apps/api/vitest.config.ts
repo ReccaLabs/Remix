@@ -11,6 +11,9 @@ import { defineConfig } from 'vitest/config';
 // tsdown build.
 export default defineConfig({
   test: {
+    // Each isolated Nest/DB worker loads a large module graph and owns connection pools.
+    // Bound resource contention under the monorepo run instead of extending test timeouts.
+    maxWorkers: 2,
     environment: 'node',
     setupFiles: ['reflect-metadata'],
     projects: [

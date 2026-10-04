@@ -1,4 +1,4 @@
-# @remix/e2e — Playwright journeys for the Phase 1 walking skeleton
+# @remix/e2e — Playwright journeys for Phases 1 and 2
 
 End-to-end smoke tests against the **real stack**: Chromium → the built web app (`next start`) →
 the built API (`node apps/api/dist/main.js`) → Postgres 18 with row-level security and the dev
@@ -70,3 +70,18 @@ Every journey runs in two projects: desktop Chrome and a 390 px wide Pixel-class
   logs in picks a student nobody else uses; do not put a new login on an existing student.
 - Use roles and visible text (`getByRole`, `getByLabel`), and `support/accounts.ts` for the seed data.
 - Seed data is dev-only (password `remix-dev-password`, `packages/db/README.md`). Never real credentials.
+
+## Phase 2 closeout
+
+`tests/phase2-closeout.spec.ts` runs in both desktop and phone projects: J-01 device replacement
+and admin revocation, J-08 500 valid CSV students plus three rejected rows, owner/cashier invite
+acceptance and SMS two-step with computer trust, teacher/cashier permissions, and tenant theme.
+The test-only API launcher captures the existing development mock SMS log in `mock-sms.log`
+(git-ignored) so journeys can read fresh invite links and codes. No production endpoint exposes
+these values. CI runs the same complete `pnpm e2e` command.
+
+For a local staging demo, start `pnpm stack:prod`, then run the journeys with
+`E2E_EXTERNAL_STACK=true` (and `E2E_API_PORT` / `E2E_WEB_PORT` when using different ports).
+Playwright verifies the existing production containers and captures their development mock SMS
+output with `docker logs`; it stops that log reader after the run. Set `E2E_API_CONTAINER` if the
+API container is named differently. Stop the app containers with `pnpm stack:prod:down` afterwards.

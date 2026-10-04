@@ -2,7 +2,16 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { UnrecoverableError } from 'bullmq';
 import { and, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
-import { allocateNumbers, formatStudentNo, schema, withTenant, type Db, type Tx } from '@remix/db';
+import {
+  advanceCounter,
+  studentNumberFloor,
+  allocateNumbers,
+  formatStudentNo,
+  schema,
+  withTenant,
+  type Db,
+  type Tx,
+} from '@remix/db';
 import { importRowSchema, type ImportRowResult } from '@remix/types';
 import { monthStart } from '../../common/time/business-date';
 import { CLOCK, type Clock } from '../../common/time/clock';
@@ -104,6 +113,9 @@ export class ImportRunner {
       const now = this.clock.now();
       const month = options.enrolFrom ?? monthStart(now);
 
+      // Serialize with Add student and other imports BEFORE reading the duplicate context.
+      // A competing allocation that commits first must be visible to re-validation.
+      await advanceCounter(tx, 'student', 0);
       const context = await loadValidationContext(tx, rows);
       const outcome = validateStudentRows(rows, context);
       const created = await this.write(tx, tenantId, job.createdBy, outcome.valid, month, now);
@@ -157,6 +169,7 @@ export class ImportRunner {
 
     // Generated numbers come last-but-inserts: the counter row lock is held until commit.
     const kept = new Set(valid.flatMap((v) => (v.studentNo ? [v.studentNo] : [])));
+    await advanceCounter(tx, 'student', studentNumberFloor(tenant.prefix, [...kept]));
     const generated = await this.generateNumbers(
       tx,
       tenant.prefix,

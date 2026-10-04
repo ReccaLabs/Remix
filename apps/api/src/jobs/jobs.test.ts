@@ -1,11 +1,20 @@
+// Nest 12 preloads this lazily in compile(); load it before the test timer starts.
+import '@nestjs/platform-express';
+import { Test } from '@nestjs/testing';
 import { UnrecoverableError } from 'bullmq';
 import type { Redis } from 'ioredis';
 import { describe, expect, it, vi } from 'vitest';
 import { loadConfig } from '../config/config';
 import { MockSmsProvider } from '../integrations/sms/sms.mock';
 import { smsProviderBinding, UnconfiguredSmsProvider } from '../integrations/sms/sms-binding';
-import { BullJobProducer, JobQueueUnavailableError, UnavailableJobProducer } from './job-producer';
+import {
+  BullJobProducer,
+  JOB_PRODUCER,
+  JobQueueUnavailableError,
+  UnavailableJobProducer,
+} from './job-producer';
 import { JobWorkers } from './job-workers';
+import { JobsModule } from './jobs.module';
 import { ProcessorRegistry } from './processor-registry';
 import { createSmsProcessor } from './sms/sms.processor';
 import { InlineJobProducer } from './testing/inline-jobs';
@@ -112,21 +121,25 @@ describe('producers', () => {
   });
 
   it('JobsModule without VALKEY_URL: inline in development, refusing in test', async () => {
-    const { Test } = await import('@nestjs/testing');
-    const { JobsModule } = await import('./jobs.module');
-    const { JOB_PRODUCER } = await import('./job-producer');
-    const producerFor = async (nodeEnv: string) => {
+    for (const nodeEnv of ['development', 'test']) {
       const ref = await Test.createTestingModule({
         imports: [JobsModule.forRoot(loadConfig({ NODE_ENV: nodeEnv }))],
       }).compile();
-      return ref.get<{ add: InlineJobProducer['add'] }>(JOB_PRODUCER);
-    };
-    const dev = await producerFor('development');
-    expect(dev).toBeInstanceOf(InlineJobProducer);
-    await expect(dev.add('sms', sms('dev'))).resolves.toEqual({ jobId: `sms-${TENANT}-dev` });
-    const test = await producerFor('test');
-    await expect(test.add('sms', sms())).rejects.toBeInstanceOf(JobQueueUnavailableError);
-   }, 30_000);
+      try {
+        const producer = ref.get<{ add: InlineJobProducer['add'] }>(JOB_PRODUCER);
+        if (nodeEnv === 'development') {
+          expect(producer).toBeInstanceOf(InlineJobProducer);
+          await expect(producer.add('sms', sms('dev'))).resolves.toEqual({
+            jobId: `sms-${TENANT}-dev`,
+          });
+        } else {
+          await expect(producer.add('sms', sms())).rejects.toBeInstanceOf(JobQueueUnavailableError);
+        }
+      } finally {
+        await ref.close();
+      }
+    }
+  });
 
   it('BullJobProducer validates the payload before touching Valkey', async () => {
     const connection = new Proxy({} as Redis, {

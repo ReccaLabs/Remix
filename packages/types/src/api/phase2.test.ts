@@ -163,3 +163,19 @@ describe('theme contrast (TEN-03)', () => {
     expect(updateThemeSchema.safeParse({ logoUrl: 'https://x.lk/logo.png' }).success).toBe(true);
   });
 });
+
+describe('listTeachers (CLS-02)', () => {
+  it('defines the picker route and a strict minimal response', () => {
+    expect(API.listTeachers.method).toBe('GET');
+    expect(buildUrl(API.listTeachers, undefined)).toBe('/api/v1/admin/teachers');
+    expect(
+      API.listTeachers.response.parse({ items: [{ id: ID, displayName: 'Teacher' }] }),
+    ).toEqual({ items: [{ id: ID, displayName: 'Teacher' }] });
+    expect(
+      API.listTeachers.response.safeParse({
+        items: [{ id: ID, displayName: 'Teacher', phone: '+94771234567' }],
+      }).success,
+    ).toBe(false);
+    expect(API.listTeachers.response.safeParse({ items: [], total: 0 }).success).toBe(false);
+  });
+});

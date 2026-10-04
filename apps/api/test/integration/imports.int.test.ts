@@ -350,6 +350,26 @@ describe('student import (STU-04 / DAT-01) against Postgres', () => {
       expect(gets).toMatch(/^TT-\d{4}$/);
     });
 
+    it('reserves supplied numbers for a later Add student, even without generated rows', async () => {
+      const [counter] = await db
+        .select({ value: schema.tenantCounters.value })
+        .from(schema.tenantCounters)
+        .where(eq(schema.tenantCounters.tenantId, tenant.id));
+      const next = (counter?.value ?? 0) + 1;
+      const taken = `TT-${String(next).padStart(4, '0')}`;
+      const done = await runImport([
+        { displayName: 'Reserved Number', phone: '0771000022', studentNo: taken },
+      ]);
+      expect(done).toMatchObject({ status: 'done', created: 1 });
+      const added = await owner().post('/api/v1/admin/students', {
+        displayName: 'Added After Import',
+        phone: '0771000023',
+        under18: false,
+      });
+      expect(added.status).toBe(201);
+      expect(added.body.studentNo).toBe(`TT-${String(next + 1).padStart(4, '0')}`);
+    });
+
     it('re-validates in the worker: a phone taken after the preview becomes a duplicate', async () => {
       const rows = [{ displayName: 'Race Student', phone: '0771000030' }];
       const preview = await owner().post(PREVIEW, { rows });

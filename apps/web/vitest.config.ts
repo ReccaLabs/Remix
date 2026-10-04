@@ -19,6 +19,8 @@ export default defineConfig({
     // next-intl + react-hook-form graph can miss Vitest's fixed 60 s start handshake, failing the
     // file before any test runs. Threads start in-process and the suite is isolation-safe.
     pool: 'threads',
+    // A cold jsdom/Next graph in many simultaneous workers can also miss that handshake.
+    maxWorkers: 2,
     // Component tests type into jsdom forms; give them headroom on a busy CI runner.
     testTimeout: 15_000,
   },

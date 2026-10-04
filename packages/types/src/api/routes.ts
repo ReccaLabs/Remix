@@ -27,6 +27,7 @@ import {
   updateMeSchema,
 } from './auth';
 import {
+  teachersResponseSchema,
   classDetailSchema,
   classInputSchema,
   classStudentsResponseSchema,
@@ -353,6 +354,7 @@ export const API = {
   deleteHall: { method: 'DELETE', path: '/api/v1/admin/halls/:id', params: idParamsSchema },
 
   /** STF-01/03 */
+  listTeachers: { method: 'GET', path: '/api/v1/admin/teachers', response: teachersResponseSchema },
   listStaff: { method: 'GET', path: '/api/v1/admin/staff', response: staffResponseSchema },
   /** 403 PLAN_LIMIT when the plan's seats are used (STF-03). Sends the invite by SMS/email. */
   inviteStaff: {
