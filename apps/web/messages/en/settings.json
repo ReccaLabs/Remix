@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "general": "General settings",
+    "theme": "Theme",
+    "halls": "Halls"
+  },
+  "nav": {
+    "label": "Settings sections",
+    "general": "General",
+    "theme": "Theme",
+    "halls": "Halls",
+    "staff": "Staff and roles"
+  },
+  "title": "Settings",
+  "errors": {
+    "forbidden": "Your role isn't allowed to do this, or you've been signed out.",
+    "conflict": "That conflicts with something that already exists.",
+    "planLimit": "Your plan doesn't allow this.",
+    "validation": "Some details aren't valid. Check the form and try again.",
+    "rateLimited": "Too many requests. Wait a minute and try again.",
+    "notFound": "We couldn't find that. It may have been removed.",
+    "network": "We couldn't reach the server. Check your internet connection and try again.",
+    "unexpected": "Something went wrong. Please try again."
+  },
+  "loadError": {
+    "title": "We couldn't load the settings",
+    "body": "Check your internet connection and try again.",
+    "retry": "Try again"
+  },
+  "general": {
+    "title": "General",
+    "subtitle": "Your institute's name and language.",
+    "name": "Institute name",
+    "nameHint": "Shown to students and on your website.",
+    "language": "Default language",
+    "languageHint": "Students see this language until they pick their own. Sinhala and Tamil screens arrive after native review; until then English is shown.",
+    "languages": {
+      "en": "English",
+      "si": "Sinhala (සිංහල)",
+      "ta": "Tamil (தமிழ்)"
+    },
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Settings saved",
+    "errors": {
+      "nameInvalid": "Enter a name of 2 to 120 characters."
+    }
+  },
+  "theme": {
+    "title": "Theme",
+    "subtitle": "Your colour, logo and tab icon on the student portal, the admin area and your website.",
+    "brandColor": "Brand colour",
+    "brandColorHint": "Used for buttons, links and the active menu item. Type a colour like #0F766E or pick one.",
+    "colorText": "Colour code",
+    "colorPlaceholder": "#0F766E",
+    "colorPicker": "Pick a colour",
+    "useDefault": "Use the ReMix blue",
+    "contrast": {
+      "label": "Readability",
+      "ok": "Readable: white text on this colour has a contrast of {ratio} to 1.",
+      "low": "Too light: white text on this colour has a contrast of {ratio} to 1, and needs at least 4.5 to 1. Pick a darker colour.",
+      "none": "Using the ReMix blue.",
+      "invalid": "Enter a colour as # followed by six letters or digits, like #0F766E."
+    },
+    "logoUrl": "Logo address",
+    "logoUrlHint": "A link starting with https:// to a square picture. File uploads come later.",
+    "faviconUrl": "Tab icon address",
+    "faviconUrlHint": "A link starting with https:// to a small square picture shown in browser tabs.",
+    "urlInvalid": "Enter an address that starts with https://",
+    "preview": {
+      "title": "Preview",
+      "sampleButton": "Pay fees",
+      "sampleLink": "Open my classes",
+      "logoAlt": "Your logo"
+    },
+    "save": "Save theme",
+    "saving": "Saving…",
+    "saved": "Theme saved",
+    "errors": {
+      "colorInvalid": "Enter a colour like #0F766E.",
+      "colorLow": "Pick a darker colour so white text stays readable.",
+      "urlInvalid": "Enter an address that starts with https://"
+    }
+  },
+  "halls": {
+    "title": "Halls",
+    "subtitle": "The rooms you teach in. Pick one for each class that meets in person.",
+    "count": "{count, plural, =0 {No halls yet} one {# hall} other {# halls}}",
+    "add": "Add hall",
+    "tableCaption": "Halls",
+    "name": "Hall name",
+    "capacity": "Seats",
+    "capacityHint": "How many students fit. Optional.",
+    "optional": "optional",
+    "noCapacity": "Not set",
+    "capacityValue": "{count} seats",
+    "columns": {
+      "name": "Hall",
+      "capacity": "Seats",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "No halls yet",
+      "body": "Add the rooms you teach in, for example Hall A. Online-only teachers can skip this."
+    },
+    "readOnly": "Only owners and admins can change halls.",
+    "edit": "Edit {name}",
+    "delete": "Delete {name}",
+    "form": {
+      "titleNew": "Add a hall",
+      "titleEdit": "Edit hall",
+      "save": "Save hall",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "errors": {
+        "nameRequired": "Enter a name of up to 60 characters.",
+        "capacityInvalid": "Enter a whole number between 1 and 5,000, or leave it empty.",
+        "nameTaken": "A hall with this name already exists."
+      }
+    },
+    "deleteDialog": {
+      "title": "Delete {name}?",
+      "body": "This cannot be undone. A hall that a class still uses cannot be deleted.",
+      "confirm": "Delete hall",
+      "cancel": "Cancel"
+    },
+    "toasts": {
+      "added": "{name} added",
+      "saved": "{name} saved",
+      "deleted": "{name} deleted",
+      "inUse": "{name} is still used by a class. Move those classes to another hall first."
+    }
+  }
+}

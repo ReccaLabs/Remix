@@ -72,6 +72,10 @@ export function api(t: DbTestApp, host: string, cookie?: string) {
       prep(request(t.server).post(path))
         .set('Content-Type', 'application/json')
         .send(JSON.stringify(body)),
+    put: (path: string, body: object = {}) =>
+      prep(request(t.server).put(path))
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(body)),
     patch: (path: string, body: object = {}) =>
       prep(request(t.server).patch(path))
         .set('Content-Type', 'application/json')

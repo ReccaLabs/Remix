@@ -7,7 +7,10 @@ import type { CSSProperties } from 'react';
  * declaration, so a bad or hostile value (`red;}body{…`) can't escape the variable.
  */
 
-type BrandVars = Record<'--color-brand' | '--color-brand-hover' | '--color-brand-soft', string>;
+type BrandVars = Record<
+  '--color-brand' | '--color-brand-hover' | '--color-brand-soft' | '--color-brand-line',
+  string
+>;
 
 function parseHex(hex: string): [number, number, number] {
   const n = Number.parseInt(hex.slice(1), 16);
@@ -33,6 +36,8 @@ export function brandCssVars(color: unknown): BrandVars | undefined {
     // Same relationships as the default tokens: hover ≈ 9% darker, soft ≈ 93% towards white.
     '--color-brand-hover': mix(brand, 0, 0.09),
     '--color-brand-soft': mix(brand, 255, 0.93),
+    // Borders on soft surfaces (default #c9d1f5 is about 75% of the way to white).
+    '--color-brand-line': mix(brand, 255, 0.75),
   };
 }
 

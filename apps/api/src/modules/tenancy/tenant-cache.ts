@@ -37,6 +37,11 @@ export class InMemoryTenantCache implements TenantCache {
     return Promise.resolve();
   }
 
+  delete(key: string): Promise<void> {
+    this.entries.delete(key);
+    return Promise.resolve();
+  }
+
   /** Drop everything (tests, or an admin action that must take effect at once on this node). */
   clear(): void {
     this.entries.clear();

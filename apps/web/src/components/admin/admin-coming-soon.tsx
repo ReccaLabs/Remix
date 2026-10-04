@@ -4,7 +4,7 @@ import { ComingSoon } from '@/components/shell/coming-soon';
 import { ADMIN_PATHS } from '@/lib/paths';
 import { requireStaff } from '@/server/api';
 
-type Section = 'students' | 'fees' | 'classes' | 'more';
+type Section = 'students' | 'fees' | 'more';
 
 /** An admin section a later phase builds (Students, Fees, Classes, More). */
 export async function AdminComingSoon({

@@ -34,7 +34,21 @@ export type AuditAction =
   | 'staff.disable'
   | 'staff.enable'
   // Student import (STU-04): one event per committed import.
-  | 'import.students';
+  | 'import.students'
+  // Classes (Phase 2, track C): classes, halls, enrolments and fee overrides, institute settings.
+  | 'class.create'
+  | 'class.update'
+  | 'class.archive'
+  | 'hall.create'
+  | 'hall.update'
+  | 'hall.delete'
+  | 'enrollment.create'
+  | 'enrollment.update'
+  | 'enrollment.end'
+  | 'enrollment.move'
+  | 'enrollment.fee_override'
+  | 'settings.theme_update'
+  | 'settings.general_update';
 
 export interface AuditEntry {
   action: AuditAction;

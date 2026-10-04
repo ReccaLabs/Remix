@@ -27,7 +27,9 @@ export function buildCsp({ nonce, isDev }: CspOptions): string {
     // style="" attributes: React `style` props (Logo geometry, tenant brand variables on <html>).
     // They cannot run script or use selectors; url() loads are still bounded by img-src/font-src.
     'style-src-attr': ["'unsafe-inline'"],
-    'img-src': ["'self'", 'data:', 'blob:'],
+    // https: for the institute's own logo and tab icon (TEN-03: https URLs until the upload
+    // pipeline lands). Images cannot run script; http: stays blocked.
+    'img-src': ["'self'", 'data:', 'blob:', 'https:'],
     'font-src': ["'self'"],
     'connect-src': ["'self'"],
     'media-src': ["'self'"],

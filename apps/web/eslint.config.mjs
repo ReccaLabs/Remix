@@ -30,7 +30,7 @@ export default defineConfig([
   },
   {
     // Tests and the mock API use literal brand colours as fixture data (valid and hostile).
-    files: ['**/*.test.ts', 'test/**'],
+    files: ['**/*.test.ts', '**/*.test.tsx', 'test/**'],
     rules: { 'no-restricted-syntax': 'off' },
   },
   globalIgnores(['.next/**', 'next-env.d.ts']),

@@ -226,6 +226,10 @@ export class Factory {
       teacherId?: string | null;
       archived?: boolean;
       schedules?: Array<[number, string, number]>;
+      hallId?: string | null;
+      place?: 'hall' | 'online' | 'hybrid';
+      startsOn?: string | null;
+      grade?: string;
     },
   ): Promise<string> {
     const [row] = await this.db
@@ -233,11 +237,13 @@ export class Factory {
       .values({
         tenantId: tenant.id,
         name: opts.name,
-        grade: '2027 A/L',
+        grade: opts.grade ?? '2027 A/L',
         medium: 'sinhala',
         teacherId: opts.teacherId ?? null,
+        hallId: opts.hallId ?? null,
         feeCents: opts.feeCents,
-        place: 'hall',
+        place: opts.place ?? 'hall',
+        startsOn: opts.startsOn ?? null,
         archivedAt: opts.archived ? START : null,
       })
       .returning({ id: schema.classes.id });
@@ -253,6 +259,15 @@ export class Factory {
         })),
       );
     }
+    return row.id;
+  }
+
+  async hall(tenant: TenantFixture, name: string, capacity: number | null = null): Promise<string> {
+    const [row] = await this.db
+      .insert(schema.halls)
+      .values({ tenantId: tenant.id, name, capacity })
+      .returning({ id: schema.halls.id });
+    if (!row) throw new Error('hall not created');
     return row.id;
   }
 

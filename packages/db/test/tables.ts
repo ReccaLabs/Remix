@@ -23,14 +23,17 @@ export type TableName = {
  * What `remix_app` may do with a table. Drives both the expected grants and which behaviour the
  * isolation tests assert (0 rows affected vs permission denied).
  * - root: the tenants table itself — SELECT own row only.
+ * - settings: like root, plus UPDATE on a few settings columns of the own row (column-level grant,
+ *   migrations/0008; the exact columns are asserted in classes.test.ts). No INSERT or DELETE.
  * - read: SELECT within the tenant only (rows managed by the owner/platform).
  * - append: SELECT + INSERT within the tenant (audit trail).
  * - full: SELECT, INSERT, UPDATE, DELETE within the tenant.
  */
-export type Access = 'root' | 'read' | 'append' | 'full';
+export type Access = 'root' | 'settings' | 'read' | 'append' | 'full';
 
 export const APP_PRIVILEGES: Record<Access, readonly string[]> = {
   root: ['SELECT'],
+  settings: ['SELECT', 'UPDATE'],
   read: ['SELECT'],
   append: ['INSERT', 'SELECT'],
   full: ['DELETE', 'INSERT', 'SELECT', 'UPDATE'],
@@ -51,6 +54,7 @@ export interface World {
   staffRoleId: string;
   deviceId: string;
   sessionId: string;
+  hallId: string;
   classId: string;
   scheduleId: string;
   enrollmentId: string;
@@ -101,6 +105,11 @@ const freshSession = (w: World): Row => ({
   token_hash: hash('d'),
   family_id: randomUUID(),
   expires_at: inOneHour(),
+});
+const freshHall = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  name: 'Fresh hall',
+  capacity: 80,
 });
 const freshClass = (w: World): Row => ({
   tenant_id: w.tenantId,
@@ -165,7 +174,7 @@ const freshImportJob = (w: World): Row => ({
 
 export const TABLES = {
   tenants: {
-    access: 'root',
+    access: 'settings',
     tenantColumn: 'id',
     key: (w) => ({ id: w.tenantId }),
     fresh: (w) => ({
@@ -235,6 +244,12 @@ export const TABLES = {
       device: (home, other) => ({ ...freshSession(home), device_id: other.deviceId }),
     },
   },
+  halls: {
+    access: 'full',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.hallId }),
+    fresh: freshHall,
+  },
   classes: {
     access: 'full',
     tenantColumn: 'tenant_id',
@@ -242,6 +257,7 @@ export const TABLES = {
     fresh: freshClass,
     crossTenantRefs: {
       teacher: (home, other) => ({ ...freshClass(home), teacher_id: other.staffUserId }),
+      hall: (home, other) => ({ ...freshClass(home), hall_id: other.hallId }),
     },
   },
   class_schedules: {
@@ -449,6 +465,13 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       'session',
     );
 
+    const hall = one(
+      await tx
+        .insert(schema.halls)
+        .values({ tenantId, name: 'Hall A', capacity: 120 })
+        .returning({ id: schema.halls.id }),
+      'hall',
+    );
     const klass = one(
       await tx
         .insert(schema.classes)
@@ -458,6 +481,7 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
           grade: '2027 A/L',
           medium: 'sinhala',
           teacherId: staff.id,
+          hallId: hall.id,
           feeCents: 250_000,
           place: 'hall',
         })
@@ -577,6 +601,7 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       staffRoleId: role.id,
       deviceId: device.id,
       sessionId: session.id,
+      hallId: hall.id,
       classId: klass.id,
       scheduleId: schedule.id,
       enrollmentId: enrollment.id,

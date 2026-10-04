@@ -79,7 +79,7 @@ describe('resolveTenantByHost (TEN-01) as remix_app, without a tenant context', 
             from pg_catalog.pg_proc p where p.proname = ${fn}`,
       );
       expect(row?.result, fn).toBe(
-        'TABLE(id uuid, slug text, name text, status text, plan text, default_locale text, timezone text, brand_color text, logo_url text)',
+        'TABLE(id uuid, slug text, name text, status text, plan text, default_locale text, timezone text, brand_color text, logo_url text, favicon_url text)',
       );
     }
   });

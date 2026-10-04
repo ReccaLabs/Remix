@@ -1,3 +1,4 @@
+import { tenantAccess } from '@remix/types/api';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { getTenant } from '@/server/api';
@@ -13,6 +14,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: tenant.name, template: `%s · ${tenant.name}` },
     applicationName: tenant.name,
+    // TEN-03: the institute's own tab icon (an https URL checked by the API), only while the
+    // institute is live — suspended and cancelled institutes keep the neutral ReMix icon.
+    ...(tenant.faviconUrl && tenantAccess(tenant.status).publicSite
+      ? { icons: { icon: tenant.faviconUrl } }
+      : {}),
   };
 }
 

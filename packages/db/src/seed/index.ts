@@ -6,6 +6,7 @@ import { allocateNumbers, formatStudentNo } from '../counters';
 import {
   auditLogs,
   classes,
+  halls,
   classSchedules,
   devices,
   enrollments,
@@ -161,7 +162,18 @@ async function seedTenant(
   );
   if (trusted.length > 0) await tx.insert(devices).values(trusted);
 
-  // Classes and weekly schedules.
+  // Halls (CLS-05), then classes and weekly schedules.
+  const hallRows = spec.halls.length
+    ? await tx
+        .insert(halls)
+        .values(spec.halls.map((h) => ({ tenantId, name: h.name, capacity: h.capacity })))
+        .returning({ id: halls.id, name: halls.name })
+    : [];
+  const hallIds = spec.halls.map((h) => {
+    const row = hallRows.find((r) => r.name === h.name);
+    if (!row) throw new Error(`seed: hall ${h.name} not created`);
+    return row.id;
+  });
   const classRows = await tx
     .insert(classes)
     .values(
@@ -171,6 +183,7 @@ async function seedTenant(
         grade: c.grade,
         medium: c.medium,
         teacherId: staffIds[c.teacher] ?? null,
+        hallId: c.hall === undefined ? null : (hallIds[c.hall] ?? null),
         feeCents: c.feeCents,
         place: c.place,
         startsOn: c.startsOn,

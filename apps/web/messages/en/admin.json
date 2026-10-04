@@ -4,7 +4,8 @@
     "students": "Students",
     "fees": "Fees & payments",
     "classes": "Classes",
-    "more": "More"
+    "more": "More",
+    "timetable": "Timetable"
   },
   "nav": {
     "label": "Institute admin",
@@ -16,7 +17,7 @@
     "feesShort": "Fees",
     "classes": "Classes",
     "more": "More",
-    "settings": "Staff and roles"
+    "settings": "Settings"
   },
   "shell": {
     "skipToContent": "Skip to content"
@@ -39,7 +40,28 @@
     "presentToday": "Present today",
     "statPending": "Shows here once fees are set up",
     "attendancePending": "Shows here once attendance is set up",
-    "note": "These numbers appear as you add students, classes and fees. Those pages are coming next."
+    "note": "Fee and attendance numbers appear here once those parts are set up.",
+    "counts": {
+      "label": "Your institute",
+      "activeStudents": "Active students",
+      "invitedStudents": "Waiting to sign in",
+      "classes": "Classes",
+      "staff": "Staff",
+      "newThisMonth": "{count, plural, =0 {None new this month} other {# new this month}}"
+    },
+    "today": {
+      "title": "Today's classes",
+      "label": "Classes today",
+      "empty": {
+        "title": "No classes today",
+        "body": "Classes that meet today appear here with their time and hall."
+      },
+      "timetable": "Open timetable",
+      "students": "{count, plural, one {# student} other {# students}}",
+      "noTeacher": "No teacher",
+      "loadError": "We couldn't load your numbers. Check your internet connection and try again.",
+      "retry": "Try again"
+    }
   },
   "billingOnly": {
     "metaTitle": "Account suspended",
@@ -50,13 +72,21 @@
     "title": "More",
     "account": "Your account",
     "staffLink": "Staff and roles",
-    "staffHint": "Invite people, set roles and limit teachers to their classes."
+    "staffHint": "Invite people, set roles and limit teachers to their classes.",
+    "settingsHeading": "Settings",
+    "generalLink": "General",
+    "generalHint": "Institute name and language.",
+    "themeLink": "Theme",
+    "themeHint": "Brand colour, logo and tab icon.",
+    "hallsLink": "Halls",
+    "hallsHint": "The rooms you teach in.",
+    "timetableLink": "Timetable",
+    "timetableHint": "This week's classes at a glance."
   },
   "soon": {
     "title": "Coming soon",
     "students": "The student list, import and profiles are coming next.",
     "fees": "Invoices, payments and the bank-slip queue are coming soon.",
-    "classes": "Creating and managing classes is coming soon.",
     "more": "Lessons, live classes, settings and integrations will be listed here.",
     "backHome": "Back to the dashboard"
   }

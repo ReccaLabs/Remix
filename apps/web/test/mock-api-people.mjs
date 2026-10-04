@@ -39,7 +39,8 @@ const ROLE_PERMISSIONS = {
   cashier: ['dashboard.view', 'students.read', 'classes.read'],
   gatekeeper: ['students.read'],
 };
-const can = (roles, permission) => roles.some((r) => ROLE_PERMISSIONS[r]?.includes(permission));
+export const can = (roles, permission) =>
+  roles.some((r) => ROLE_PERMISSIONS[r]?.includes(permission));
 
 const PLAN_SEATS = {
   tutor: { teachers: 1, cashiers: 0 },

@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { PeopleIsland } from '@/components/people/people-island';
 import { PageBody, PageTitle } from '@/components/shell/page-body';
+import { SettingsNav } from '@/components/settings/settings-nav';
 import { StaffPanel } from '@/components/staff/staff-panel';
 import { ADMIN_PATHS } from '@/lib/paths';
 import { requireStaff } from '@/server/api';
@@ -30,6 +31,7 @@ export default async function StaffSettingsPage() {
   return (
     <PageBody width="admin">
       <PageTitle title={t('title')} subtitle={t('subtitle')} />
+      <SettingsNav roles={session.user.roles} current="staff" />
       {result.ok ? (
         <PeopleIsland namespaces={['staff']}>
           <StaffPanel data={result.data} classes={classes} currentUserId={session.user.id} />

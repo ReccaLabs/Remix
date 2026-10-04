@@ -32,7 +32,12 @@ export const ADMIN_PATHS = {
   fees: '/admin/fees',
   classes: '/admin/classes',
   more: '/admin/more',
-  /** Settings → Staff and roles (STF-01..03), owners only. */
+  /** CLS-06 — the weekly timetable. */
+  timetable: '/admin/classes/timetable',
+  /** Settings → General (owner), Theme (owner, TEN-03), Halls (CLS-05), Staff and roles (owner). */
+  settings: '/admin/settings',
+  theme: '/admin/settings/theme',
+  halls: '/admin/settings/halls',
   staff: '/admin/settings/staff',
 } as const;
 

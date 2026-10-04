@@ -25,6 +25,8 @@ export interface SeedClass {
   teacher: number;
   feeCents: number;
   place: ClassPlace;
+  /** Index into the tenant's `halls` (CLS-05); absent for online classes. */
+  hall?: number;
   startsOn: string;
   /** A/L exam year of the students who take it; null for O/L. */
   alYear: number | null;
@@ -44,6 +46,7 @@ export interface SeedTenant {
   /** Students' phones are +94 <phoneBase> <student number padded to 7 digits>. */
   phoneBase: string;
   staff: readonly SeedStaff[];
+  halls: ReadonlyArray<{ name: string; capacity: number }>;
   classes: readonly SeedClass[];
   /** The last N students are still `invited` (no password yet — AUTH-07). */
   invitedStudents: number;
@@ -85,6 +88,10 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         classScope: [3, 4, 5],
       },
     ],
+    halls: [
+      { name: 'Hall A', capacity: 200 },
+      { name: 'Hall B', capacity: 120 },
+    ],
     classes: [
       {
         name: '2027 A/L Physics Theory',
@@ -93,6 +100,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         teacher: 0,
         feeCents: 250_000,
         place: 'hybrid',
+        hall: 0,
         startsOn: '2025-02-01',
         alYear: 2027,
         schedules: [
@@ -107,6 +115,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         teacher: 0,
         feeCents: 150_000,
         place: 'hall',
+        hall: 1,
         startsOn: '2026-01-01',
         alYear: 2027,
         schedules: [[6, '14:00', 120]],
@@ -118,6 +127,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         teacher: 0,
         feeCents: 200_000,
         place: 'hall',
+        hall: 0,
         startsOn: '2025-06-01',
         alYear: 2026,
         schedules: [[7, '08:00', 180]],
@@ -140,6 +150,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         teacher: 3,
         feeCents: 250_000,
         place: 'hybrid',
+        hall: 1,
         startsOn: '2026-02-01',
         alYear: 2028,
         schedules: [[7, '14:00', 180]],
@@ -151,6 +162,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         teacher: 3,
         feeCents: 120_000,
         place: 'hall',
+        hall: 1,
         startsOn: '2026-01-01',
         alYear: null,
         schedules: [[5, '16:00', 120]],
@@ -183,6 +195,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
     students: 40,
     phoneBase: '72',
     staff: [{ name: 'Ruwan Wickramasinghe', phone: '+94770002200', roles: ['owner', 'teacher'] }],
+    halls: [],
     classes: [
       {
         name: '2027 A/L Chemistry Theory',
@@ -221,6 +234,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
     students: 5,
     phoneBase: '75',
     staff: [{ name: 'Chaminda Silva', phone: '+94770003300', roles: ['owner', 'teacher'] }],
+    halls: [{ name: 'Main room', capacity: 60 }],
     classes: [
       {
         name: '2026 A/L Combined Maths',
@@ -229,6 +243,7 @@ export const SEED_TENANTS: readonly SeedTenant[] = [
         teacher: 0,
         feeCents: 180_000,
         place: 'hall',
+        hall: 0,
         startsOn: '2025-03-01',
         alYear: 2026,
         schedules: [[6, '09:00', 120]],
