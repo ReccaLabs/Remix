@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { KAMAL, PASSWORD, kamalStudentPhone } from '../support/accounts';
 import {
@@ -12,8 +12,41 @@ import { tenantUrl } from '../support/env';
 import { deliveredSms, smsOffset } from '../support/mock-sms';
 
 const SLUG = 'kamalphysics';
-const owner = (page: Page) => loginStaff(page, SLUG, KAMAL.email, PASSWORD, KAMAL.seedPhone);
+let ownerCookies: Awaited<ReturnType<BrowserContext['cookies']>> | undefined;
+// Reuse a real sign-in within this worker: four owner journeys must not spend the same
+// account's five-logins/minute budget, especially when CI runs both projects quickly.
+async function owner(page: Page) {
+  if (ownerCookies) {
+    await page.context().addCookies(ownerCookies);
+    await page.goto(tenantUrl(SLUG, '/admin'));
+    await expect(page).toHaveURL(tenantUrl(SLUG, '/admin'));
+  } else {
+    await loginStaff(page, SLUG, KAMAL.email, PASSWORD, KAMAL.seedPhone);
+    ownerCookies = await page.context().cookies();
+  }
+}
 const projectIndex = (name: string) => (name === 'mobile-chrome' ? 1 : 0);
+
+test.beforeEach(async ({ page }, info) => {
+  const ip = createHash('sha256').update(`${info.testId}:${info.retry}`).digest();
+  await page.context().setExtraHTTPHeaders({
+    'x-forwarded-for': `10.23.${ip.readUInt8(0)}.${ip.readUInt8(1)}`,
+  });
+});
+
+test.afterAll(async ({ browser }, info) => {
+  if (!ownerCookies) return;
+  const ctx = await browser.newContext({ ...info.project.use });
+  try {
+    await ctx.addCookies(ownerCookies);
+    const page = await ctx.newPage();
+    await page.goto(tenantUrl(SLUG, '/admin'));
+    await apiRequest(page, '/api/v1/auth/logout', 'POST');
+  } finally {
+    ownerCookies = undefined;
+    await ctx.close();
+  }
+});
 
 async function apiRequest(page: Page, path: string, method = 'GET', data?: unknown) {
   return page.evaluate(
@@ -55,7 +88,7 @@ test.describe('Phase 2 closeout journeys', () => {
         );
       const [a, b, c] = await Promise.all(contexts.map((ctx) => ctx.newPage()));
       if (!a || !b || !c) throw new Error('Three device contexts required');
-      const phone = kamalStudentPhone(1501 + projectIndex(info.project.name));
+      const phone = kamalStudentPhone(1501 + projectIndex(info.project.name) + info.retry * 20);
       await loginStudent(a, SLUG, phone, PASSWORD);
       const session = await apiGet<{ user: { id: string } }>(a, '/api/v1/auth/session');
       const devices = await apiGet<{ items: { id: string }[] }>(a, '/api/v1/me/devices');

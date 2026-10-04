@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import { API_PORT, DATABASE_URL, WEB_PORT, repoRoot } from './support/env';
 
 /**
- * Phase 1 walking-skeleton journeys against the real stack: browser -> built web app -> built API
+ * Phase 1 and Phase 2 journeys against the real stack: browser -> built web app -> built API
  * -> Postgres with row-level security. The stack (Postgres, migrated and seeded) must be up before
  * `playwright test`; see e2e/README.md. The web app and API are started here from their builds.
  *
