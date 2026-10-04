@@ -26,6 +26,7 @@ export const ALLOW = {
   },
   /** SECURITY DEFINER functions (each returns only tenantPublicSchema fields). */
   securityDefiner: {
+    invoice_job_tenants: 'ADR 0012 cron fan-out: active/trial tenant UUIDs only, no tenant data; actual jobs use withTenant.',
     resolve_tenant_by_slug: 'TEN-01 host → tenant before a tenant context exists.',
     resolve_tenant_by_domain: 'TEN-01 verified custom domain → tenant.',
   },
@@ -33,6 +34,13 @@ export const ALLOW = {
 
 const APP_ROLES = ['remix_app', 'remix_readonly', 'remix_platform'] as const;
 const OWNER = 'remix_owner';
+
+/** ADR 0008: FORCE binds even the owner, through a separate tenant-scoped owner policy. */
+export const LEDGER_UPDATE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
+  tenant_settings: ['due_day'], invoices: ['paid_cents', 'status'],
+  invoice_lines: ['void_reason', 'voided_at'], payments: [], payment_allocations: [],
+  receipts: ['pdf_key', 'reversed_at'],
+};
 
 /** RLS on, ≥1 policy, tenant_id, tenant-scoped key, owner, updated_at trigger, factory entry. */
 export async function tableViolations(
@@ -139,7 +147,8 @@ export async function policyViolations(db: Queryable): Promise<string[]> {
   for (const p of policies) {
     const label = `${p.table}.${p.policy}`;
     for (const role of p.roles) {
-      if (role !== 'remix_app' && role !== 'remix_readonly') {
+      const tenantBoundOwner = role === OWNER && p.table in LEDGER_UPDATE_COLUMNS && p.policy === 'tenant_owner';
+      if (role !== 'remix_app' && role !== 'remix_readonly' && !tenantBoundOwner) {
         problems.push(`${label}: applies to ${role} (only remix_app / remix_readonly allowed)`);
       }
     }
@@ -400,6 +409,18 @@ export async function grantViolations(
         `${g.table}: ${g.role} ${g.granted ? 'has' : 'lacks'} ${g.privilege}${g.privilege === 'TRUNCATE' ? ' (TRUNCATE ignores RLS)' : ''}`,
       );
     }
+  }
+  const columns = await rows<{ table: string; column: string; granted: boolean; forced: boolean }>(db, sql`
+    select c.relname as table, a.attname as column, c.relforcerowsecurity as forced,
+      has_column_privilege('remix_app', c.oid, a.attname, 'UPDATE') as granted
+    from pg_class c join pg_attribute a on a.attrelid = c.oid
+    where c.relnamespace = 'public'::regnamespace and a.attnum > 0 and not a.attisdropped
+  `);
+  for (const c of columns) {
+    const allowed = LEDGER_UPDATE_COLUMNS[c.table];
+    if (!allowed) continue;
+    if (!c.forced) problems.push(`${c.table}: ledger RLS is not forced`);
+    if (c.granted !== allowed.includes(c.column)) problems.push(`${c.table}.${c.column}: unexpected UPDATE grant=${c.granted}`);
   }
   return problems;
 }

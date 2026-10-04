@@ -59,7 +59,9 @@ describe('PAR-01 guardians', () => {
   });
 
   it('are deleted with their student', async () => {
-    const other = await createWorld(db.owner, 'cascade');
+    // This control covers pre-ledger cascade relationships. Money rows deliberately restrict
+    // deleting their parents; the ledger factory/isolation suite covers those references.
+    const other = await createWorld(db.owner, 'cascade', false);
     await db.owner.execute(sql`delete from enrollments where student_id = ${other.studentUserId}`);
     await db.owner.execute(sql`delete from students where user_id = ${other.studentUserId}`);
     const left = await withTenant(db.app, other.tenantId, (tx) =>

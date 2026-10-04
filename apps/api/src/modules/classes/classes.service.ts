@@ -7,6 +7,7 @@ import type { z } from 'zod';
 import type { AuthSession } from '../../common/auth/session-authenticator';
 import { AppException } from '../../common/errors/app-exception';
 import { monthStart } from '../../common/time/business-date';
+import { generateInvoices, voidEndedLines } from '../fees/invoice-generation';
 import { CLOCK, type Clock } from '../../common/time/clock';
 import type { EndpointBody } from '../../common/validation/endpoint';
 import { AuditService, type AuditEntry } from '../audit/audit.service';
@@ -478,6 +479,8 @@ export class ClassesService {
               ]),
         ]);
         await this.audit.recordMany(tx, tenantId, entries);
+        // FEE-01: the current month's line exists as soon as the student is enrolled.
+        await generateInvoices(tx, monthStart(now), now, created.map((e) => e.id));
       }
       return { enrolled: toEnrol.length, skipped };
     });
@@ -558,6 +561,11 @@ export class ClassesService {
       }
 
       await tx.update(enrollments).set(changes).where(eq(enrollments.id, enrollmentId));
+      if (body.toMonth !== undefined) {
+        // FEE-01: ending voids unpaid later lines; re-opening restores the current month's line.
+        await voidEndedLines(tx, [enrollmentId], 'Enrolment ended', now);
+        await generateInvoices(tx, monthStart(now), now, [enrollmentId]);
+      }
       entries.unshift({
         ...base,
         action: 'enrollment.update',
@@ -644,6 +652,8 @@ export class ClassesService {
         if (!created) throw new Error('enrolment not created');
         resultId = created.id;
       }
+      await voidEndedLines(tx, [enrollmentId], 'Enrolment moved', now);
+      await generateInvoices(tx, monthStart(now), now, [resultId]);
       await this.audit.record(tx, tenantId, {
         ...actor(session, now),
         action: 'enrollment.move',

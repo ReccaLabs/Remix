@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Queue names, a closed list (ADR 0012). One queue per kind of work so a slow import cannot
  * starve SMS. Add `invoices` / `reminders` here when those phases land.
  */
-export const QUEUES = ['sms', 'imports'] as const;
+export const QUEUES = ['sms', 'imports', 'fees'] as const;
 export type QueueName = (typeof QUEUES)[number];
 
 /** Valkey key prefix of every BullMQ key; keeps jobs apart from limiter/cache keys. */
@@ -43,6 +43,22 @@ export const importsPayload = z.strictObject({
   importId: idPart,
 });
 
+/** Scheduler ticks touch no tenant rows; only the narrow tenant-id discovery function. */
+export const FEES_SYSTEM_TENANT = '00000000-0000-0000-0000-000000000000';
+const feeMonth = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
+const feeTenant = tenantId.refine(id => id !== FEES_SYSTEM_TENANT);
+export const feesPayload = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('monthly_tick'), tenantId: z.literal(FEES_SYSTEM_TENANT) }),
+  z.strictObject({ kind: z.literal('nightly_tick'), tenantId: z.literal(FEES_SYSTEM_TENANT) }),
+  z.strictObject({ kind: z.literal('invoices'), tenantId: feeTenant, month: feeMonth }),
+  z.strictObject({ kind: z.literal('recompute'), tenantId: feeTenant, date: z.iso.date() }),
+]);
+export function feesBusinessKey(p: z.output<typeof feesPayload>): string {
+  if (p.kind === 'invoices') return `invoices:${p.tenantId}:${p.month}`;
+  if (p.kind === 'recompute') return `fee-projections:${p.tenantId}:${p.date}`;
+  return `fees:${p.kind}`;
+}
+
 export interface JobDefinition<S extends z.ZodType> {
   schema: S;
   /** The business key: adding the same key twice is a no-op while the job exists. */
@@ -63,6 +79,12 @@ const DAY = 24 * HOUR;
 
 /** Every queue's contract. Keys must match {@link QUEUES} (checked by the type). */
 export const JOBS = {
+  fees: defineJob({
+    schema: feesPayload,
+    // Preserve the exact business key reversibly; BullMQ prohibits literal colons in job ids.
+    jobId: p => encodeURIComponent(feesBusinessKey(p)), concurrency: 4,
+    removeOnComplete: { age: DAY, count: 10000 }, removeOnFail: { age: 14 * DAY },
+  }),
   sms: defineJob({
     schema: smsPayload,
     jobId: (p) => `sms-${p.tenantId}-${p.messageId}`,

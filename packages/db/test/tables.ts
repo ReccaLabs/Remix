@@ -29,13 +29,14 @@ export type TableName = {
  * - append: SELECT + INSERT within the tenant (audit trail).
  * - full: SELECT, INSERT, UPDATE, DELETE within the tenant.
  */
-export type Access = 'root' | 'settings' | 'read' | 'append' | 'full';
+export type Access = 'root' | 'settings' | 'read' | 'append' | 'projection' | 'full';
 
 export const APP_PRIVILEGES: Record<Access, readonly string[]> = {
   root: ['SELECT'],
   settings: ['SELECT', 'UPDATE'],
   read: ['SELECT'],
   append: ['INSERT', 'SELECT'],
+  projection: ['INSERT', 'SELECT', 'UPDATE'],
   full: ['DELETE', 'INSERT', 'SELECT', 'UPDATE'],
 };
 
@@ -64,12 +65,21 @@ export interface World {
   authTicketId: string;
   staffInviteId: string;
   importJobId: string;
+  invoiceId: string;
+  lineId: string;
+  paymentId: string;
+  sparePaymentId: string;
+  spareEnrollmentId: string;
+  receiptId: string;
+  settingsId: string;
 }
 
 type Row = Record<string, unknown>;
 
 export interface TableSpec {
   access: Access;
+  /** Singleton insert control is tested separately on a tenant without a settings row. */
+  singleton?: boolean;
   /** Column compared with app_tenant_id() by the policy. */
   tenantColumn: 'tenant_id' | 'id';
   /** Identifies this world's row of the table. */
@@ -172,7 +182,48 @@ const freshImportJob = (w: World): Row => ({
   input: JSON.stringify([]),
 });
 
+const freshInvoice = (w: World): Row => ({ tenant_id: w.tenantId, student_id: w.studentUserId, number: 'IS-I-26-10-IS-0001', month: '2026-10-01', due_on: '2026-10-05' });
+const freshLine = (w: World): Row => ({ tenant_id: w.tenantId, invoice_id: w.invoiceId, enrollment_id: w.spareEnrollmentId, class_id: w.classId, month: '2026-09-01', amount_cents: 250000 });
+const freshPayment = (w: World): Row => ({ tenant_id: w.tenantId, student_id: w.studentUserId, method: 'cash', amount_cents: 250000, idempotency_key: 'fresh-payment' });
+const freshAllocation = (w: World): Row => ({ tenant_id: w.tenantId, payment_id: w.sparePaymentId, invoice_line_id: w.lineId, amount_cents: 1 });
+const freshReceipt = (w: World): Row => ({ tenant_id: w.tenantId, payment_id: w.sparePaymentId, number: 'IS-R-26-00002' });
+
 export const TABLES = {
+  tenant_settings: {
+    access: 'projection', singleton: true, tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.settingsId }), fresh: (w) => ({ tenant_id: w.tenantId }),
+  },
+  invoices: {
+    access: 'projection', tenantColumn: 'tenant_id', key: (w) => ({ id: w.invoiceId }), fresh: freshInvoice,
+    crossTenantRefs: { student: (a,b) => ({ ...freshInvoice(a), student_id: b.studentUserId }) },
+  },
+  invoice_lines: {
+    access: 'projection', tenantColumn: 'tenant_id', key: (w) => ({ id: w.lineId }), fresh: freshLine,
+    crossTenantRefs: {
+      invoice: (a,b) => ({ ...freshLine(a), invoice_id: b.invoiceId }),
+      enrollment: (a,b) => ({ ...freshLine(a), enrollment_id: b.spareEnrollmentId }),
+      class: (a,b) => ({ ...freshLine(a), class_id: b.classId }),
+    },
+  },
+  payments: {
+    access: 'append', tenantColumn: 'tenant_id', key: (w) => ({ id: w.paymentId }), fresh: freshPayment,
+    crossTenantRefs: {
+      student: (a,b) => ({ ...freshPayment(a), student_id: b.studentUserId }),
+      receivedBy: (a,b) => ({ ...freshPayment(a), received_by: b.staffUserId }),
+      reversal: (a,b) => ({ ...freshPayment(a), method: 'reversal', amount_cents: -250000, reverses_payment_id: b.paymentId }),
+    },
+  },
+  payment_allocations: {
+    access: 'append', tenantColumn: 'tenant_id', key: (w) => ({ payment_id: w.paymentId, invoice_line_id: w.lineId }), fresh: freshAllocation,
+    crossTenantRefs: {
+      payment: (a,b) => ({ ...freshAllocation(a), payment_id: b.sparePaymentId }),
+      line: (a,b) => ({ ...freshAllocation(a), invoice_line_id: b.lineId }),
+    },
+  },
+  receipts: {
+    access: 'projection', tenantColumn: 'tenant_id', key: (w) => ({ id: w.receiptId }), fresh: freshReceipt,
+    crossTenantRefs: { payment: (a,b) => ({ ...freshReceipt(a), payment_id: b.sparePaymentId }) },
+  },
   tenants: {
     access: 'settings',
     tenantColumn: 'id',
@@ -398,7 +449,7 @@ function one<T>(rows: T[], what: string): T {
 }
 
 /** Build one tenant's world as the owner, in one transaction, with typed Drizzle inserts. */
-export async function createWorld(owner: Db, label: string): Promise<World> {
+export async function createWorld(owner: Db, label: string, includeLedger = true): Promise<World> {
   const tag = uniqueTag();
   const slug = `iso-${label}-${tag}`;
   const domainHost = `${label}-${tag}.example.test`;
@@ -589,6 +640,20 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       'import job',
     );
 
+    const ledger = includeLedger ? await (async () => {
+    await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
+    const settings = one(await tx.insert(schema.tenantSettings).values({ tenantId }).returning(), 'settings');
+    const spareEnrollment = one(await tx.insert(schema.enrollments).values({ tenantId, classId: klass.id, studentId: student.id, fromMonth: '2026-09-01' }).returning(), 'spare enrolment');
+    const invoice = one(await tx.insert(schema.invoices).values({ tenantId, studentId: student.id, number: 'IS-I-26-09-IS-0001', month: '2026-09-01', dueOn: '2026-09-05', status: 'paid', paidCents: 250000 }).returning(), 'invoice');
+    const line = one(await tx.insert(schema.invoiceLines).values({ tenantId, invoiceId: invoice.id, enrollmentId: enrollment.id, classId: klass.id, month: '2026-09-01', amountCents: 250000 }).returning(), 'line');
+    const payment = one(await tx.insert(schema.payments).values({ tenantId, studentId: student.id, method: 'cash', amountCents: 250000, idempotencyKey: 'world-payment', receivedBy: staff.id }).returning(), 'payment');
+    const sparePayment = one(await tx.insert(schema.payments).values({ tenantId, studentId: student.id, method: 'cash', amountCents: 250000, idempotencyKey: 'spare-payment' }).returning(), 'spare payment');
+    await tx.insert(schema.paymentAllocations).values({ tenantId, paymentId: payment.id, invoiceLineId: line.id, amountCents: 250000 });
+    const receipt = one(await tx.insert(schema.receipts).values({ tenantId, paymentId: payment.id, number: 'IS-R-26-00001' }).returning(), 'receipt');
+    return { invoiceId: invoice.id, lineId: line.id, paymentId: payment.id, sparePaymentId: sparePayment.id,
+      spareEnrollmentId: spareEnrollment.id, receiptId: receipt.id, settingsId: settings.id };
+    })() : { invoiceId: '', lineId: '', paymentId: '', sparePaymentId: '', spareEnrollmentId: '', receiptId: '', settingsId: '' };
+
     return {
       tag,
       tenantId,
@@ -611,6 +676,7 @@ export async function createWorld(owner: Db, label: string): Promise<World> {
       authTicketId: ticket.id,
       staffInviteId: invite.id,
       importJobId: importJob.id,
+      ...ledger,
     };
   });
 }

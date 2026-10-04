@@ -22,6 +22,7 @@ import {
 import { withTenant } from '../tenant';
 import { FIRST_NAMES, LAST_NAMES, SCHOOLS, SEED_TENANTS, type SeedTenant } from './data';
 import { createRng, type Rng } from './random';
+import { seedFees } from './fees';
 
 const RNG_SEED = 20_261_002;
 
@@ -364,6 +365,7 @@ async function seedTenant(
     after: { slug: spec.slug, students: spec.students },
   });
 
+  await withTenant(tx, tenantId, scoped => seedFees(scoped, tenantId, spec.studentNoPrefix, staffIds[0] ?? ''));
   return {
     slug: spec.slug,
     tenantId,
