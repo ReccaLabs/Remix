@@ -11,6 +11,8 @@ Short records of decisions that are expensive to reverse. Copy the format of an 
 | [0005](0005-tenancy-shared-schema-rls.md) | Tenancy: shared schema + Postgres RLS, DB roles, `withTenant()`, platform access via owned views |
 | [0006](0006-web-api-data-access.md) | `apps/web` never touches the database; server and client call the API through the typed client |
 | [0007](0007-ids-money-time-numbering.md) | UUIDv7 ids, `bigint` cents, UTC storage with Asia/Colombo business dates, per-tenant gap-free counters |
+| [0008](0008-fee-ledger.md) | Fee ledger: per-month invoice lines, append-only payments + allocations, derived paid status, idempotent recording, slips, PayHere notify, reversals, encrypted merchant secrets |
+| [0009](0009-file-storage.md) | File storage: private R2/S3 bucket, tenant-prefixed keys, presigned PUT with conditions, worker re-encode + EXIF strip, ≤ 10 min signed GETs |
 | [0012](0012-background-jobs.md) | Background jobs: BullMQ on Valkey, named queues, idempotent jobs keyed by business id, tenant id in every payload, cron via repeatable jobs |
 
-Backlog (0008–0011, 0013–0017, each written before the phase that needs it): [roadmap §6](../plan/05-roadmap.md#6-decision-backlog-adrs).
+Backlog (0010–0011, 0013–0017, each written before the phase that needs it): [roadmap §6](../plan/05-roadmap.md#6-decision-backlog-adrs).

@@ -84,7 +84,7 @@ Before finishing any task: `pnpm lint && pnpm typecheck && pnpm test` must pass,
 
 ### Knowledge graph
 - `graphify-out/` holds a graphify knowledge graph of the repo (code, docs, plan, designs). For questions about architecture or "where/how does X work", query it first (`/graphify query "…"`), then read the files it points to.
-- After a feature lands, refresh it with `/graphify . --update`.
+- Refresh it only at the end of a phase, by the lead (`/graphify . --update`). Feature tracks and coding agents (Claude subagents, Codex) never run graphify and never commit `graphify-out/` changes.
 
 ### Git
 - Branches `feat/…`, `fix/…`; Conventional Commits with feature IDs (`feat(fees): FEE-06 …`); squash merge into `main` (always deployable). Only commit when asked.
