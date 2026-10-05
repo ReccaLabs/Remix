@@ -1,7 +1,9 @@
 # CLAUDE.md — rules for AI assistants working on ReMix
 
 **Project:** ReMix by Recca Labs — multi-tenant LMS SaaS for Sri Lankan tuition teachers and institutes.
-**Now building:** the LMS platform (`apps/web` + `apps/api` + `packages/db`) phase by phase — Phase 1 (foundation) is done, see [`docs/plan/phase-1.md`](docs/plan/phase-1.md). `remix.lk` (`apps/site`) is built.
+**Now building:** the LMS platform (`apps/web` + `apps/api` + `packages/db`) phase by phase — Phases 1–2 are done; Phase 3 (money) is in progress, see [`docs/plan/phase-3.md`](docs/plan/phase-3.md). `remix.lk` (`apps/site`) is built.
+
+**How features are built:** Codex writes each track as a subagent and Claude leads (plans, writes contracts/ADRs and prompts, reviews, merges). Before planning or running any feature track, read [`docs/agents/codex-subagent.md`](docs/agents/codex-subagent.md) and follow it.
 
 Read before non-trivial work:
 - [`docs/plan/`](docs/plan/README.md) — **the development plan**: needs, feature IDs (`FEE-06`…), architecture, Definition of Done, phases. Every task maps to a feature ID; follow its acceptance criteria and the DoD in `docs/plan/04-quality.md`.
@@ -81,6 +83,10 @@ Before finishing any task: `pnpm lint && pnpm typecheck && pnpm test` must pass,
 ### Tests
 - Unit tests (Vitest) with every piece of logic (`*.test.ts` next to the file). Pricing/money changes must update `pricing.test.ts`.
 - Phase 1+: tenant-isolation tests for every new table and endpoint.
+
+### Agents (Codex + Claude)
+- Feature tracks are written by Codex (`gpt-6.1-sol`) via `scripts/codex-track.sh`, one track per worktree; Claude Sonnet is the fallback when Codex is out of quota. Full procedure, pitfalls, prompt and report templates: [`docs/agents/codex-subagent.md`](docs/agents/codex-subagent.md).
+- The lead reviews every PR before merging; money/auth/RLS/secrets code is reviewed line by line.
 
 ### Knowledge graph
 - `graphify-out/` holds a graphify knowledge graph of the repo (code, docs, plan, designs). For questions about architecture or "where/how does X work", query it first (`/graphify query "…"`), then read the files it points to.
