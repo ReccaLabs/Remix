@@ -10,7 +10,7 @@ export function OpenMonths({ lines, selected, onSelect, disabled = false }: { li
     {lines.length === 0 ? <p className="m-0 px-4 py-6 text-muted">{t('noOpen')}</p> : <ul className="m-0 list-none divide-y divide-line p-0">{lines.map(l => {
       const title = <span className="font-medium">{l.className}<span className="block text-sm font-normal text-muted">{format.dateTime(new Date(l.month), { month: 'long', year: 'numeric' })}</span></span>;
       return <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-        {onSelect ? <Checkbox disabled={disabled} checked={selected?.includes(l.id) ?? false} label={title} onChange={e => onSelect(e.target.checked ? [...(selected ?? []), l.id] : (selected ?? []).filter(id => id !== l.id))} /> : title}
+        {onSelect ? <Checkbox value={l.id} disabled={disabled} checked={selected?.includes(l.id) ?? false} label={title} onChange={e => onSelect(e.target.checked ? [...(selected ?? []), l.id] : (selected ?? []).filter(id => id !== l.id))} /> : title}
         <div className="flex items-center gap-3"><StatusBadge tone={l.overdue ? 'danger' : 'neutral'}>{t(l.overdue ? 'overdue' : 'unpaid')}</StatusBadge><span className="font-semibold tabular-nums">{formatLKR(l.openCents, { exact: true })}</span></div>
       </li>;
     })}</ul>}
