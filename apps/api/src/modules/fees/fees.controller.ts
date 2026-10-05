@@ -12,6 +12,8 @@ import { ReceiptsService } from './receipts.service';
 @Controller()
 export class FeesController {
   constructor(private readonly fees: FeesService, private readonly receipts: ReceiptsService) {}
+  @SessionKinds('student') @Header('cache-control', 'no-store') @Endpoint(API.myFees)
+  myFees(@CurrentTenant() t: ResolvedTenant, @CurrentSession() s: AuthSession) { return this.fees.myFees(t.id, s); }
   @RequirePermission('fees.collect') @Header('cache-control', 'no-store') @Endpoint(API.recordCashPayment)
   recordCashPayment(@CurrentTenant() t: ResolvedTenant, @CurrentSession() s: AuthSession, @Body() b: EndpointBody<typeof API.recordCashPayment>) { return this.fees.recordCashPayment(t.id, s, b); }
   @RequirePermission('fees.collect') @Header('cache-control', 'no-store') @Endpoint(API.recordManualPayment)

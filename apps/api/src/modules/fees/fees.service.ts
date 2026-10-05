@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { schema, withTenant, type Db, type Tx } from '@remix/db';
-import type { API, CashPaymentRequest, ManualPaymentRequest, InvoiceLine, Payment, Receipt } from '@remix/types/api';
+import type { API, CashPaymentRequest, ManualPaymentRequest, InvoiceLine, MyFeesResponse, Payment, Receipt } from '@remix/types/api';
 import type { z } from 'zod';
 import type { AuthSession } from '../../common/auth/session-authenticator';
 import { AppException } from '../../common/errors/app-exception';
@@ -147,7 +147,24 @@ export class FeesService {
   }
 
   studentFees(tenantId: string, studentId: string) {
+    return withTenant(this.db, tenantId, tx => this.studentFeesRows(tx, studentId));
+  }
+
+  async myFees(tenantId: string, session: AuthSession): Promise<MyFeesResponse> {
+    if (session.kind !== 'student') throw new AppException('FORBIDDEN', 403);
     return withTenant(this.db, tenantId, async tx => {
+      const own = await this.studentFeesRows(tx, session.userId);
+      const [settings] = await tx.select({ bankDetails: schema.tenantSettings.bankDetails }).from(schema.tenantSettings);
+      const [payhere] = await tx.select({ config: schema.tenantIntegrations.config }).from(schema.tenantIntegrations)
+        .where(eq(schema.tenantIntegrations.kind, 'payhere'));
+      return { openLines: own.openLines,
+        payments: own.payments.map(({ needsRefund: _needsRefund, unallocatedCents: _unallocated, ...payment }) => payment),
+        slips: [], // TODO(3-D): the slips table/lifecycle does not exist yet.
+        cardEnabled: payhere?.config.enabled ?? false, bankDetails: settings?.bankDetails ?? null };
+    });
+  }
+
+  private async studentFeesRows(tx: Tx, studentId: string) {
       const [student] = await tx.select({ studentNo: students.studentNo, displayName: tenantUsers.displayName }).from(students)
         .innerJoin(tenantUsers, and(eq(tenantUsers.tenantId, students.tenantId), eq(tenantUsers.id, students.userId))).where(eq(students.userId, studentId));
       if (!student) throw feeNotFound();
@@ -162,7 +179,6 @@ export class FeesService {
         month: r.line.month, dueOn: r.dueOn, amountCents: r.line.amountCents, paidCents: safeCents(r.paid),
         openCents: r.line.amountCents - safeCents(r.paid), paid: false, overdue: today > r.dueOn, slipWaiting: false }));
       return { studentId, ...student, openLines, payments: await this.paymentRows(tx, eq(payments.studentId, studentId)) };
-    });
   }
 
   getReceipt(tenantId: string, id: string): Promise<Receipt> {
