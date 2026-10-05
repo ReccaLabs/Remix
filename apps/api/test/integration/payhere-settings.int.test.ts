@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { schema, withTenant, type Db } from '@remix/db';
 import { checkoutResponseSchema, payhereSettingsSchema, type StaffRole } from '@remix/types/api';
@@ -92,11 +93,28 @@ describe('SET-02 PayHere settings against Postgres RLS', () => {
       order_id: body.checkoutId,
     });
     expect(body.fields.hash).toMatch(/^[A-F0-9]{32}$/);
+    for (const key of ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'country']) {
+      expect(body.fields[key]?.trim().length, key).toBeGreaterThan(0);
+    }
     expect(body.actionUrl).toBe('https://www.payhere.lk/pay/checkout');
     expect(JSON.stringify(body)).not.toContain(SECRET);
     expect((await staff.owner.api.get(PATH)).body.lastTest).toMatchObject({ status: 'pending' });
     expect(t.logs.text).not.toContain(SECRET);
     expect(JSON.stringify(await f.audits(tenant, 'settings.payhere_test'))).not.toContain(SECRET);
+  });
+  it('requires the testing owner to have both buyer contact fields without recording a test', async () => {
+    const user = await f.staff(tenant, ['owner'], { name: 'Mononym' });
+    const owner = api(t, tenant.host, await signInStaff(t, tenant, user));
+    const before = (await owner.get(PATH)).body.lastTest;
+    const audits = await f.audits(tenant, 'settings.payhere_test');
+    for (const contact of [{ phone: null }, { phone: user.phone, email: null }]) {
+      await withTenant(db, tenant.id, (tx) =>
+        tx.update(schema.tenantUsers).set(contact).where(eq(schema.tenantUsers.id, user.id)),
+      );
+      expectProblem(await owner.post(`${PATH}/test`), 400, 'VALIDATION_FAILED');
+    }
+    expect((await owner.get(PATH)).body.lastTest).toEqual(before);
+    expect(await f.audits(tenant, 'settings.payhere_test')).toHaveLength(audits.length);
   });
   it('rejects unknown fields, malformed inputs and enabling/testing without credentials', async () => {
     for (const body of [

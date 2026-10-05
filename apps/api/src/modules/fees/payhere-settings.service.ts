@@ -103,6 +103,13 @@ export class PayhereSettingsService {
       const [owner] = await tx.select().from(tenantUsers).where(eq(tenantUsers.id, session.userId));
       const [settings] = await tx.select().from(tenantSettings);
       if (!tenant || !owner) throw feeNotFound();
+      if (!owner.email || !owner.phone) {
+        throw new AppException(
+          'VALIDATION_FAILED',
+          400,
+          'Add an email and phone to your profile before testing PayHere',
+        );
+      }
       const [firstName = '', ...rest] = owner.displayName.split(' ');
       const checkout = this.builder.build({
         merchantId: row.config.merchantId,
@@ -118,11 +125,13 @@ export class PayhereSettingsService {
         tenantSlug: tenant.slug,
         customer: {
           firstName,
-          lastName: rest.join(' '),
-          email: owner.email ?? '',
-          phone: owner.phone ?? '',
-          address: settings?.receiptAddress ?? '',
-          city: '',
+          lastName: rest.join(' ') || 'Integration test',
+          email: owner.email,
+          phone: owner.phone,
+          // Required gateway fields for an owner-only integration test, with no delivery.
+          // Real student billing/customer data belongs to the 3-E checkout flow.
+          address: settings?.receiptAddress?.trim() || 'Integration test - no delivery',
+          city: 'Not applicable (integration test)',
         },
       });
       // TODO(3-E): persist an owner-test checkout and verify notify; redirects never prove payment.
