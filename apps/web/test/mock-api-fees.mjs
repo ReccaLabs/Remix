@@ -63,7 +63,8 @@ export async function handleFees(env) {
   const studentFees = /^\/api\/v1\/admin\/students\/([^/]+)\/fees$/.exec(pathname);
   const cash = pathname === '/api/v1/admin/payments/cash';
   const manual = pathname === '/api/v1/admin/payments/manual';
-  if (!payhere && !test && !fees && !receipt && !pdf && !paymentList && !paymentDetail && !reverse && !studentFees && !cash && !manual) return false;
+  const mine = pathname === '/api/v1/me/fees';
+  if (!payhere && !test && !fees && !receipt && !pdf && !paymentList && !paymentDetail && !reverse && !studentFees && !cash && !manual && !mine) return false;
   const tenant = tenantOf(req);
   if (!tenant) return (problem(res, 404, 'TENANT_NOT_FOUND'), true);
   const current = currentSession(req, tenant);
@@ -89,6 +90,12 @@ export async function handleFees(env) {
       return { ...l, paidCents, openCents: l.amountCents - paidCents, paid: paidCents >= l.amountCents };
     }).filter(l => !l.paid);
   };
+  if (mine) {
+    if (user.kind !== 'student') return (problem(res, 403, 'FORBIDDEN'), true);
+    if (req.method !== 'GET') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
+    json(res, 200, { openLines: openLines(user), payments: store.payments.filter(p => p.studentId === user.id).map(({ needsRefund: _refund, unallocatedCents: _surplus, ...p }) => p),
+      slips: [], cardEnabled: store.payhere.enabled, bankDetails: store.fees.bankDetails }); return true;
+  }
   if (studentFees) {
     if (!reader) return (problem(res, 403, 'FORBIDDEN'), true);
     const student = findStudent(studentFees[1]);

@@ -3,17 +3,16 @@ import type { MyFeesResponse } from '@remix/types/api';
 import { formatLKR } from '@remix/types/money';
 import { Printer } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
-import { useId } from 'react';
 import { PaymentStatus } from './payment-status';
 import { ReceiptDownload } from './receipt-download';
 
 export function PaymentHistory({ payments, admin = false }: { payments: MyFeesResponse['payments']; admin?: boolean }) {
-  const t = useTranslations('fees'); const format = useFormatter(); const id = useId();
+  const t = useTranslations('fees'); const format = useFormatter();
   const date = (value: string) => format.dateTime(new Date(value), { dateStyle: 'medium', timeZone: 'Asia/Colombo' });
   const months = (p: MyFeesResponse['payments'][number]) => p.lines.map(l => `${l.className} · ${format.dateTime(new Date(l.month), { month: 'short', year: 'numeric' })}`).join(', ');
   const receipt = (receiptId: string | null) => receiptId ? <div className="flex flex-wrap gap-1"><ReceiptDownload id={receiptId} />{admin ? <a href={`/admin/receipts/${receiptId}/print`} target="_blank" rel="noopener noreferrer" className={buttonClass({ variant: 'ghost', size: 'lg' })}><Printer aria-hidden size={18} />{t('reprint')}</a> : null}</div> : null;
-  return <section aria-labelledby={id} className="overflow-hidden rounded-lg border border-line bg-surface">
-    <h2 id={id} className="m-0 border-b border-line px-4 py-3 text-base font-semibold">{t('history')}</h2>
+  return <section className="overflow-hidden rounded-lg border border-line bg-surface">
+    <h2 className="m-0 border-b border-line px-4 py-3 text-base font-semibold">{t('history')}</h2>
     {payments.length === 0 ? <EmptyState size="compact" title={t('empty')} description={t('emptyBody')} /> : <>
       <ul className="m-0 list-none divide-y divide-line p-0 md:hidden">{payments.map(p => <li key={p.id} className="flex flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-3"><p className="m-0 font-semibold">{months(p)}</p><span className="shrink-0 font-semibold tabular-nums">{formatLKR(p.amountCents, { exact: true })}</span></div>
