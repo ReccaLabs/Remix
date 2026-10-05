@@ -189,6 +189,11 @@ const freshAllocation = (w: World): Row => ({ tenant_id: w.tenantId, payment_id:
 const freshReceipt = (w: World): Row => ({ tenant_id: w.tenantId, payment_id: w.sparePaymentId, number: 'IS-R-26-00002' });
 
 export const TABLES = {
+  tenant_integrations: {
+    access: 'projection', singleton: true, tenantColumn: 'tenant_id',
+    key: (w) => ({ tenant_id: w.tenantId, kind: 'payhere' }),
+    fresh: (w) => ({ tenant_id: w.tenantId, kind: 'payhere', config: '{}' }),
+  },
   tenant_settings: {
     access: 'projection', singleton: true, tenantColumn: 'tenant_id',
     key: (w) => ({ id: w.settingsId }), fresh: (w) => ({ tenant_id: w.tenantId }),
@@ -643,6 +648,7 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
     const ledger = includeLedger ? await (async () => {
     await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
     const settings = one(await tx.insert(schema.tenantSettings).values({ tenantId }).returning(), 'settings');
+    await tx.insert(schema.tenantIntegrations).values({ tenantId, kind: 'payhere', config: { enabled: false, mode: 'sandbox', merchantId: null, lastTest: null } });
     const spareEnrollment = one(await tx.insert(schema.enrollments).values({ tenantId, classId: klass.id, studentId: student.id, fromMonth: '2026-09-01' }).returning(), 'spare enrolment');
     const invoice = one(await tx.insert(schema.invoices).values({ tenantId, studentId: student.id, number: 'IS-I-26-09-IS-0001', month: '2026-09-01', dueOn: '2026-09-05', status: 'paid', paidCents: 250000 }).returning(), 'invoice');
     const line = one(await tx.insert(schema.invoiceLines).values({ tenantId, invoiceId: invoice.id, enrollmentId: enrollment.id, classId: klass.id, month: '2026-09-01', amountCents: 250000 }).returning(), 'line');
