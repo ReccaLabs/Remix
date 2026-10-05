@@ -32,10 +32,12 @@ RUN pnpm --filter @remix/api build \
 # ── runtime: production dependencies + bundle only, non-root ──
 FROM ${NODE_IMAGE} AS runtime
 ENV NODE_ENV=production PORT=4000
-# Patch CVE-2026-103111 until the Node base image includes Debian's fixed PCRE2 package.
+# Patch CVE-2026-103111 (PCRE2) and CVE-2026-13221 + 6 more (perl-base 5.36.0-7+deb12u4) until
+# the Node base image includes Debian's fixed packages.
 RUN apt-get update -o APT::Update::Error-Mode=any \
- && apt-get install -y --no-install-recommends --only-upgrade libpcre2-8-0 \
+ && apt-get install -y --no-install-recommends --only-upgrade libpcre2-8-0 perl-base \
  && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" ge 10.42-1+deb12u2 \
+ && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' perl-base)" ge 5.36.0-7+deb12u4 \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build --chown=node:node /out/package.json ./package.json
