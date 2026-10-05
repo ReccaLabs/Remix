@@ -1,5 +1,14 @@
 import { ShellUser } from '@remix/ui';
-import { CalendarDays, ChevronRight, DoorOpen, Menu, Palette, Settings } from 'lucide-react';
+import {
+  CalendarDays,
+  ChevronRight,
+  CreditCard,
+  DoorOpen,
+  Menu,
+  Palette,
+  ReceiptText,
+  Settings,
+} from 'lucide-react';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
@@ -25,34 +34,47 @@ export default async function MorePage() {
     formatRoles(session.user.roles),
   ]);
   const name = session.user.displayName;
+  const money = await getTranslations('settings');
 
   const links: Record<
     SettingsSection,
     { href: string; title: string; hint: string; icon: ReactNode }
   > = {
+    payments: {
+      href: ADMIN_PATHS.paymentsSettings,
+      title: money('nav.payments'),
+      hint: money('payments.subtitle'),
+      icon: <CreditCard aria-hidden size={20} className="flex-none text-muted" />,
+    },
+    fees: {
+      href: ADMIN_PATHS.feeSettings,
+      title: money('nav.fees'),
+      hint: money('fees.subtitle'),
+      icon: <ReceiptText aria-hidden size={20} className="flex-none text-muted" />,
+    },
     general: {
       href: ADMIN_PATHS.settings,
       title: t('generalLink'),
       hint: t('generalHint'),
-      icon: <Settings aria-hidden size={20} className="text-muted flex-none" />,
+      icon: <Settings aria-hidden size={20} className="flex-none text-muted" />,
     },
     theme: {
       href: ADMIN_PATHS.theme,
       title: t('themeLink'),
       hint: t('themeHint'),
-      icon: <Palette aria-hidden size={20} className="text-muted flex-none" />,
+      icon: <Palette aria-hidden size={20} className="flex-none text-muted" />,
     },
     halls: {
       href: ADMIN_PATHS.halls,
       title: t('hallsLink'),
       hint: t('hallsHint'),
-      icon: <DoorOpen aria-hidden size={20} className="text-muted flex-none" />,
+      icon: <DoorOpen aria-hidden size={20} className="flex-none text-muted" />,
     },
     staff: {
       href: ADMIN_PATHS.staff,
       title: t('staffLink'),
       hint: t('staffHint'),
-      icon: <Settings aria-hidden size={20} className="text-muted flex-none" />,
+      icon: <Settings aria-hidden size={20} className="flex-none text-muted" />,
     },
   };
   const items = [
@@ -60,7 +82,7 @@ export default async function MorePage() {
       href: ADMIN_PATHS.timetable,
       title: t('timetableLink'),
       hint: t('timetableHint'),
-      icon: <CalendarDays aria-hidden size={20} className="text-muted flex-none" />,
+      icon: <CalendarDays aria-hidden size={20} className="flex-none text-muted" />,
     },
     ...settingsSections(session.user.roles).map((section) => links[section]),
   ];
@@ -69,7 +91,7 @@ export default async function MorePage() {
     <AdminComingSoon section="more" icon={<Menu />}>
       <section
         aria-label={t('account')}
-        className="bg-surface border-line flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface p-4"
       >
         <ShellUser name={name} meta={roles} initials={initials(name)} />
         <LogoutButton redirectTo={TENANT_PATHS.staffLogin} />
@@ -79,14 +101,14 @@ export default async function MorePage() {
           <li key={item.href}>
             <Link
               href={item.href}
-              className="bg-surface border-line hover:border-brand flex min-h-11 items-center gap-3 rounded-lg border p-4"
+              className="flex min-h-11 items-center gap-3 rounded-lg border border-line bg-surface p-4 hover:border-brand"
             >
               {item.icon}
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="font-medium">{item.title}</span>
-                <span className="text-muted text-sm">{item.hint}</span>
+                <span className="text-sm text-muted">{item.hint}</span>
               </span>
-              <ChevronRight aria-hidden size={18} className="text-muted flex-none" />
+              <ChevronRight aria-hidden size={18} className="flex-none text-muted" />
             </Link>
           </li>
         ))}

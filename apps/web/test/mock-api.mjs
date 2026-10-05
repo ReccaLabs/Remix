@@ -25,6 +25,7 @@ import { DEV_INVITE_TOKEN, handleAuthRoute } from './mock-api-auth.mjs';
 import { handleImport } from './mock-api-import.mjs';
 import { handleClasses, settingsFor } from './mock-api-classes.mjs';
 import { handlePeople } from './mock-api-people.mjs';
+import { handleFees } from './mock-api-fees.mjs';
 
 const PORT = Number(process.env.MOCK_API_PORT ?? 4000);
 const BACKDATE = Number(process.env.MOCK_TOKEN_BACKDATE_SECONDS ?? 0);
@@ -502,7 +503,18 @@ async function handle(req, res) {
     default:
       // Phase 2 student import: test/mock-api-import.mjs.
       if (
-        await handleImport({ req, res, pathname, json, problem, csrfRejected, tenantOf, currentSession, USERS, CLASSES })
+        await handleImport({
+          req,
+          res,
+          pathname,
+          json,
+          problem,
+          csrfRejected,
+          tenantOf,
+          currentSession,
+          USERS,
+          CLASSES,
+        })
       )
         return;
       // Phase 2 routes: classes, halls, timetable, dashboard, settings (mock-api-classes.mjs),
@@ -522,7 +534,12 @@ async function handle(req, res) {
           USERS,
           CLASSES,
         };
-        if ((await handleClasses(feature)) || (await handlePeople(feature))) return;
+        if (
+          (await handleFees(feature)) ||
+          (await handleClasses(feature)) ||
+          (await handlePeople(feature))
+        )
+          return;
       }
       return problem(res, 404, 'NOT_FOUND');
   }

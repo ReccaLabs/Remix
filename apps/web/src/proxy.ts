@@ -34,6 +34,10 @@ export async function proxy(request: NextRequest) {
   const requestId = resolveRequestId(request.headers.get(REQUEST_HEADERS.requestId));
   const headers = securityHeaders({
     nonce,
+    allowPayhereCheckout:
+      decision.action === 'rewrite' &&
+      decision.area === 'tenant' &&
+      request.nextUrl.pathname === '/admin/settings/payments',
     isDev: process.env.NODE_ENV === 'development',
     hsts: process.env.NODE_ENV === 'production',
   });

@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { ADMIN_PATHS } from '@/lib/paths';
 
-export type SettingsSection = 'general' | 'theme' | 'halls' | 'staff';
+export type SettingsSection = 'general' | 'theme' | 'halls' | 'staff' | 'payments' | 'fees';
 
 const HREF: Record<SettingsSection, string> = {
   general: ADMIN_PATHS.settings,
   theme: ADMIN_PATHS.theme,
+  payments: ADMIN_PATHS.paymentsSettings,
+  fees: ADMIN_PATHS.feeSettings,
   halls: ADMIN_PATHS.halls,
   staff: ADMIN_PATHS.staff,
 };
@@ -17,6 +19,7 @@ const HREF: Record<SettingsSection, string> = {
 export function settingsSections(roles: readonly StaffRole[]): SettingsSection[] {
   return [
     ...(can(roles, 'settings.manage') ? (['general', 'theme'] as const) : []),
+    ...(can(roles, 'fees.settings') ? (['payments', 'fees'] as const) : []),
     ...(can(roles, 'classes.write') ? (['halls'] as const) : []),
     ...(can(roles, 'staff.manage') ? (['staff'] as const) : []),
   ];
@@ -40,7 +43,7 @@ export async function SettingsNav({
   const sections = settingsSections(roles);
   if (sections.length < 2) return null;
   return (
-    <nav aria-label={t('label')} className="border-line overflow-x-auto border-b">
+    <nav aria-label={t('label')} className="overflow-x-auto border-b border-line">
       <ul className="m-0 flex min-w-max list-none gap-1 p-0">
         {sections.map((section) => (
           <li key={section}>
@@ -49,8 +52,8 @@ export async function SettingsNav({
               aria-current={section === current ? 'page' : undefined}
               className={
                 section === current
-                  ? 'border-brand text-brand -mb-px inline-flex min-h-11 items-center border-b-2 px-3 text-sm font-semibold'
-                  : 'text-muted hover:text-ink inline-flex min-h-11 items-center px-3 text-sm font-medium'
+                  ? '-mb-px inline-flex min-h-11 items-center border-b-2 border-brand px-3 text-sm font-semibold text-brand'
+                  : 'inline-flex min-h-11 items-center px-3 text-sm font-medium text-muted hover:text-ink'
               }
             >
               {t(section)}

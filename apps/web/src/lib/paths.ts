@@ -37,6 +37,8 @@ export const ADMIN_PATHS = {
   /** Settings → General (owner), Theme (owner, TEN-03), Halls (CLS-05), Staff and roles (owner). */
   settings: '/admin/settings',
   theme: '/admin/settings/theme',
+  paymentsSettings: '/admin/settings/payments',
+  feeSettings: '/admin/settings/fees',
   halls: '/admin/settings/halls',
   staff: '/admin/settings/staff',
 } as const;
