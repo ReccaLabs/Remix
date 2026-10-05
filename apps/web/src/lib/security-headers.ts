@@ -8,6 +8,8 @@ export interface CspOptions {
   nonce: string;
   /** `next dev` only: React needs `eval` for its dev tooling and dev CSS is injected inline. */
   isDev: boolean;
+  /** SET-02: only the Payments settings page may submit a checkout to these exact gateways. */
+  allowPayhereCheckout?: boolean;
 }
 
 /** 128-bit random nonce, base64. Unpredictable and unique per request. */
@@ -16,7 +18,7 @@ export function createNonce(): string {
   return btoa(String.fromCharCode(...bytes));
 }
 
-export function buildCsp({ nonce, isDev }: CspOptions): string {
+export function buildCsp({ nonce, isDev, allowPayhereCheckout = false }: CspOptions): string {
   const n = `'nonce-${nonce}'`;
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
@@ -36,7 +38,12 @@ export function buildCsp({ nonce, isDev }: CspOptions): string {
     'object-src': ["'none'"],
     'base-uri': ["'none'"],
     'frame-ancestors': ["'none'"],
-    'form-action': ["'self'"],
+    'form-action': [
+      "'self'",
+      ...(allowPayhereCheckout
+        ? ['https://sandbox.payhere.lk/pay/checkout', 'https://www.payhere.lk/pay/checkout']
+        : []),
+    ],
   };
   const policy = Object.entries(directives).map(([name, values]) => `${name} ${values.join(' ')}`);
   if (!isDev) policy.push('upgrade-insecure-requests');

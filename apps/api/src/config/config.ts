@@ -55,6 +55,9 @@ const envSchema = z
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     LOG_LEVEL: z.enum(LOG_LEVELS).default('info'),
+    INTEGRATIONS_KEY: z.string().regex(/^[A-Za-z0-9+/]{43}=$/, 'must be 32 bytes encoded as base64').optional()
+      .or(z.literal('').transform(() => undefined)),
+    INTEGRATIONS_KEY_ID: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/).default('v1'),
     /**
      * Proxy addresses/CIDRs whose `X-Forwarded-Host` / `X-Forwarded-For` are honoured. Also accepts
      * the keywords `loopback`, `linklocal`, `uniquelocal`. Everything else is treated as the client.
@@ -107,6 +110,9 @@ const envSchema = z
   }))
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
+    if (!env.INTEGRATIONS_KEY) {
+      ctx.addIssue({ code: 'custom', path: ['INTEGRATIONS_KEY'], message: 'required in production (AES-256-GCM)' });
+    }
     if (!env.COOKIE_SECURE) {
       ctx.addIssue({
         code: 'custom',
@@ -157,6 +163,8 @@ export interface AppConfig {
   valkeyUrl: string | undefined;
   /** HMAC key for SMS codes; the public dev value outside production when unset. */
   authCodeSecret: string;
+  integrationsKey: string | undefined;
+  integrationsKeyId: string;
 }
 
 /** Thrown when the environment is invalid. Lists variable names and reasons, never values. */
@@ -205,6 +213,8 @@ export function loadConfig(
     databaseUrl: e.DATABASE_URL,
     valkeyUrl: e.VALKEY_URL,
     authCodeSecret: e.AUTH_CODE_SECRET ?? DEV_AUTH_CODE_SECRET,
+    integrationsKey: e.INTEGRATIONS_KEY,
+    integrationsKeyId: e.INTEGRATIONS_KEY_ID,
   };
 }
 

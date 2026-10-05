@@ -8,3 +8,4 @@ export { tenantCounters } from './counters';
 export { auditLogs } from './audit';
 export { importJobs, importJobStatus } from './imports';
 export { tenantSettings, invoices, invoiceLines, payments, paymentAllocations, receipts, invoiceStatus, paymentMethod } from './fees';
+export { tenantIntegrations, integrationKind } from './integrations';

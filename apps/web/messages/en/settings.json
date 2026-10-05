@@ -2,14 +2,18 @@
   "meta": {
     "general": "General settings",
     "theme": "Theme",
-    "halls": "Halls"
+    "halls": "Halls",
+    "payments": "Payment settings",
+    "fees": "Fee settings"
   },
   "nav": {
     "label": "Settings sections",
     "general": "General",
     "theme": "Theme",
     "halls": "Halls",
-    "staff": "Staff and roles"
+    "staff": "Staff and roles",
+    "payments": "Payments",
+    "fees": "Fees"
   },
   "title": "Settings",
   "errors": {
@@ -130,5 +134,87 @@
       "deleted": "{name} deleted",
       "inUse": "{name} is still used by a class. Move those classes to another hall first."
     }
-  }
+  },
+  "payments": {
+    "title": "PayHere",
+    "subtitle": "Connect your institute's own PayHere merchant account.",
+    "merchantId": "Merchant ID",
+    "merchantIdHint": "The numeric merchant ID from PayHere.",
+    "secret": "Merchant secret",
+    "secretHint": "Enter the domain's merchant secret. It is encrypted and never shown again.",
+    "secretStored": "Stored: {hint}. Leave this field empty to keep it.",
+    "mode": "Payment mode",
+    "sandbox": "Sandbox",
+    "live": "Live",
+    "enabled": "Enable card payments",
+    "lastTest": "Last test: {at} — {status}",
+    "noTest": "No test payment yet.",
+    "testHint": "Save changes before testing and add an email and phone to your profile. This starts a real LKR 10 checkout in the selected mode, with no delivery. A pending test has not been verified yet.",
+    "test": "Test payment (LKR 10)",
+    "save": "Save payment settings",
+    "saved": "Payment settings saved",
+    "statuses": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "expired": "Expired"
+    }
+  },
+  "fees": {
+    "subtitle": "Due dates, reminders, bank details and your receipt template.",
+    "schedule": "Due dates and reminders",
+    "dueDay": "Due day",
+    "dueDayHint": "A day from 1 to 28. Applies to new invoices.",
+    "remindersEnabled": "Enable fee reminders",
+    "beforeDays": "Days before due date",
+    "beforeHint": "0 to 10 days.",
+    "afterDays": "Days after due date",
+    "afterHint": "1 to 30 days.",
+    "bankTitle": "Bank details",
+    "bankEnabled": "Show bank details to students",
+    "bank": {
+      "bankName": "Bank name",
+      "branch": "Branch",
+      "accountNumber": "Account number",
+      "accountName": "Account name"
+    },
+    "receiptTitle": "Receipt template",
+    "receipt": {
+      "address": "Receipt address",
+      "phone": "Receipt phone",
+      "footer": "Receipt footer"
+    },
+    "save": "Save fee settings",
+    "saved": "Fee settings saved"
+  },
+  "receiptPrint": {
+    "meta": "Print receipt",
+    "title": "Receipt {number}",
+    "logo": "{name} logo",
+    "issued": "Issued",
+    "student": "Student",
+    "method": "Method",
+    "methods": {
+      "cash": "Cash",
+      "manual": "Manual payment",
+      "card": "Card",
+      "slip": "Bank slip",
+      "reversal": "Reversal"
+    },
+    "lines": "Payment details",
+    "classMonth": "Class / month",
+    "amount": "Amount",
+    "total": "Total paid",
+    "cashReceived": "Cash received",
+    "change": "Change",
+    "reversed": "REVERSED — {at}",
+    "reprint": "Reprint receipt",
+    "back": "Back to fees",
+    "loadError": "We couldn't load the receipt",
+    "loadErrorHint": "Check your connection and try again.",
+    "retry": "Try again",
+    "loading": "Loading receipt"
+  },
+  "loading": "Loading settings"
 }

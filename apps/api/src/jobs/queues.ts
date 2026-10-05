@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Queue names, a closed list (ADR 0012). One queue per kind of work so a slow import cannot
  * starve SMS. Add `invoices` / `reminders` here when those phases land.
  */
-export const QUEUES = ['sms', 'imports', 'fees'] as const;
+export const QUEUES = ['sms', 'imports', 'fees', 'receipts'] as const;
 export type QueueName = (typeof QUEUES)[number];
 
 /** Valkey key prefix of every BullMQ key; keeps jobs apart from limiter/cache keys. */
@@ -19,6 +19,7 @@ const idPart = z
 
 /** Every payload carries the tenant: the worker runs tenant work only through `withTenant()`. */
 const tenantId = z.uuid();
+export const receiptsPayload = z.strictObject({ tenantId, paymentId: z.uuid(), receiptId: z.uuid() });
 
 /**
  * Payload schemas. `z.strictObject`, validated when a job is added and again in the worker.
@@ -79,6 +80,9 @@ const DAY = 24 * HOUR;
 
 /** Every queue's contract. Keys must match {@link QUEUES} (checked by the type). */
 export const JOBS = {
+  receipts: defineJob({ schema: receiptsPayload,
+    jobId: p => encodeURIComponent(`receipt:${p.tenantId}:${p.paymentId}`), concurrency: 2,
+    removeOnComplete: { age: DAY, count: 10000 }, removeOnFail: { age: 14 * DAY } }),
   fees: defineJob({
     schema: feesPayload,
     // Preserve the exact business key reversibly; BullMQ prohibits literal colons in job ids.

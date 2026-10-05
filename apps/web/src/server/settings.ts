@@ -35,10 +35,26 @@ export async function loadTheme(): Promise<Loaded<Theme>> {
     return failed('GET /admin/settings/theme', err);
   }
 }
+export async function loadPayhere() {
+  try {
+    return { ok: true, data: await (await getApi()).call('getPayhereSettings') } as const;
+  } catch (err) {
+    return failed('GET /admin/settings/payhere', err);
+  }
+}
+export async function loadFees() {
+  try {
+    return { ok: true, data: await (await getApi()).call('getFeeSettings') } as const;
+  } catch (err) {
+    return failed('GET /admin/settings/fees', err);
+  }
+}
 
 const NO_INDEX = { robots: { index: false, follow: false } } as const;
 
-export async function settingsMetadata(page: 'general' | 'theme' | 'halls'): Promise<Metadata> {
+export async function settingsMetadata(
+  page: 'general' | 'theme' | 'halls' | 'payments' | 'fees',
+): Promise<Metadata> {
   const tenant = await getTenant();
   if (tenantAccess(tenant.status).staff !== 'full') return unavailableMetadata();
   const t = await getTranslations('settings.meta');

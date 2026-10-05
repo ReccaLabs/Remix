@@ -92,6 +92,20 @@
       "when": 1791140916820,
       "tag": "0012_fee_ledger_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791184859477,
+      "tag": "0013_settings_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791184936527,
+      "tag": "0014_settings_receipts_rls",
+      "breakpoints": true
     }
   ]
 }

@@ -7,9 +7,17 @@ const PRODUCTION = {
   TENANT_BASE_DOMAINS: 'remix.lk',
   TRUST_PROXY: '10.0.0.0/8',
   VALKEY_URL: 'redis://valkey:6379',
+  INTEGRATIONS_KEY: Buffer.alloc(32, 1).toString('base64'),
 };
 
 describe('loadConfig', () => {
+  it('requires the integration encryption key in production and rejects malformed keys without echoing them', () => {
+    expect(() => loadConfig({ ...PRODUCTION, INTEGRATIONS_KEY: '' })).toThrow(/INTEGRATIONS_KEY/);
+    for (const key of ['secret-value', Buffer.alloc(31).toString('base64'), Buffer.alloc(33).toString('base64')]) {
+      expect(() => loadConfig({ INTEGRATIONS_KEY: key })).toThrow(/INTEGRATIONS_KEY/);
+      try { loadConfig({ INTEGRATIONS_KEY: key }); } catch (error) { expect(String(error)).not.toContain(key); }
+    }
+  });
   it('applies dev defaults', () => {
     const config = loadConfig({});
     expect(config).toMatchObject({

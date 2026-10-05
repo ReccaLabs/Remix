@@ -64,6 +64,11 @@ describe('buildCsp (production)', () => {
 });
 
 describe('buildCsp (development)', () => {
+  it('permits only the exact PayHere actions when the Payments page opts in', () => {
+    const policy = buildCsp({ nonce: 'sample', isDev: false, allowPayhereCheckout: true });
+    expect(policy).toContain("form-action 'self' https://sandbox.payhere.lk/pay/checkout https://www.payhere.lk/pay/checkout");
+    expect(policy).toContain("connect-src 'self'");
+  });
   it('adds only what next dev needs', () => {
     const d = directives(buildCsp({ nonce: 'n', isDev: true }));
     expect(d.get('script-src')).toEqual([

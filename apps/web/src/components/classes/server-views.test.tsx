@@ -375,12 +375,12 @@ describe('class detail', () => {
 
 describe('settings sections by role', () => {
   it('owners get General, Theme, Halls and Staff; admins only Halls; the rest nothing', () => {
-    expect(settingsSections(['owner'])).toEqual(['general', 'theme', 'halls', 'staff']);
+    expect(settingsSections(['owner'])).toEqual(['general', 'theme', 'payments', 'fees', 'halls', 'staff']);
     expect(settingsSections(['admin'])).toEqual(['halls']);
     for (const role of ['teacher', 'cashier', 'gatekeeper'] as const) {
       expect(settingsSections([role]), role).toEqual([]);
     }
-    expect(settingsSections(['teacher', 'owner'])).toEqual(['general', 'theme', 'halls', 'staff']);
+    expect(settingsSections(['teacher', 'owner'])).toEqual(['general', 'theme', 'payments', 'fees', 'halls', 'staff']);
   });
 
   it('Settings leads to the first page a person may open', () => {
@@ -395,6 +395,8 @@ describe('settings sections by role', () => {
     expect(screen.getAllByRole('link').map((l) => l.textContent)).toEqual([
       'General',
       'Theme',
+      'Payments',
+      'Fees',
       'Halls',
       'Staff and roles',
     ]);

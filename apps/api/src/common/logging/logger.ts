@@ -19,6 +19,10 @@ const SECRET_FIELDS = [
   'accessToken',
   'refreshToken',
   'secret',
+  'merchantSecret',
+  'secretCiphertext',
+  'secretNonce',
+  'INTEGRATIONS_KEY',
   'otp',
 ];
 

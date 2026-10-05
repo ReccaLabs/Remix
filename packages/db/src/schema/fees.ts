@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
-import { bigint, boolean, check, date, foreignKey, index, pgEnum, pgTable, smallint, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { bigint, boolean, check, date, foreignKey, index, jsonb, pgEnum, pgTable, smallint, text, unique, uuid } from 'drizzle-orm/pg-core';
+import type { FeeSettings } from '@remix/types/api';
 import { id, instant, tenantId } from './columns';
 import { classes, enrollments } from './classes';
 import { tenants } from './tenants';
@@ -13,11 +14,26 @@ export const tenantSettings = pgTable('tenant_settings', {
   id: id(), tenantId: tenantId().references(() => tenants.id, { onDelete: 'cascade' }),
   dueDay: smallint('due_day').notNull().default(5),
   unlockBeforeDue: boolean('unlock_before_due').notNull().default(false),
+  remindersEnabled: boolean('reminders_enabled').notNull().default(false),
+  remindBeforeDays: smallint('remind_before_days').notNull().default(0),
+  remindAfterDays: smallint('remind_after_days').notNull().default(1),
+  bankDetails: jsonb('bank_details').$type<FeeSettings['bankDetails']>(),
+  receiptAddress: text('receipt_address'), receiptPhone: text('receipt_phone'), receiptFooter: text('receipt_footer'),
 }, (t) => [
   unique('tenant_settings_tenant_id_id_key').on(t.tenantId, t.id),
   unique('tenant_settings_tenant_key').on(t.tenantId),
   check('tenant_settings_due_day_range', sql`${t.dueDay} between 1 and 28`),
   check('tenant_settings_no_grace_r1', sql`not ${t.unlockBeforeDue}`),
+  check('tenant_settings_remind_before_range', sql`${t.remindBeforeDays} between 0 and 10`),
+  check('tenant_settings_remind_after_range', sql`${t.remindAfterDays} between 1 and 30`),
+  check('tenant_settings_receipt_lengths', sql`char_length(${t.receiptAddress}) <= 200 and char_length(${t.receiptPhone}) <= 40 and char_length(${t.receiptFooter}) <= 200`),
+  check('tenant_settings_bank_details', sql`${t.bankDetails} is null or coalesce(jsonb_typeof(${t.bankDetails}) = 'object'
+    and ${t.bankDetails} ?& array['bankName', 'branch', 'accountNumber', 'accountName']
+    and (${t.bankDetails} - array['bankName', 'branch', 'accountNumber', 'accountName']) = '{}'::jsonb
+    and jsonb_typeof(${t.bankDetails}->'bankName') = 'string' and char_length(btrim(${t.bankDetails}->>'bankName')) between 2 and 80
+    and jsonb_typeof(${t.bankDetails}->'branch') = 'string' and char_length(btrim(${t.bankDetails}->>'branch')) between 2 and 80
+    and jsonb_typeof(${t.bankDetails}->'accountName') = 'string' and char_length(btrim(${t.bankDetails}->>'accountName')) between 2 and 120
+    and jsonb_typeof(${t.bankDetails}->'accountNumber') = 'string' and btrim(${t.bankDetails}->>'accountNumber') ~ '^[0-9 -]{6,24}$', false)`),
 ]);
 
 /** Immutable invoice identity/due date; status and paid_cents are rebuildable projections. */

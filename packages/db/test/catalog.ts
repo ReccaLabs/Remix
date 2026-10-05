@@ -37,7 +37,8 @@ const OWNER = 'remix_owner';
 
 /** ADR 0008: FORCE binds even the owner, through a separate tenant-scoped owner policy. */
 export const LEDGER_UPDATE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
-  tenant_settings: ['due_day'], invoices: ['paid_cents', 'status'],
+  tenant_settings: ['due_day', 'reminders_enabled', 'remind_before_days', 'remind_after_days', 'bank_details', 'receipt_address', 'receipt_phone', 'receipt_footer'],
+  tenant_integrations: ['config', 'secret_ciphertext', 'secret_nonce', 'key_id'], invoices: ['paid_cents', 'status'],
   invoice_lines: ['void_reason', 'voided_at'], payments: [], payment_allocations: [],
   receipts: ['pdf_key', 'reversed_at'],
 };
