@@ -16,6 +16,7 @@ Codex (`gpt-6.1-sol`) writes each track in its own worktree; Claude (lead) write
 | 3-A | Ledger core | Codex · high | Opus line by line | invoices/lines/payments/allocations/receipts tables, append-only grants, `recordPayment`, projections, unlock function, reversal, monthly invoice job, property tests (FEE-01, FEE-11) |
 | 3-B | Settings + receipts | Codex · high | Opus (secrets) | SET-02 encrypted merchant secret, SET-03 bank details, fee settings, receipt data + PDF + 80 mm layout (FEE-09) |
 | 3-C | Cash + manual | Codex · medium | Opus (money paths) | FEE-07 cash counter, FEE-08 manual payment, student fees view, FEE-10 history |
+| 3-C2 | Student cards | Codex · high | Opus (lookup + codes) | STU-06 cards (barcode / QR / NFC per institute), issue/link/revoke, print, scan at the cash counter |
 | 3-D | Slips | Codex · high | Opus (uploads) | storage provider (ADR 0009), media worker, FEE-05 upload, FEE-06 queue with A/R/S |
 | 3-E | PayHere | Codex · high | Opus line by line | FEE-03 Pay screen, FEE-04 checkout + notify webhook, test payment |
 | 3-F | SMS | Codex · medium | report + CI | MSG-01 Text.lk adapter, MSG-02 wallet, MSG-04 templates, FEE-12 reminders, FEE-02 invoices tab + reminder send |

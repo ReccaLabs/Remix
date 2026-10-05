@@ -46,6 +46,14 @@ import {
   updateClassSchema,
   updateEnrollmentSchema,
 } from './classes';
+import {
+  cardLookupResponseSchema,
+  cardLookupSchema,
+  issueStudentCardSchema,
+  revokeStudentCardSchema,
+  studentCardSchema,
+  studentCardsResponseSchema,
+} from './cards';
 import { idParamsSchema } from './common';
 import {
   approveSlipSchema,
@@ -526,6 +534,36 @@ export const API = {
     path: '/api/v1/admin/payments/manual',
     request: manualPaymentSchema,
     response: paymentSchema,
+  },
+  /** STU-06 - a student's cards, newest first (`students.read`). */
+  listStudentCards: {
+    method: 'GET',
+    path: '/api/v1/admin/students/:id/cards',
+    params: idParamsSchema,
+    response: studentCardsResponseSchema,
+  },
+  /** STU-06 - issue or link a card (`students.write`); revokes the previous active card. 409 CONFLICT if the code belongs to another card. */
+  issueStudentCard: {
+    method: 'POST',
+    path: '/api/v1/admin/students/:id/cards',
+    params: idParamsSchema,
+    request: issueStudentCardSchema,
+    response: studentCardSchema,
+  },
+  /** STU-06 - lost or damaged card (`students.write`). 409 CONFLICT if already revoked. */
+  revokeStudentCard: {
+    method: 'POST',
+    path: '/api/v1/admin/cards/:id/revoke',
+    params: idParamsSchema,
+    request: revokeStudentCardSchema,
+    response: studentCardSchema,
+  },
+  /** STU-06, FEE-07 - resolve a scanned code at the counter (`students.read`, rate limited). 404 for unknown codes. */
+  lookupCard: {
+    method: 'POST',
+    path: '/api/v1/admin/cards/lookup',
+    request: cardLookupSchema,
+    response: cardLookupResponseSchema,
   },
   /** FEE-11 - owner only; returns the reversal payment. 409 CONFLICT if already reversed. */
   reversePayment: {

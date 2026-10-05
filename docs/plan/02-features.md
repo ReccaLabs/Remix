@@ -88,7 +88,7 @@ Legend — **Rel**: R1 Must · R1s Should · R2 · R3.
 | STU-03 | Add student (name, phone, school, A/L year, medium, classes, guardian) → auto student number | 12a | N-OWN-2 | R1 |
 | STU-04 | **CSV/Excel import** with column mapping, validation preview, duplicate phone detection, dry run, error file | 12a "Import CSV" | N-OWN-2 | R1 |
 | STU-05 | Profile tabs: Overview (owes, paid this year, attendance %, lessons watched, recent activity) · Classes · Payments · Attendance · Devices · Parent | 12b/12c/12f | N-OWN-1 | R1 |
-| STU-06 | Student card QR (rotating signed token) for gate & cash counter; shown in Me | Student Me 16 | N-GTE-1, N-CSH-2 | R1s |
+| STU-06 | Physical student card: barcode, QR or NFC as the institute chooses; ReMix-issued random code or linked existing card number/NFC UID; one active card per student, revoke + reissue; print sheet; scan at cash counter (USB/keyboard-wedge reader, camera, Web NFC) | Student profile, 11c | N-GTE-1, N-CSH-2 | R1 (pulled into Phase 3, track 3-C2) |
 | STU-07 | Archive / reactivate student (archived = not active, keeps history) | — | N-OWN-2 | R1 |
 | STU-08 | Student self-registration from public site "Enrol" (see WEB-05) | Public Site | N-VIS-1 | R2 |
 

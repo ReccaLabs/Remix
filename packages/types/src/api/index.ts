@@ -8,5 +8,6 @@ export * from './staff';
 export * from './imports';
 export * from './admin';
 export * from './fees';
+export * from './cards';
 export * from './routes';
 export * from './client';
