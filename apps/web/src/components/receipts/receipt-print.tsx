@@ -1,5 +1,6 @@
 import type { Receipt } from '@remix/types/api';
 import { formatLKR } from '@remix/types/money';
+import Image from 'next/image';
 import { useFormatter, useTranslations } from 'next-intl';
 import styles from './receipt-print.module.css';
 
@@ -11,12 +12,13 @@ export function ReceiptPrint({ receipt }: { receipt: Receipt }) {
     <article className={styles.paper} aria-labelledby="receipt-title">
       <header className={styles.header}>
         {receipt.institute.logoUrl ? (
-          <img
+          <Image
             src={receipt.institute.logoUrl}
             alt={t('logo', { name: receipt.institute.name })}
             className={styles.logo}
             width={64}
             height={64}
+            unoptimized
           />
         ) : null}
         <p className={styles.institute}>{receipt.institute.name}</p>

@@ -43,6 +43,19 @@ describe('FEE-09 minimal PDF writer', () => {
     expect(pdf).toContain('Sample \\(Student\\) \\\\ safe');
     expect(pdf).toContain('(REVERSED)');
   });
+  it('renders Windows and Unix address line breaks as separate PDF text lines', () => {
+    const pdf = renderReceiptPdf({
+      ...receipt,
+      institute: {
+        ...receipt.institute,
+        address: 'First line\r\nSecond line\rThird line\nLast line',
+      },
+    }).toString('ascii');
+    for (const line of ['First line', 'Second line', 'Third line', 'Last line']) {
+      expect(pdf).toContain(`(${line}) Tj`);
+    }
+    expect(pdf).not.toContain('?');
+  });
   it('wraps long words, paginates long receipts and replaces unsupported glyphs explicitly', () => {
     const pdf = renderReceiptPdf({
       ...receipt,

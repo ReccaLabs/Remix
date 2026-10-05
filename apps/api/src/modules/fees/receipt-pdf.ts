@@ -3,7 +3,11 @@ import { formatLKR } from '@remix/types/money';
 
 // PDF 1.4, Courier core font. TODO: embed a Unicode font and shape Sinhala/Tamil before those
 // locales go live. This Latin-only R1 writer replaces unsupported glyphs with '?' explicitly.
-const latin = (text: string) => text.normalize('NFC').replace(/[^\x20-\x7e\n]/g, '?'); // eslint-disable-line no-control-regex
+const latin = (text: string) =>
+  text
+    .normalize('NFC')
+    .replace(/\r\n?/g, '\n')
+    .replace(/[^\x20-\x7e\n]/g, '?');
 const literal = (text: string) => text.replace(/[\\()]/g, '\\$&');
 function wrap(text: string, width = 84): string[] {
   return latin(text)
