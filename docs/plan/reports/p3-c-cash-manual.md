@@ -1,6 +1,6 @@
 # p3-c-cash-manual report
 - Status: blocked
-- Branch / PR: https://github.com/ReccaLabs/Remix/tree/feat/p3-c-cash-manual (draft PR pending)
+- Branch / PR: `feat/p3-c-cash-manual` / https://github.com/ReccaLabs/Remix/pull/53 (draft)
 - Feature IDs: done: none | not done: FEE-07, FEE-08, FEE-10
 - Gates: lint · typecheck · build · tests per package not run; documentation only. `pnpm install` passed.
 - CI: 6 checks not yet verified; draft remains blocked.
