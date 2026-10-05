@@ -81,6 +81,7 @@ describe('SMS provider binding', () => {
   it('never binds the mock in production: sending fails visibly instead', async () => {
     const config = loadConfig({
       NODE_ENV: 'production',
+      INTEGRATIONS_KEY: Buffer.alloc(32, 1).toString('base64'),
       TENANT_BASE_DOMAINS: 'remix.lk',
       TRUST_PROXY: '10.0.0.0/8',
       VALKEY_URL: 'redis://valkey:6379',
