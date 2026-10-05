@@ -7,6 +7,7 @@ import { SecretBox } from '../../integrations/secret-box';
 import { PayhereCheckoutBuilder } from '../../integrations/payment/payhere-checkout-builder';
 import { PayhereSettingsService } from './payhere-settings.service';
 import { MoneySettingsController } from './money-settings.controller';
+import { FeeSettingsService } from './fee-settings.service';
 
 @Global()
 @Module({
@@ -18,6 +19,7 @@ import { MoneySettingsController } from './money-settings.controller';
     SecretBox,
     PayhereCheckoutBuilder,
     PayhereSettingsService,
+    FeeSettingsService,
   ],
   exports: [FeesService, FeesHooks],
 })
