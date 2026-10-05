@@ -25,12 +25,12 @@ describe('STU-06 read-only Web NFC', () => {
   it('hides unsupported hardware and aborts the reader without writing to a chip', async () => {
     expect(supportsNfc()).toBe(false);
     const options: { signal: AbortSignal }[] = [];
-    let reader: { onreading: unknown; onreadingerror: unknown } | undefined;
     class Reader {
+      static instance: Reader | undefined;
       onreading = null;
       onreadingerror = null;
       constructor() {
-        reader = this;
+        Reader.instance = this;
       }
       async scan(option: { signal: AbortSignal }) {
         options.push(option);
@@ -42,7 +42,7 @@ describe('STU-06 read-only Web NFC', () => {
     await scanNfc(abort.signal, vi.fn(), vi.fn());
     expect(options[0]?.signal).toBe(abort.signal);
     abort.abort();
-    expect(reader?.onreading).toBeNull();
-    expect(reader?.onreadingerror).toBeNull();
+    expect(Reader.instance?.onreading).toBeNull();
+    expect(Reader.instance?.onreadingerror).toBeNull();
   });
 });

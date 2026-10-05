@@ -77,7 +77,7 @@ export function CashCounter() {
       if (current === version.current) setLoading(false);
     }
   }
-  async function lookup(value: string): Promise<boolean> {
+  async function lookup(value: string, isCurrent = () => true): Promise<boolean> {
     if (inFlight.current) return true;
     const parsed = cardLookupSchema.safeParse({ input: value });
     if (!parsed.success) return false;
@@ -92,7 +92,7 @@ export function CashCounter() {
     retry.current = null;
     try {
       const found = await createBrowserApi().api.call('lookupCard', parsed.data);
-      if (current !== version.current) return true;
+      if (current !== version.current || !isCurrent()) return true;
       if (found.card?.status === 'ordered' || found.card?.status === 'revoked') {
         setScanNotice(found.card.status);
         return true;
@@ -100,7 +100,7 @@ export function CashCounter() {
       await choose({ id: found.student.id }, found);
       return true;
     } catch (err) {
-      if (current !== version.current) return true;
+      if (current !== version.current || !isCurrent()) return true;
       if (err instanceof ApiError && err.status === 404) return false;
       setFailure(feeFailure(err));
       return true;

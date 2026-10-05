@@ -135,6 +135,20 @@ describe('validateStudentRows — errors', () => {
     expect(out.results[1]?.errors[0]?.message).toContain('row 1');
     expect(out.results[2]?.errors[0]?.message).toContain('ignoring case and whitespace');
   });
+  it('rejects nonportable whitespace and non-English letters rather than assigning a different identity', () => {
+    for (const studentNo of [
+      'old\u00a0-77',
+      'old\ufeff-77',
+      'old\u2007-77',
+      'old\u202f-77',
+      'straße',
+    ]) {
+      expect(one({ studentNo }).result).toMatchObject({
+        status: 'error',
+        errors: [{ field: 'studentNo', message: expect.any(String) as string }],
+      });
+    }
+  });
 
   it('needs guardian name and phone together and a known relation', () => {
     expect(fields({ guardianName: 'Kamal' })).toEqual(['guardianPhone']);

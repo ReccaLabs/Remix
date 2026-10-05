@@ -3,6 +3,7 @@ import { ApiError, type CardFormat, type StudentCard } from '@remix/types/api';
 import { Button, ConfirmDialog, Field, Input, StatusBadge } from '@remix/ui';
 import { CreditCard, Printer, Radio, Ban } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createBrowserApi } from '@/lib/browser-api';
 import { noHardware, scanNfc, subscribeHardware, supportsNfc } from '@/lib/card-nfc';
@@ -19,6 +20,7 @@ export function CardPanel({
   initial: StudentCard[] | null;
 }) {
   const t = useTranslations('students.cards');
+  const router = useRouter();
   const format = useFormatter();
   const [cards, setCards] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -80,7 +82,7 @@ export function CardPanel({
         await api.call('issueStudentCard', { kind: 'temporary' }, { params: { id: studentId } });
         const href = `/admin/students/${studentId}/card/print`;
         if (print) print.location.href = href;
-        else window.location.assign(href);
+        else router.push(href);
       } else if (action === 'order') {
         const formats: CardFormat[] = ['barcode'];
         if (qr) formats.push('qr');
@@ -158,7 +160,7 @@ export function CardPanel({
         </div>
         <p className="m-0 font-mono text-lg font-semibold break-all">{card.code}</p>
         <p className="m-0 text-sm text-muted">{card.formats.map((f) => t(f)).join(' / ')}</p>
-        {card.status === 'ordered' ? <p className="m-0 text-warning">{t('printing')}</p> : null}
+        {card.status === 'ordered' ? <p className="m-0 text-warning-ink">{t('printing')}</p> : null}
         <p className="m-0 text-sm text-muted">{t('issued', { date: date(card.issuedAt) })}</p>
         {card.activatedAt ? (
           <p className="m-0 text-sm text-muted">
@@ -255,7 +257,7 @@ export function CardPanel({
               </Button>
             </div>
           ) : null}
-          {archived ? <p className="m-0 text-warning">{t('archived')}</p> : null}
+          {archived ? <p className="m-0 text-warning-ink">{t('archived')}</p> : null}
           {cards.some((c) => c.status === 'revoked') ? (
             <details>
               <summary className="min-h-11 cursor-pointer py-3 font-semibold">

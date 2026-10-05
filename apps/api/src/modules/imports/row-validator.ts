@@ -168,8 +168,19 @@ export function validateStudentRows(
     let studentNo: string | null = null;
     const numberCell = row.studentNo ?? '';
     const numberKey = normalizeStudentNo(numberCell);
-    if (numberKey) {
-      if (numberCell.length > 32 || !STUDENT_NO.test(numberKey)) {
+    // PostgreSQL's POSIX whitespace class excludes these ECMAScript whitespace characters.
+    // Keep the lead's SQL normal form and never import a number with a different identity.
+    if (/[\u00A0\u2007\u202F\uFEFF]/u.test(numberCell)) {
+      errors.add(
+        'studentNo',
+        'Use ordinary spaces; this student number contains unsupported whitespace',
+      );
+    } else if (numberKey) {
+      if (
+        numberCell.length > 32 ||
+        !STUDENT_NO.test(numberKey) ||
+        !/^[A-Za-z0-9\s-]+$/u.test(numberCell)
+      ) {
         errors.add(
           'studentNo',
           'Use letters, digits, spaces and dashes only (up to 32 characters)',

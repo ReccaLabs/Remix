@@ -74,8 +74,8 @@ describe('STU-06 cards against Postgres and the real permission pipeline', () =>
     ).toBe(200);
   });
   afterAll(async () => {
-    await t?.close();
-    await db?.$client.end();
+    await t.close();
+    await db.$client.end();
   });
 
   for (const role of ['owner', 'admin', 'teacher', 'cashier', 'gatekeeper'] as const)
@@ -309,7 +309,14 @@ describe('STU-06 cards against Postgres and the real permission pipeline', () =>
   });
 
   it('refuses card issue when the normalised number is short or outside visible ASCII', async () => {
-    for (const studentNo of [' x ', 'සිසු-01', '\u00a0\u00a0']) {
+    for (const studentNo of [
+      ' x ',
+      'සිසු-01',
+      '\u00a0\u00a0',
+      'old\u00a0-77',
+      'old\ufeff-78',
+      'straße',
+    ]) {
       const target = await f.student(tenant);
       await db
         .update(schema.students)

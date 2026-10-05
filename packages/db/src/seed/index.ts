@@ -14,6 +14,7 @@ import {
   staffInvites,
   staffRoles,
   students,
+  studentCards,
   tenantCounters,
   tenantDomains,
   tenants,
@@ -77,6 +78,21 @@ async function insertChunked<T>(rows: readonly T[], insert: (chunk: T[]) => Prom
 export async function seed(owner: Db, passwordHash: string): Promise<SeedSummary[]> {
   const rng = createRng(RNG_SEED);
   return owner.transaction(async (tx) => {
+    // DEV reset only: cards deliberately prevent parent deletion and the app has no DELETE.
+    // Remove this seed's card rows under their tenant policy before recreating seed tenants.
+    const previous = await tx
+      .select({ id: tenants.id })
+      .from(tenants)
+      .where(
+        inArray(
+          tenants.slug,
+          SEED_TENANTS.map((t) => t.slug),
+        ),
+      );
+    for (const tenant of previous)
+      await withTenant(tx, tenant.id, (scoped) =>
+        scoped.delete(studentCards).where(eq(studentCards.tenantId, tenant.id)),
+      );
     await tx.delete(tenants).where(
       inArray(
         tenants.slug,

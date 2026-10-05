@@ -8,6 +8,7 @@ import type { StudentCard } from '@remix/types/api';
 import students from '../../../messages/en/students.json';
 import { expectNoAxeViolations } from '../../../test/axe';
 import { CardPanel } from './card-panel';
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const STUDENT = '0193f1c2-7b1d-7c3e-9a4f-000000000101';
 const CARD: StudentCard = {

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
+import { students, studentCards, tenantUsers } from '../src/schema';
 import { describe, expect, it } from 'vitest';
 import { resolveTenantByHost } from '../src/resolve';
 import { devTrustToken, seed } from '../src/seed';
@@ -31,6 +32,31 @@ describe('dev seed', () => {
   it('is deterministic and idempotent (reset-first)', async () => {
     const first = await seed(db.owner, 'seed-test-hash');
     const digest1 = await rows<{ digest: string; lines: number }>(db.owner, contentDigest);
+    const tenant = first[0];
+    if (!tenant) throw new Error('Seed tenant missing');
+    await withTenant(db.owner, tenant.tenantId, async (tx) => {
+      const [student] = await tx
+        .select()
+        .from(students)
+        .where(eq(students.tenantId, tenant.tenantId))
+        .limit(1);
+      const [actor] = await tx
+        .select()
+        .from(tenantUsers)
+        .where(and(eq(tenantUsers.tenantId, tenant.tenantId), eq(tenantUsers.kind, 'staff')))
+        .limit(1);
+      if (!student || !actor) throw new Error('Seed card fixture missing');
+      await tx.insert(studentCards).values({
+        tenantId: tenant.tenantId,
+        studentId: student.userId,
+        cardSeq: 1,
+        code: `${student.studentNo}-1`,
+        kind: 'permanent',
+        formats: ['barcode'],
+        status: 'ordered',
+        issuedBy: actor.id,
+      });
+    });
     const second = await seed(db.owner, 'seed-test-hash');
     const digest2 = await rows<{ digest: string; lines: number }>(db.owner, contentDigest);
 

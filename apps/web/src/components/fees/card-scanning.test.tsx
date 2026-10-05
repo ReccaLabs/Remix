@@ -47,6 +47,39 @@ function setup(
   return { urls, ...wrap(<CashCounter />), user: userEvent.setup() };
 }
 describe('FEE-07 scan first, search second', () => {
+  it('discards a lookup if the cashier changes the input before it resolves', async () => {
+    let resolve: (value: Response) => void = () => undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((done) => {
+            resolve = done;
+          }),
+      ),
+    );
+    wrap(<CashCounter />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Search student'), `${CODE}{Enter}`);
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+    await user.clear(screen.getByLabelText('Search student'));
+    resolve(
+      json({
+        matchedBy: 'card',
+        card: { id: '0193f1c2-7b1d-7c3e-9a4f-000000000901', kind: 'temporary', status: 'active' },
+        student: {
+          id: STUDENT.id,
+          studentNo: STUDENT.studentNo,
+          displayName: STUDENT.displayName,
+          archived: false,
+        },
+      }),
+    );
+    await waitFor(() => expect(screen.queryByText('Loading…')).toBeNull());
+    expect(screen.queryByLabelText(/Physics.*September/)).toBeNull();
+    expect(screen.queryByText('Temporary card')).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
   it('Enter loads open months directly with a temporary-card badge and hides unsupported readers; axe clean', async () => {
     const { user, urls, container } = setup();
     expect(screen.queryByRole('button', { name: 'Scan with camera' })).toBeNull();

@@ -20,7 +20,7 @@ export function StudentSearch({
   onChoose: (student: StudentListItem) => void;
   focus?: boolean;
   disabled?: boolean;
-  onScan?: (value: string) => Promise<boolean>;
+  onScan?: (value: string, isCurrent: () => boolean) => Promise<boolean>;
   ref?: Ref<StudentSearchHandle>;
 }) {
   const t = useTranslations('fees');
@@ -44,7 +44,9 @@ export function StudentSearch({
     setFailure(null);
     setResults(null);
     try {
-      if (scanFirst && onScan && (await onScan(value))) return;
+      if (scanFirst && onScan && (await onScan(value, () => version === generation.current.value)))
+        return;
+      if (version !== generation.current.value) return;
       const response = await createBrowserApi().api.call('listStudents', {
         query: { q: value.trim(), pageSize: 25 },
       });

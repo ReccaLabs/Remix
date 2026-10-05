@@ -66,7 +66,7 @@ export class CardsService {
       if (student.archivedAt)
         throw new AppException('VALIDATION_FAILED', 400, 'Archived students cannot receive cards');
       const number = normalizeStudentNo(student.studentNo);
-      if (!/^[!-~]{3,60}$/.test(number))
+      if (!/^[!-~]{3,60}$/.test(number) || number !== student.normalNo)
         throw new AppException(
           'VALIDATION_FAILED',
           400,
@@ -233,7 +233,14 @@ export class CardsService {
   }
 
   private async student(tx: Tx, id: string, lock = false) {
-    const query = tx.select().from(students).where(eq(students.userId, id));
+    const query = tx
+      .select({
+        studentNo: students.studentNo,
+        archivedAt: students.archivedAt,
+        normalNo: studentNoNormalForm(students.studentNo),
+      })
+      .from(students)
+      .where(eq(students.userId, id));
     const [row] = await (lock ? query.for('update') : query);
     if (!row) throw missing();
     return row;
