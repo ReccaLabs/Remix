@@ -5,11 +5,9 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '../../../test/axe';
 import { CashCounter } from './cash-counter';
-import { PAYMENT, json, wrap } from './test-fixtures';
+import { PAYMENT, FEES, STUDENT, json, wrap } from './test-fixtures';
 import { cashCents } from '@/lib/fees-money';
 
-const STUDENT = { id: PAYMENT.studentId, studentNo: 'TT-00001', displayName: PAYMENT.studentName, phone: '+94771234567', school: null, alYear: null, status: 'active', classNames: ['Physics'], activeDevices: 0, joinedAt: '2026-10-01T00:00:00Z' };
-export const FEES = { studentId: STUDENT.id, studentNo: STUDENT.studentNo, displayName: STUDENT.displayName, payments: [], openLines: PAYMENT.lines.map(l => ({ id: l.lineId, invoiceId: PAYMENT.id, invoiceNumber: 'TT-I-26', enrollmentId: PAYMENT.id, classId: PAYMENT.id, className: l.className, month: l.month, dueOn: `${l.month.slice(0, 7)}-05`, amountCents: 250000, paidCents: 0, openCents: 250000, paid: false, overdue: true, slipWaiting: false })) };
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 function setup(response?: (body: unknown) => Response) {
   const requests: object[] = [];

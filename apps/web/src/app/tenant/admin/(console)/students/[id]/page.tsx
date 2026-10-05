@@ -4,6 +4,8 @@ import { CircleAlert } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { DevicesPanel } from '@/components/students/devices-panel';
 import { PeopleIsland } from '@/components/people/people-island';
+import { ProfilePayments } from '@/components/fees/profile-payments';
+import type { StudentFees } from '@remix/types/api';
 import { PageBody } from '@/components/shell/page-body';
 import {
   ClassesTab,
@@ -16,7 +18,7 @@ import {
   StudentTabs,
 } from '@/components/students/student-profile';
 import { ADMIN_PATHS } from '@/lib/paths';
-import { requireStaff } from '@/server/api';
+import { getApi, requireStaff } from '@/server/api';
 import { loadStudent } from '@/server/people';
 import { studentsMetadata } from '@/server/people-metadata';
 
@@ -39,7 +41,7 @@ export default async function StudentProfilePage({
   const roles = session.user.roles;
   const canWrite = can(roles, 'students.write');
   const canDevices = can(roles, 'students.devices');
-  const tabs = PROFILE_TABS.filter((tab) => tab !== 'devices' || canDevices);
+  const tabs = PROFILE_TABS.filter((tab) => (tab !== 'devices' || canDevices) && (tab !== 'payments' || can(roles, 'fees.read')));
   const tab = parseTab(query.tab, tabs);
 
   const [result, t] = await Promise.all([loadStudent(id), getTranslations('students.list')]);
@@ -65,15 +67,18 @@ export default async function StudentProfilePage({
     );
   }
   const student = result.data;
+  let fees: StudentFees | null = null;
+  if (tab === 'payments') try { fees = await (await getApi()).call('studentFees', { params: { id } }); } catch { /* Retry in the tab. */ }
 
   return (
     <PageBody width="admin">
-      <PeopleIsland namespaces={['students']}>
+      <PeopleIsland namespaces={['students', 'fees']}>
         <StudentHeader student={student} canWrite={canWrite} />
         <StudentTabs studentId={id} current={tab} tabs={tabs} />
         {tab === 'overview' ? <OverviewTab student={student} /> : null}
         {tab === 'classes' ? <ClassesTab student={student} /> : null}
-        {tab === 'payments' || tab === 'attendance' ? <LaterTab tab={tab} /> : null}
+        {tab === 'payments' ? <ProfilePayments initial={fees} studentId={id} canCollect={can(roles, 'fees.collect')} /> : null}
+        {tab === 'attendance' ? <LaterTab tab={tab} /> : null}
         {tab === 'devices' ? (
           <DevicesPanel studentId={id} name={student.displayName} devices={student.devices} />
         ) : null}

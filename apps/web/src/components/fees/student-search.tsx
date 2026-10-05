@@ -11,21 +11,21 @@ export function StudentSearch({ onChoose, focus = false, disabled = false }: { o
   const t = useTranslations('fees'); const input = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState(''); const [results, setResults] = useState<StudentListItem[] | null>(null);
   const [busy, setBusy] = useState(false); const [failure, setFailure] = useState<FeeFailure | null>(null);
-  const generation = useRef(0);
-  useEffect(() => { if (focus) input.current?.focus(); return () => { generation.current++; }; }, [focus]);
+  const generation = useRef({ value: 0 });
+  useEffect(() => { const sequence = generation.current; if (focus) input.current?.focus(); return () => { sequence.value++; }; }, [focus]);
   async function search() {
     if (!q.trim() || busy || disabled) return;
-    const version = ++generation.current;
+    const version = ++generation.current.value;
     setBusy(true); setFailure(null); setResults(null);
     try {
       const response = await createBrowserApi().api.call('listStudents', { query: { q: q.trim(), pageSize: 25 } });
-      if (version === generation.current) setResults(response.items);
-    } catch (err) { if (version === generation.current) setFailure(feeFailure(err)); }
-    finally { if (version === generation.current) setBusy(false); }
+      if (version === generation.current.value) setResults(response.items);
+    } catch (err) { if (version === generation.current.value) setFailure(feeFailure(err)); }
+    finally { if (version === generation.current.value) setBusy(false); }
   }
   return <div className="flex flex-col gap-3">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-      <Field className="flex-1" label={t('search')} hint={t('searchHint')}><Input ref={input} value={q} maxLength={80} disabled={disabled} onChange={e => { generation.current++; setBusy(false); setQ(e.target.value); setResults(null); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); void search(); } }} /></Field>
+      <Field className="flex-1" label={t('search')} hint={t('searchHint')}><Input ref={input} value={q} maxLength={80} disabled={disabled} onChange={e => { generation.current.value++; setBusy(false); setQ(e.target.value); setResults(null); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); void search(); } }} /></Field>
       <Button size="lg" type="button" variant="secondary" className="sm:mt-6" disabled={!q.trim() || disabled} loading={busy} onClick={() => void search()}><Search aria-hidden size={18} />{t('searchButton')}</Button>
     </div>
     <FeeError failure={failure} />

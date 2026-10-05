@@ -62,7 +62,8 @@ export async function handleFees(env) {
   const reverse = /^\/api\/v1\/admin\/payments\/([^/]+)\/reverse$/.exec(pathname);
   const studentFees = /^\/api\/v1\/admin\/students\/([^/]+)\/fees$/.exec(pathname);
   const cash = pathname === '/api/v1/admin/payments/cash';
-  if (!payhere && !test && !fees && !receipt && !pdf && !paymentList && !paymentDetail && !reverse && !studentFees && !cash) return false;
+  const manual = pathname === '/api/v1/admin/payments/manual';
+  if (!payhere && !test && !fees && !receipt && !pdf && !paymentList && !paymentDetail && !reverse && !studentFees && !cash && !manual) return false;
   const tenant = tenantOf(req);
   if (!tenant) return (problem(res, 404, 'TENANT_NOT_FOUND'), true);
   const current = currentSession(req, tenant);
@@ -95,16 +96,18 @@ export async function handleFees(env) {
     json(res, 200, { studentId: student.id, studentNo: student.studentNo ?? 'SAMPLE-00001', displayName: student.displayName,
       openLines: openLines(student), payments: store.payments.filter(p => p.studentId === student.id) }); return true;
   }
-  if (cash) {
+  if (cash || manual) {
     if (!reader) return (problem(res, 403, 'FORBIDDEN'), true);
     if (req.method !== 'POST') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
     if (csrfRejected(req, res)) return true;
     const body = await readJson(req);
-    if (!only(body, ['studentId', 'lineIds', 'cashReceivedCents', 'idempotencyKey']) || !Array.isArray(body.lineIds) ||
+    if (!only(body, cash ? ['studentId', 'lineIds', 'cashReceivedCents', 'idempotencyKey'] : ['studentId', 'lineIds', 'kind', 'reference', 'receivedOn', 'note', 'idempotencyKey']) || !Array.isArray(body.lineIds) ||
       body.lineIds.length < 1 || body.lineIds.length > 24 || new Set(body.lineIds).size !== body.lineIds.length ||
-      !/^[A-Za-z0-9_-]{16,64}$/.test(body.idempotencyKey) || !Number.isSafeInteger(body.cashReceivedCents))
+      !/^[A-Za-z0-9_-]{16,64}$/.test(body.idempotencyKey) || (cash && !Number.isSafeInteger(body.cashReceivedCents)) ||
+      (manual && (!['bank_transfer', 'cheque', 'other'].includes(body.kind) || typeof body.reference !== 'string' || !body.reference.trim() || body.reference.length > 80 ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(body.receivedOn) || Number.isNaN(Date.parse(body.receivedOn)) || (body.note !== undefined && (typeof body.note !== 'string' || body.note.length > 300)))))
       return (problem(res, 400, 'VALIDATION_FAILED'), true);
-    const fingerprint = JSON.stringify(['cash', body.studentId, body.lineIds, body.cashReceivedCents]);
+    const fingerprint = JSON.stringify(cash ? ['cash', body.studentId, body.lineIds, body.cashReceivedCents] : ['manual', body.studentId, body.lineIds, body.kind, body.reference.trim(), body.receivedOn, body.note?.trim() ?? null]);
     const retry = store.retries.get(body.idempotencyKey);
     if (retry) {
       if (retry.fingerprint !== fingerprint) return (problem(res, 409, 'CONFLICT'), true);
@@ -118,13 +121,16 @@ export async function handleFees(env) {
     const selected = open.filter(l => body.lineIds.includes(l.id));
     if (selected.length !== body.lineIds.length) return (problem(res, 409, 'ALREADY_PAID'), true);
     const total = selected.reduce((sum, l) => sum + l.openCents, 0);
-    if (body.cashReceivedCents < total) return (problem(res, 400, 'VALIDATION_FAILED'), true);
-    const payment = { id: randomUUID(), method: 'cash', amountCents: total, unallocatedCents: 0, needsRefund: false,
-      studentId: student.id, studentName: student.displayName, receivedAt: new Date().toISOString(), receivedByName: user.displayName,
-      reference: null, note: null, reversedByPaymentId: null, reversesPaymentId: null, receiptId: randomUUID(),
+    if (cash && body.cashReceivedCents < total) return (problem(res, 400, 'VALIDATION_FAILED'), true);
+    const oldest = selected.map(l => l.month).sort()[0];
+    if (manual && (body.receivedOn > new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' }) || body.receivedOn < `${Number(oldest.slice(0, 4)) - 1}${oldest.slice(4)}`))
+      return (problem(res, 400, 'VALIDATION_FAILED'), true);
+    const payment = { id: randomUUID(), method: cash ? 'cash' : 'manual', amountCents: total, unallocatedCents: 0, needsRefund: false,
+      studentId: student.id, studentName: student.displayName, receivedAt: cash ? new Date().toISOString() : `${body.receivedOn}T12:00:00Z`, receivedByName: user.displayName,
+      reference: manual ? body.reference.trim() : null, note: body.note?.trim() ?? null, reversedByPaymentId: null, reversesPaymentId: null, receiptId: randomUUID(),
       receiptNumber: `SAMPLE-R-26-${String(store.payments.length + 1).padStart(5, '0')}`,
       lines: selected.map(l => ({ lineId: l.id, className: l.className, month: l.month, amountCents: l.openCents })) };
-    store.payments.unshift(payment); store.cash.set(payment.id, body.cashReceivedCents); store.retries.set(body.idempotencyKey, { fingerprint, payment });
+    store.payments.unshift(payment); if (cash) store.cash.set(payment.id, body.cashReceivedCents); store.retries.set(body.idempotencyKey, { fingerprint, payment });
     json(res, 200, payment); return true;
   }
   if (paymentList || paymentDetail || reverse) {
