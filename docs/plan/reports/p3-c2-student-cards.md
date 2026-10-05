@@ -1,0 +1,21 @@
+# p3-c2-student-cards report
+
+- Status: blocked
+- Branch / PR: `feat/p3-c2-student-cards` / https://github.com/ReccaLabs/Remix/pull/54 (draft, base `main`; #53 merged).
+- Feature IDs: done: STU-07; STU-06 database checkpoint | not done: STU-06 API/UI/printing, FEE-07 card scanning and checkpoint (h) journey.
+- Gates: lint · typecheck · build · full tests passed in CI for checkpoint (b). Local affected tests: db 401 tests exercised, all failures resolved by the 269-test cards/isolation rerun; API numbering/import/fees tests passed (44 students + 93 other affected tests). DB/API typecheck passed. Uncommitted work: web 12 tests and typecheck passed; API card integration 7 passed / 6 failed on the contract blocker. Full local gate not run.
+- CI: 5/6 pass on `9290b6b`: lint/typecheck/test/build, tenant isolation (Postgres 18), E2E journeys, gitleaks, Semgrep; API image/build/smoke/Trivy fails on HIGH/CRITICAL `perl-base` vulnerabilities. Existing E2E passing does not validate the unfinished card journey.
+- Migrations added: `packages/db/migrations/0015_student_cards.sql` and `0016_student_cards_rls.sql` rewritten in place; matching snapshots/journal retained; no fix-up migration.
+- Contract changes (packages/types): none.
+- New dependencies: none.
+- Security-relevant changes:
+  - Forced tenant RLS, same-tenant foreign keys, explicit column grants, no DELETE: `packages/db/migrations/0016_student_cards_rls.sql`.
+  - Permanent code/UID reservation, one active/ordered card per student, lifecycle constraints and immutable recorded activation: `packages/db/src/schema/cards.ts`, `packages/db/migrations/0015_student_cards.sql`, `0016_student_cards_rls.sql`.
+  - Globally unique validated institute prefixes with deterministic collision handling: `packages/db/src/schema/tenants.ts`, `packages/db/src/provision.ts`.
+  - Isolation catalog covers the new table and grants: `packages/db/test/catalog.ts`, `packages/db/test/cards.test.ts`.
+- Deviations from plan/ADRs: stopped at the contract blocker as instructed; checkpoints (c)–(h) deferred and PR remains draft. Numbering amendment added to ADR 0007.
+- Known issues / TODO:
+  - Lead decision required: `packages/types/src/api/cards.ts` uppercases every lookup input, while `apps/api/src/modules/imports/row-validator.ts` accepts and preserves lowercase student numbers. An imported `legacy-7` produces card code `legacy-7-1`, but lookup receives `LEGACY-7-1`; exact lookup returns 404. Existing case-sensitive uniqueness also permits both `legacy-7` and `LEGACY-7`, so case-insensitive fallback is ambiguous. Resolve the contract without renumbering existing students or changing imported numbers.
+  - Checkpoints (a)/(b) committed and pushed as `72b17bf` / `9290b6b`. API, profile Card section, temporary printing and Code 128 work is unfinished and saved locally in stash `ca34e1b3c0cbdfed77927aa0791ed9291526ba91`; restore with `git stash apply ca34e1b3c0cbdfed77927aa0791ed9291526ba91` after the lead resolves the contract. This stash is not in the PR.
+  - Finish API/security tests, Cards sheet/QR/CSV, counter wedge/camera/NFC, admin camera policy, responsive/axe coverage and both card/cash journeys; rerun gates and CI before marking ready. API image vulnerability failure also needs resolution; no security gate was weakened.
+- Review these files first (max 10): `packages/types/src/api/cards.ts`, `apps/api/src/modules/imports/row-validator.ts`, `packages/db/src/counters.ts`, `packages/db/src/provision.ts`, `packages/db/src/schema/cards.ts`, `packages/db/migrations/0015_student_cards.sql`, `packages/db/migrations/0016_student_cards_rls.sql`, `packages/db/test/cards.test.ts`, `packages/db/test/catalog.ts`, `docs/decisions/0007-ids-money-time-numbering.md`.
