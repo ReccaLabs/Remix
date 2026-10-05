@@ -39,6 +39,18 @@ export async function scanNfc(
   reader.onreading = (event) => {
     if (!signal.aborted) onRead(nfcCardInput(event), normalizeNfcUid(event.serialNumber));
   };
-  reader.onreadingerror = onError;
-  await reader.scan({ signal });
+  reader.onreadingerror = () => {
+    if (!signal.aborted) onError();
+  };
+  const clear = () => {
+    reader.onreading = null;
+    reader.onreadingerror = null;
+  };
+  signal.addEventListener('abort', clear, { once: true });
+  if (signal.aborted) {
+    clear();
+    return;
+  }
+  try { await reader.scan({ signal }); }
+  catch (error) { clear(); signal.removeEventListener('abort', clear); throw error; }
 }

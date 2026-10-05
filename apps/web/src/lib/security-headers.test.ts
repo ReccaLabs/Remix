@@ -66,7 +66,9 @@ describe('buildCsp (production)', () => {
 describe('buildCsp (development)', () => {
   it('permits only the exact PayHere actions when the Payments page opts in', () => {
     const policy = buildCsp({ nonce: 'sample', isDev: false, allowPayhereCheckout: true });
-    expect(policy).toContain("form-action 'self' https://sandbox.payhere.lk/pay/checkout https://www.payhere.lk/pay/checkout");
+    expect(policy).toContain(
+      "form-action 'self' https://sandbox.payhere.lk/pay/checkout https://www.payhere.lk/pay/checkout",
+    );
     expect(policy).toContain("connect-src 'self'");
   });
   it('adds only what next dev needs', () => {
@@ -97,5 +99,12 @@ describe('securityHeaders', () => {
   it('omits HSTS outside production', () => {
     const h = securityHeaders({ nonce: 'n', isDev: true, hsts: false });
     expect(h['Strict-Transport-Security']).toBeUndefined();
+  });
+  it('allows only same-origin camera when explicitly enabled, keeping microphone and USB denied', () => {
+    const headers = securityHeaders({ nonce: 'n', isDev: false, hsts: true, allowCamera: true });
+    expect(headers['Permissions-Policy']).toContain('camera=(self)');
+    expect(headers['Permissions-Policy']).toContain('microphone=()');
+    expect(headers['Permissions-Policy']).toContain('usb=()');
+    expect(headers['Content-Security-Policy']).toBe(buildCsp({ nonce: 'n', isDev: false }));
   });
 });

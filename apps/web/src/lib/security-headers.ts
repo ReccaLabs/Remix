@@ -53,6 +53,8 @@ export function buildCsp({ nonce, isDev, allowPayhereCheckout = false }: CspOpti
 export interface SecurityHeaderOptions extends CspOptions {
   /** Send HSTS — production only (browsers ignore it over plain http anyway). */
   hsts: boolean;
+  /** STU-06: camera access is same-origin and limited to tenant admin pages. */
+  allowCamera?: boolean;
 }
 
 export function securityHeaders(opts: SecurityHeaderOptions): Record<string, string> {
@@ -60,8 +62,7 @@ export function securityHeaders(opts: SecurityHeaderOptions): Record<string, str
     'Content-Security-Policy': buildCsp(opts),
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Permissions-Policy':
-      'accelerometer=(), browsing-topics=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
+    'Permissions-Policy': `accelerometer=(), browsing-topics=(), camera=${opts.allowCamera ? '(self)' : '()'}, geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()`,
     'Cross-Origin-Opener-Policy': 'same-origin',
     // Legacy twin of frame-ancestors 'none' for old browsers.
     'X-Frame-Options': 'DENY',
