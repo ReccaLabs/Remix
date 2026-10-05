@@ -1,3 +1,5 @@
+import { CardPanel } from '@/components/students/card-panel';
+import type { StudentCard } from '@remix/types/api';
 import { can } from '@remix/types';
 import { buttonClass, EmptyState } from '@remix/ui';
 import { CircleAlert } from 'lucide-react';
@@ -67,6 +69,8 @@ export default async function StudentProfilePage({
     );
   }
   const student = result.data;
+  let cards: StudentCard[] | null = null;
+  if (tab === 'overview') try { cards = (await (await getApi()).call('listStudentCards', { params: { id } })).items; } catch { /* The card section offers a retry. */ }
   let fees: StudentFees | null = null;
   if (tab === 'payments') try { fees = await (await getApi()).call('studentFees', { params: { id } }); } catch { /* Retry in the tab. */ }
 
@@ -75,7 +79,7 @@ export default async function StudentProfilePage({
       <PeopleIsland namespaces={['students', 'fees']}>
         <StudentHeader student={student} canWrite={canWrite} />
         <StudentTabs studentId={id} current={tab} tabs={tabs} />
-        {tab === 'overview' ? <OverviewTab student={student} /> : null}
+        {tab === 'overview' ? <><OverviewTab student={student} /><CardPanel studentId={id} archived={student.status === 'archived'} canWrite={canWrite} initial={cards} /></> : null}
         {tab === 'classes' ? <ClassesTab student={student} /> : null}
         {tab === 'payments' ? <ProfilePayments initial={fees} studentId={id} canCollect={can(roles, 'fees.collect')} /> : null}
         {tab === 'attendance' ? <LaterTab tab={tab} /> : null}
