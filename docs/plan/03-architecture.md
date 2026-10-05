@@ -167,7 +167,7 @@ platform (no tenant_id): platform_staff · platform_sessions · plans (mirrors @
 | **YouTube** | `VideoProvider` (unlisted embed) | Validate URL → store id → privacy-enhanced embed (`youtube-nocookie.com`) | Labelled unprotected; free previews only |
 | **Cloudflare R2** | `StorageProvider` | Slips, tutes, receipts, logos; presigned PUT for uploads with content-type + size conditions | Private buckets, `<tenantId>/` prefixes, signed GET ≤ 10 min, magic-byte check + EXIF strip in worker, ClamAV scan (Should) |
 | **Zoom** | `MeetingProvider` | OAuth (user-managed app) → create recurring meeting with registration + name lock settings → add registrants for paid students → webhooks participant_joined/left, recording.completed → attendance + recording import | Tokens encrypted; refresh server-side; deauth webhook; Marketplace review started in Phase 1 |
-| **Text.lk** | `SmsProvider` | Send (unicode aware), DLR webhook, balance check | Wallet debit in same tx as enqueue; SMS-pumping limits |
+| **Notify.lk / Text.lk** | `SmsProvider` (one adapter each; `SMS_PRIMARY` + optional `SMS_FALLBACK`) | Send (unicode aware), delivery status, balance check | Wallet debit in same tx as enqueue; SMS-pumping limits; fallback only on gateway errors before acceptance, never after (no double send) |
 | **BYO SMS gateway** (R2) | `SmsProvider` | Generic HTTP adapter (method, URL template, auth header) | SSRF guard: https only, DNS-resolve to public IPs (block RFC1918, loopback, link-local, ULA), no redirects, 5 s timeout, response size cap |
 | **Resend** | `EmailProvider` | Staff invites, impersonation notices, platform invoices | SPF/DKIM/DMARC on remix.lk |
 

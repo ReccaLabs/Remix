@@ -85,7 +85,8 @@ Before finishing any task: `pnpm lint && pnpm typecheck && pnpm test` must pass,
 - Phase 1+: tenant-isolation tests for every new table and endpoint.
 
 ### Agents (Codex + Claude)
-- Feature tracks are written by Codex (`gpt-6.1-sol`) via `scripts/codex-track.sh`, one track per worktree; Claude Sonnet is the fallback when Codex is out of quota. Full procedure, pitfalls, prompt and report templates: [`docs/agents/codex-subagent.md`](docs/agents/codex-subagent.md).
+- Feature tracks are written by Codex (`gpt-6.1-sol`) via `scripts/codex-track.sh`, one track per worktree; Claude Sonnet is the fallback when Codex is out of quota. Full procedure, pitfalls, prompt and report templates: [`docs/agents/codex-subagent.md`](docs/agents/codex-subagent.md); in Claude Code use the `/codex-subagent` skill (`.claude/skills/codex-subagent/`).
+- If auto mode blocks the Codex launch, never work around it: tell the owner the three options in the guide (§4 "Permission for the launch").
 - The lead reviews every PR before merging; money/auth/RLS/secrets code is reviewed line by line.
 
 ### Knowledge graph

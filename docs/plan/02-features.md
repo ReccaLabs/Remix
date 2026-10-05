@@ -200,7 +200,7 @@ Legend — **Rel**: R1 Must · R1s Should · R2 · R3.
 
 | ID | Feature | Screen | Rel |
 | --- | --- | --- | --- |
-| MSG-01 | `SmsProvider` interface; Text.lk adapter; delivery status webhooks | — | R1 |
+| MSG-01 | `SmsProvider` interface; Notify.lk and Text.lk adapters (platform picks primary + optional fallback by config); delivery status where the gateway supports it | — | R1 |
 | MSG-02 | ReMix SMS wallet: balance, sender ID (registered), ledger, low-balance alert, staff "Buy SMS" (invoice to institute) | Integrations 13a | R1 |
 | MSG-03 | Compose SMS to: class, unpaid students, parents of absentees, selected students; segment count + cost preview; Sinhala/Tamil unicode counting | Messages | R1 |
 | MSG-04 | System SMS: OTP, receipts, slip approved/rejected, fee reminders, absence, class changes — templates per locale | — | R1 |

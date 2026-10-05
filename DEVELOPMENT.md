@@ -465,6 +465,7 @@ remix.lk on Cloudflare Pages: **free**. Video, SMS and OTP costs grow with stude
 - **Branches:** `main` (always deployable), `feat/…`, `fix/…`; Conventional Commits; squash merge.
 - **CI on every PR:** install → lint → typecheck → unit tests → build → Trivy (images) → Semgrep → gitleaks. Site PRs get a Cloudflare preview link.
 - **Tests:** Vitest (unit), Supertest (API + tenant isolation), Playwright (E2E: site form, student pay → watch, admin approve slip), k6 (load).
+- **AI subagents:** feature tracks are written by Codex in their own worktrees and reviewed by Claude: [docs/agents/codex-subagent.md](docs/agents/codex-subagent.md) (`bash scripts/codex-track.sh …`; Claude skill `/codex-subagent`).
 - **Definition of Done:** reviewed PR · CI green · tests for new logic · RLS + isolation test for new tables · Zod validation · i18n keys · works at 390 px and on 3G throttling · no secrets in code/logs · docs/ADR updated.
 
 ---
