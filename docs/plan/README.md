@@ -12,8 +12,12 @@
 | 4 | [04-quality.md](04-quality.md) | NFRs, Definition of Ready/Done (story → release), test strategy + critical journeys, threat model, release process |
 | 5 | [05-roadmap.md](05-roadmap.md) | Phases 1–10 with exit criteria, timeline, long-lead tracks, design gaps, risks, ADR backlog |
 | — | [phase-1.md](phase-1.md) | Phase 1 execution board: tracks, branches, ownership, decisions, status |
+| — | [status-2026-10-05.md](status-2026-10-05.md) | **Latest status (paused 5 Oct)**: what is built, distance to the R1 MVP, how to resume |
+| — | [phase-3.md](phase-3.md) | Phase 3 execution board (Money): tracks, status |
 | — | [phase-2.md](phase-2.md) | **Status report (3 Oct) and Phase 2 plan**: what is done, carry-overs, Phase 2 scope, tracks, decisions |
 | — | [phase-1-report-si.md](phase-1-report-si.md) | Phase 1 වාර්තාව සිංහලෙන් — හැදුවේ මොනවද, PRs/branches/Docker පැහැදිලි කිරීම, ඊළඟ පියවර |
+
+How tracks are built (Codex writes, Claude leads): [docs/agents/codex-subagent.md](../agents/codex-subagent.md) and the `/codex-subagent` Claude skill.
 
 Related: [DEVELOPMENT.md](../../DEVELOPMENT.md) (stack, security checklist §5) · [DESIGN.md](../../DESIGN.md) (design system, screen → route map) · [CLAUDE.md](../../CLAUDE.md) (rules for AI assistants) · [docs/decisions/](../decisions/) (ADRs).
 
@@ -35,8 +39,8 @@ Update this table at every phase boundary (and feature statuses in 02-features.m
 | --- | --- | --- | --- | --- |
 | 0 | remix.lk marketing site | R0 | ✅ Built — launch tasks pending (D1, Turnstile, legal review, deploy) | done |
 | 1 | Foundation & walking skeleton | — | ✅ Done 3 Oct 2026 ([board](phase-1.md)) | weeks 1–4 |
-| 2 | People & classes | R1 | ⬜ Next — [plan](phase-2.md) | weeks 5–7 |
-| 3 | Money (fees, PayHere, slips, cash) | R1 | ⬜ | weeks 8–11 |
+| 2 | People & classes | R1 | ✅ Done (#38–#42, [plan](phase-2.md)) | weeks 5–7 |
+| 3 | Money (fees, PayHere, slips, cash) | R1 | 🟡 ~55 % — paused 5 Oct ([board](phase-3.md), [status](status-2026-10-05.md)) | weeks 8–11 |
 | 4 | Learning (protected video, tutes) | R1 | ⬜ | weeks 12–14 |
 | 5 | Live classes (Zoom) & attendance | R1 | ⬜ | weeks 15–17 |
 | 6 | Institute website, messages, reports | R1 | ⬜ | weeks 18–20 |

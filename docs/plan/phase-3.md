@@ -19,7 +19,7 @@ Codex (`gpt-6.1-sol`) writes each track in its own worktree; Claude (lead) write
 | 3-C2 | Student numbers + cards | Codex · high | Opus (lookup + codes) | STU-07 `NIL-26-0042` numbers; STU-06 permanent (ReMix-printed, barcode + optional QR/NFC) and temporary (institute-printed barcode) cards, order/activate/revoke, print, scan at the cash counter |
 | 3-D | Slips | Codex · high | Opus (uploads) | storage provider (ADR 0009), media worker, FEE-05 upload, FEE-06 queue with A/R/S |
 | 3-E | PayHere | Codex · high | Opus line by line | FEE-03 Pay screen, FEE-04 checkout + notify webhook, test payment |
-| 3-F | SMS | Codex · medium | report + CI | MSG-01 Text.lk adapter, MSG-02 wallet, MSG-04 templates, FEE-12 reminders, FEE-02 invoices tab + reminder send |
+| 3-F | SMS | Codex · medium | report + CI | MSG-01 Notify.lk (primary, owner has an approved sender ID) + Text.lk (optional fallback) adapters, MSG-02 wallet, MSG-04 templates, FEE-12 reminders, FEE-02 invoices tab + reminder send |
 | 3-G | Fees UI + journeys | Codex · medium (Astra trial) | report + CI | admin Fees tabs polish, J-02, J-03, J-04, J-05, J-09 on local staging |
 | 3-S | Security review | Claude Opus | — | PayHere notify, slips, ledger, secrets (two-reviewer rule) |
 
@@ -33,12 +33,15 @@ Codex (`gpt-6.1-sol`) writes each track in its own worktree; Claude (lead) write
 
 ## Status
 
+Paused 5 Oct 2026 (Claude/Codex weekly limits). Full picture and how to resume: [status-2026-10-05.md](status-2026-10-05.md).
+
 | Track | Status |
 | --- | --- |
-| 3-0 Contracts + ADRs | merged #43 |
+| 3-0 Contracts + ADRs | merged #43 (+ #46) |
 | 3-A Ledger | merged #44 |
 | 3-B Settings + receipts | merged #52 |
-| 3-C Cash + manual | PR open |
-| 3-C2 Student cards | PR open |
-| 3-D ... 3-G | waiting |
-| 3-S | waiting |
+| 3-C Cash + manual | merged #53 |
+| 3-C2 Student numbers + cards | merged #54 |
+| 3-D Slips | next |
+| 3-E PayHere · 3-F SMS · 3-G Fees UI + journeys | waiting |
+| 3-S Security review | waiting |

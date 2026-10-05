@@ -1,6 +1,6 @@
 # Using Codex as a coding subagent
 
-> How ReMix is built from Phase 3 on. **Any Claude session that plans or runs feature work must follow this guide.** Linked from [CLAUDE.md](../../CLAUDE.md).
+> How ReMix is built from Phase 3 on. **Any Claude session that plans or runs feature work must follow this guide.** Linked from [CLAUDE.md](../../CLAUDE.md). In Claude Code, the `/codex-subagent` skill ([`.claude/skills/codex-subagent/SKILL.md`](../../.claude/skills/codex-subagent/SKILL.md)) walks the lead through it step by step.
 
 ## 1. Roles
 
@@ -62,6 +62,16 @@ Check: `codex login status` → "Logged in using ChatGPT".
 6. **When it ends**: read `../codex-runs/<track>/last.md` (the report). If it says `blocked` or `partial`, read the reason before anything else.
 7. **Review** (§7), then `gh pr merge <n> --squash`, then remove the worktree (`git worktree remove --force ../Remix-wt-<track>`) and the local branch.
 
+### Permission for the launch (Claude Code auto mode)
+
+Claude Code's auto mode blocks a command that starts Codex with `-s danger-full-access`, so the lead cannot launch a track until the owner allows it. Pick one:
+
+1. **Owner runs it** in Git Bash (same command as step 4), leaves the window open, and tells the lead when it ends.
+2. **Allow it once for the project:** in an interactive `claude` terminal run `/permissions` and add the allow rule `Bash(bash scripts/codex-track.sh:*)`. After that the lead can launch tracks directly.
+3. **Leave auto mode** for that session (permission mode menu in the app) and approve the call when asked.
+
+The lead never changes permission settings itself or rewrites the command to get past the block.
+
 ### Resuming a stopped Codex session
 
 The session id is in the first lines of the log. `exec resume` has no `-s` option:
@@ -79,6 +89,7 @@ Run it from inside the worktree. Do not resume while the old process is still al
 | `CreateProcessWithLogonW failed: 5`; Codex can't run any shell command | `[windows] sandbox = "elevated"` in the Codex config | Run with `-s danger-full-access`, **only** inside a dedicated worktree, never the main checkout |
 | Prompt symbols garbled (`âœ…`) | PowerShell 5.1 pipes text in a legacy code page | Launch from Git Bash (the helper does) |
 | "Usage limit … try again at HH:MM" | ChatGPT 5-hour quota used up (applies to all models) | Wait for the time shown, or hand the track to Sonnet with the same prompt |
+| "Selected model is at capacity" (exit 1, no commits) | OpenAI-side capacity for that model, not the owner's quota | Re-run the one-line check; when it answers, relaunch (fresh if nothing was committed, otherwise resume) |
 | Scheduled start never happened | Background shells run in **UTC** (Sri Lanka is UTC+5:30) | Don't schedule by local time; start when quota is available |
 | Background task "stopped after time limit" | Claude's background wrappers end at 2 h | Codex itself may still be running: check `Get-CimInstance Win32_Process` for `codex.exe exec` before relaunching |
 | Resumed run used `gpt-5.5` / sandbox | `exec resume` reads the config defaults | Pass `-m` and `--dangerously-bypass-approvals-and-sandbox` |
