@@ -1,0 +1,13 @@
+# p3-c-cash-manual report
+- Status: blocked
+- Branch / PR: https://github.com/ReccaLabs/Remix/tree/feat/p3-c-cash-manual (draft PR pending)
+- Feature IDs: done: none | not done: FEE-07, FEE-08, FEE-10
+- Gates: lint · typecheck · build · tests per package not run; documentation only. `pnpm install` passed.
+- CI: 6 checks not yet verified; draft remains blocked.
+- Migrations added: none
+- Contract changes (packages/types): none
+- New dependencies: none
+- Security-relevant changes: none; RLS, grants, guards and application code untouched.
+- Deviations from plan/ADRs: stopped before checkpoint (a), following the instruction to stop and report an incorrect contract; draft PR contains the blocker report only.
+- Known issues / TODO: `packages/types/src/api/fees.ts` → `listPaymentsQuerySchema` lacks the status filter required by scope (4). It extends the strict pagination schema, so a `status` query is rejected. Filtering just a returned page gives incomplete results and incorrect totals. The lead must define the status query contract (including reversal semantics), or explicitly approve a revised filtering scope, before implementation resumes. All checkpoints (a)–(h) remain unfinished.
+- Review these files first (max 10): `packages/types/src/api/fees.ts`, `packages/types/src/api/common.ts`, `packages/types/src/api/routes.ts`, `apps/api/src/modules/fees/fees.service.ts`, `docs/plan/phase-3.md`, `docs/plan/reports/p3-c-cash-manual.md`
