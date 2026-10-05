@@ -72,6 +72,7 @@ export interface World {
   spareEnrollmentId: string;
   receiptId: string;
   settingsId: string;
+  cardId: string;
 }
 
 type Row = Record<string, unknown>;
@@ -91,6 +92,10 @@ export interface TableSpec {
 }
 
 const hash = (char: string) => char.repeat(64);
+const freshCard = (w: World): Row => ({ tenant_id: w.tenantId, student_id: w.studentUserId,
+  code: randomUUID().replaceAll('-', '').toUpperCase(), format: 'qr', source: 'linked',
+  status: 'revoked', issued_by: w.staffUserId, revoked_at: new Date(),
+  revoked_by: w.staffUserId, revoke_reason: 'Lost card' });
 const inOneHour = () => new Date(Date.now() + 3_600_000);
 
 const freshStaffRole = (w: World): Row => ({
@@ -274,6 +279,15 @@ export const TABLES = {
     fresh: freshStudent,
     crossTenantRefs: {
       user: (home, other) => ({ ...freshStudent(home), user_id: other.spareStudentUserId }),
+    },
+  },
+  student_cards: {
+    access: 'projection', tenantColumn: 'tenant_id',
+    key: w => ({ id: w.cardId }), fresh: freshCard,
+    crossTenantRefs: {
+      student: (a, b) => ({ ...freshCard(a), student_id: b.studentUserId }),
+      issuedBy: (a, b) => ({ ...freshCard(a), issued_by: b.staffUserId }),
+      revokedBy: (a, b) => ({ ...freshCard(a), revoked_by: b.staffUserId }),
     },
   },
   devices: {
@@ -660,7 +674,11 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
       spareEnrollmentId: spareEnrollment.id, receiptId: receipt.id, settingsId: settings.id };
     })() : { invoiceId: '', lineId: '', paymentId: '', sparePaymentId: '', spareEnrollmentId: '', receiptId: '', settingsId: '' };
 
+    await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
+    const card = includeLedger ? one(await tx.insert(schema.studentCards).values({ tenantId, studentId: student.id,
+      code: 'ISOLATIONCARD', format: 'qr', source: 'issued', issuedBy: staff.id }).returning(), 'card') : { id: '' };
     return {
+      cardId: card.id,
       tag,
       tenantId,
       slug,
