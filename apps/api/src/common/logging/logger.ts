@@ -24,6 +24,9 @@ const SECRET_FIELDS = [
   'secretNonce',
   'INTEGRATIONS_KEY',
   'otp',
+  'input',
+  'nfcUid',
+  'nfc_uid',
 ];
 
 /**
