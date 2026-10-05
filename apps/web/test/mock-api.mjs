@@ -25,6 +25,7 @@ import { DEV_INVITE_TOKEN, handleAuthRoute } from './mock-api-auth.mjs';
 import { handleImport } from './mock-api-import.mjs';
 import { handleClasses, settingsFor } from './mock-api-classes.mjs';
 import { handlePeople } from './mock-api-people.mjs';
+import { handleCards } from './mock-api-cards.mjs';
 import { handleFees } from './mock-api-fees.mjs';
 
 const PORT = Number(process.env.MOCK_API_PORT ?? 4000);
@@ -535,6 +536,7 @@ async function handle(req, res) {
           CLASSES,
         };
         if (
+          (await handleCards(feature)) ||
           (await handleFees(feature)) ||
           (await handleClasses(feature)) ||
           (await handlePeople(feature))

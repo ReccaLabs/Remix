@@ -23,6 +23,9 @@
   --color-accent-ink: #8a5200; /* text on accent-soft (AA contrast) */
 
   /* ---------- Neutrals ---------- */
+  /* Physical barcode/QR cards stay readable independently of dark mode and tenant theming. */
+  --color-print-ink: #000000;
+  --color-print-paper: #ffffff;
   --color-ink: #0e1525; /* main text; dark bands; footer */
   --color-ink-2: #3a4357; /* body copy on marketing, nav links */
   --color-muted: #5b6478; /* secondary text */
