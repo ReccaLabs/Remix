@@ -187,5 +187,34 @@
     },
     "save": "Save fee settings",
     "saved": "Fee settings saved"
-  }
+  },
+  "receiptPrint": {
+    "meta": "Print receipt",
+    "title": "Receipt {number}",
+    "logo": "{name} logo",
+    "issued": "Issued",
+    "student": "Student",
+    "method": "Method",
+    "methods": {
+      "cash": "Cash",
+      "manual": "Manual payment",
+      "card": "Card",
+      "slip": "Bank slip",
+      "reversal": "Reversal"
+    },
+    "lines": "Payment details",
+    "classMonth": "Class / month",
+    "amount": "Amount",
+    "total": "Total paid",
+    "cashReceived": "Cash received",
+    "change": "Change",
+    "reversed": "REVERSED ? {at}",
+    "reprint": "Reprint receipt",
+    "back": "Back to fees",
+    "loadError": "We couldn?t load the receipt",
+    "loadErrorHint": "Check your connection and try again.",
+    "retry": "Try again",
+    "loading": "Loading receipt"
+  },
+  "loading": "Loading settings"
 }
