@@ -33,7 +33,7 @@ describe('worker: imports processor (STU-04)', () => {
     });
     try {
       const registry = app.get(ProcessorRegistry);
-      expect(registry.queues().sort()).toEqual(['fees', 'imports', 'sms']);
+      expect(registry.queues().sort()).toEqual(['fees', 'imports', 'receipts', 'sms']);
 
       const tenant = await f.tenant('active');
       const staff = await f.staff(tenant, ['owner']);

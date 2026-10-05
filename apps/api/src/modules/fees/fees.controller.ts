@@ -1,16 +1,19 @@
 import { Body, Controller, Header } from '@nestjs/common';
 import { API, type IdParams } from '@remix/types/api';
 import type { z } from 'zod';
-import { CurrentSession, CurrentTenant, RequirePermission } from '../../common/auth/auth.decorators';
+import { CurrentSession, CurrentTenant, RequirePermission, SessionKinds } from '../../common/auth/auth.decorators';
 import type { AuthSession } from '../../common/auth/session-authenticator';
 import type { ResolvedTenant } from '../../common/tenant/tenant-resolver';
 import { Endpoint, type EndpointBody } from '../../common/validation/endpoint';
 import { EndpointParams, EndpointQuery } from '../../common/validation/request-input';
 import { FeesService } from './fees.service';
+import { ReceiptsService } from './receipts.service';
 
 @Controller()
 export class FeesController {
-  constructor(private readonly fees: FeesService) {}
+  constructor(private readonly fees: FeesService, private readonly receipts: ReceiptsService) {}
+  @SessionKinds('staff', 'student') @Header('cache-control', 'no-store') @Endpoint(API.receiptPdf)
+  receiptPdf(@CurrentTenant() t: ResolvedTenant, @CurrentSession() s: AuthSession, @EndpointParams() p: IdParams) { return this.receipts.pdf(t.id, s, p.id); }
   @RequirePermission('fees.read') @Header('cache-control', 'no-store') @Endpoint(API.listInvoices)
   listInvoices(@CurrentTenant() t: ResolvedTenant, @EndpointQuery() q: z.output<typeof API.listInvoices.query>) { return this.fees.listInvoices(t.id, q); }
   @RequirePermission('fees.read') @Header('cache-control', 'no-store') @Endpoint(API.studentFees)

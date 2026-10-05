@@ -17,6 +17,7 @@ import { JOB_PRODUCER } from '../../../src/jobs/job-producer';
 import { createSmsProcessor } from '../../../src/jobs/sms/sms.processor';
 import { InlineJobProducer } from '../../../src/jobs/testing/inline-jobs';
 import { ImportRunner } from '../../../src/modules/imports/import-runner';
+import { ReceiptJobRunner } from '../../../src/modules/fees/receipt-jobs';
 import { TENANT_CACHE } from '../../../src/modules/tenancy/db-tenant-resolver';
 import type { InMemoryTenantCache } from '../../../src/modules/tenancy/tenant-cache';
 import { LogCapture } from '../../fixtures/test-app';
@@ -86,6 +87,7 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
   configureApp(app, config);
   await app.init();
   const importRunner = app.get(ImportRunner);
+  processors.receipts = payload => app.get(ReceiptJobRunner).run(payload);
   processors.imports = async (payload, ctx) => {
     await importRunner.run(payload, ctx);
   };

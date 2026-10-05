@@ -11,12 +11,13 @@ import { CLOCK, type Clock } from '../../common/time/clock';
 import { AuditService } from '../audit/audit.service';
 import { DB } from '../db/db.module';
 import { canAccess } from './access';
+import { receiptData } from './receipt-data';
 import { FeesHooks } from './fees-hooks';
 import { generateInvoices } from './invoice-generation';
 import { feeNotFound, recordPayment, reversePayment, type RecordPaymentInput } from './ledger';
 import { projectionCtes, safeCents, type ProjectionRow } from './projections';
 
-const { payments, receipts, students, tenantUsers, invoiceLines, invoices, paymentAllocations, classes, tenants } = schema;
+const { payments, receipts, students, tenantUsers, invoiceLines, invoices, paymentAllocations, classes } = schema;
 type InvoiceQuery = z.output<typeof API.listInvoices.query>;
 type PaymentQuery = z.output<typeof API.listPayments.query>;
 const receiver = alias(tenantUsers, 'receiver');
@@ -150,20 +151,6 @@ export class FeesService {
   }
 
   getReceipt(tenantId: string, id: string): Promise<Receipt> {
-    return withTenant(this.db, tenantId, async tx => {
-      const [receipt] = await tx.select().from(receipts).where(eq(receipts.id, id));
-      if (!receipt) throw feeNotFound();
-      const [p] = await this.paymentRows(tx, eq(payments.id, receipt.paymentId));
-      const [student] = await tx.select().from(students).where(eq(students.userId, p?.studentId ?? id));
-      const [tenant] = await tx.select().from(tenants).where(eq(tenants.id, tenantId));
-      if (!p || !student || !tenant) throw feeNotFound();
-      return { id: receipt.id, number: receipt.number, paymentId: p.id, issuedAt: receipt.issuedAt.toISOString(), method: p.method,
-        amountCents: p.amountCents, cashReceivedCents: receipt.cashReceivedCents,
-        changeCents: receipt.cashReceivedCents === null ? null : receipt.cashReceivedCents - p.amountCents,
-        studentNo: student.studentNo, studentName: p.studentName,
-        lines: p.lines.map(l => ({ className: l.className, month: l.month, amountCents: l.amountCents })),
-        reversedAt: receipt.reversedAt?.toISOString() ?? null,
-        institute: { name: tenant.name, logoUrl: tenant.logoUrl, address: null, phone: null, footer: null } };
-    });
+    return withTenant(this.db, tenantId, tx => receiptData(tx, tenantId, id));
   }
 }

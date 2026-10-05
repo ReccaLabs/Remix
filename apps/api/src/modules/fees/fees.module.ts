@@ -8,6 +8,8 @@ import { PayhereCheckoutBuilder } from '../../integrations/payment/payhere-check
 import { PayhereSettingsService } from './payhere-settings.service';
 import { MoneySettingsController } from './money-settings.controller';
 import { FeeSettingsService } from './fee-settings.service';
+import { ReceiptJobEnqueuer, ReceiptJobRunner } from './receipt-jobs';
+import { ReceiptsService } from './receipts.service';
 
 @Global()
 @Module({
@@ -20,6 +22,9 @@ import { FeeSettingsService } from './fee-settings.service';
     PayhereCheckoutBuilder,
     PayhereSettingsService,
     FeeSettingsService,
+    ReceiptJobEnqueuer,
+    ReceiptJobRunner,
+    ReceiptsService,
   ],
   exports: [FeesService, FeesHooks],
 })

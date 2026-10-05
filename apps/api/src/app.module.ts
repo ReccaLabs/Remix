@@ -33,6 +33,7 @@ import { DbModule } from './modules/db/db.module';
 import { ImportsModule } from './modules/imports/imports.module';
 import { PeopleModule } from './modules/people/people.module';
 import { FeesModule } from './modules/fees/fees.module';
+import { StorageModule } from './integrations/storage/storage.module';
 import { DbTenantResolver } from './modules/tenancy/db-tenant-resolver';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 
@@ -120,6 +121,7 @@ export class AppModule {
         CoreModule.forRoot({ ...options, database }),
         HealthModule,
         JobsModule.forRoot(options.config),
+        StorageModule.forRoot(options.config),
         ...(database
           ? [
               DbModule.forRoot(options.config),

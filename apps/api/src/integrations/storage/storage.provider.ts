@@ -22,6 +22,8 @@ export interface SignedDownload {
  * a URL for another tenant's object.
  */
 export interface StorageProvider {
+  /** Server-side write. `key` is relative to the tenant, just like the signed URL methods. */
+  putObject(input: { tenantId: string; key: string; body: Buffer; contentType: string }): Promise<void>;
   createUploadUrl(input: {
     tenantId: string;
     key: string;
