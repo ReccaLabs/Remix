@@ -34,6 +34,9 @@ export interface RecordPaymentInput {
   note?: string;
   receivedAt?: Date;
   cashReceivedCents?: number;
+  /** Collection retry identity, stored atomically in the append-only audit. */
+  requestFingerprint?: string;
+  manualKind?: string;
 }
 export interface RecordedPayment {
   payment: typeof payments.$inferSelect;
@@ -86,7 +89,9 @@ export async function recordPayment(tx: Tx, input: RecordPaymentInput, now: Date
   if (allocations.length) await tx.insert(paymentAllocations).values(allocations.map(a => ({ ...a, paymentId: payment.id })));
   await recomputeProjections(tx, now, [...new Set(selected.map(r => r.line.invoiceId))]);
   await audit.record(tx, tenantId, { action: 'payment.record', actorId: input.receivedBy, actorKind: input.receivedBy ? 'staff' : 'system', at: now,
-    entity: 'payment', entityId: payment.id, after: { method: input.method, amountCents: input.amountCents, unallocatedCents: remaining, lines: allocations.length } });
+    entity: 'payment', entityId: payment.id, after: { method: input.method, amountCents: input.amountCents, unallocatedCents: remaining, lines: allocations.length,
+      ...(input.requestFingerprint ? { requestFingerprint: input.requestFingerprint } : {}),
+      ...(input.manualKind ? { manualKind: input.manualKind } : {}) } });
   const [tenant] = await tx.select().from(tenants).where(eq(tenants.id, tenantId));
   if (!tenant) throw feeNotFound();
   const year = calendarDate(now).slice(0, 4);

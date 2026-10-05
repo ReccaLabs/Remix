@@ -1,6 +1,7 @@
 // Nest 12 preloads this lazily in compile(); load it before the test timer starts.
 import '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
+import { Module } from '@nestjs/common';
 import { UnrecoverableError } from 'bullmq';
 import type { Redis } from 'ioredis';
 import { describe, expect, it, vi } from 'vitest';
@@ -18,6 +19,11 @@ import { JobsModule } from './jobs.module';
 import { ProcessorRegistry } from './processor-registry';
 import { createSmsProcessor } from './sms/sms.processor';
 import { InlineJobProducer } from './testing/inline-jobs';
+import { ImportRunner } from '../modules/imports/import-runner';
+import { ReceiptJobRunner } from '../modules/fees/receipt-jobs';
+
+@Module({})
+class InlineRunners {}
 
 const TENANT = '0199a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b';
 const sms = (messageId = 'm1') => ({
@@ -150,6 +156,27 @@ describe('producers', () => {
     });
     const producer = new BullJobProducer(connection);
     await expect(producer.add('sms', { ...sms(), to: 'nope' })).rejects.toThrow();
+  });
+
+  it('development runs receipt PDFs once and keeps subsequent import/SMS queues healthy', async () => {
+    const receipts = { run: vi.fn().mockResolvedValue(undefined) };
+    const imports = { run: vi.fn().mockResolvedValue(undefined) };
+    const ref = await Test.createTestingModule({ imports: [
+      { module: InlineRunners, global: true, providers: [
+        { provide: ReceiptJobRunner, useValue: receipts }, { provide: ImportRunner, useValue: imports },
+      ], exports: [ReceiptJobRunner, ImportRunner] },
+      JobsModule.forRoot(loadConfig({ NODE_ENV: 'development' })),
+    ] }).compile();
+    try {
+      const jobs = ref.get<InlineJobProducer>(JOB_PRODUCER);
+      const receipt = { tenantId: TENANT, paymentId: TENANT, receiptId: TENANT };
+      await jobs.add('receipts', receipt); await jobs.add('receipts', receipt);
+      await jobs.add('imports', { tenantId: TENANT, importId: 'after-receipt' });
+      await jobs.add('sms', sms('after-receipt'));
+      expect(receipts.run).toHaveBeenCalledExactlyOnceWith(receipt);
+      expect(imports.run).toHaveBeenCalledOnce();
+      expect(jobs.jobs.map(job => job.status)).toEqual(['completed', 'completed', 'completed']);
+    } finally { await ref.close(); }
   });
 });
 

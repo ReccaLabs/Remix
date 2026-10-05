@@ -4,6 +4,7 @@ import type classes from '../../messages/en/classes.json';
 import type common from '../../messages/en/common.json';
 import type importMessages from '../../messages/en/import.json';
 import type errors from '../../messages/en/errors.json';
+import type fees from '../../messages/en/fees.json';
 import type platform from '../../messages/en/platform.json';
 import type portal from '../../messages/en/portal.json';
 import type settings from '../../messages/en/settings.json';
@@ -26,6 +27,7 @@ export const NAMESPACES = [
   'import',
   'classes',
   'settings',
+  'fees',
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -43,6 +45,7 @@ export interface Messages {
   import: typeof importMessages;
   classes: typeof classes;
   settings: typeof settings;
+  fees: typeof fees;
 }
 
 declare module 'next-intl' {

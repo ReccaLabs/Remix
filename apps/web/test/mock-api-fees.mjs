@@ -1,6 +1,7 @@
 // DEV/TEST ONLY. Settings and receipts mock; no credentials are persisted in this module.
 import { randomUUID } from 'node:crypto';
 import { settingsFor } from './mock-api-classes.mjs';
+import { storeFor as peopleStoreFor } from './mock-api-people.mjs';
 
 const stores = new Map();
 const RECEIPT_ID = '0193f1c2-7b1d-7c3e-9a4f-000000000900';
@@ -22,6 +23,10 @@ function storeFor(tenant) {
         bankDetails: null,
         receipt: { address: null, phone: null, footer: null },
       },
+      payments: [],
+      lines: new Map(),
+      retries: new Map(),
+      cash: new Map(),
     });
   return stores.get(tenant.slug);
 }
@@ -52,7 +57,14 @@ export async function handleFees(env) {
   const fees = pathname === '/api/v1/admin/settings/fees';
   const receipt = /^\/api\/v1\/admin\/receipts\/([^/]+)$/.exec(pathname);
   const pdf = /^\/api\/v1\/receipts\/([^/]+)\/pdf$/.exec(pathname);
-  if (!payhere && !test && !fees && !receipt && !pdf) return false;
+  const paymentList = pathname === '/api/v1/admin/payments';
+  const paymentDetail = /^\/api\/v1\/admin\/payments\/([^/]+)$/.exec(pathname);
+  const reverse = /^\/api\/v1\/admin\/payments\/([^/]+)\/reverse$/.exec(pathname);
+  const studentFees = /^\/api\/v1\/admin\/students\/([^/]+)\/fees$/.exec(pathname);
+  const cash = pathname === '/api/v1/admin/payments/cash';
+  const manual = pathname === '/api/v1/admin/payments/manual';
+  const mine = pathname === '/api/v1/me/fees';
+  if (!payhere && !test && !fees && !receipt && !pdf && !paymentList && !paymentDetail && !reverse && !studentFees && !cash && !manual && !mine) return false;
   const tenant = tenantOf(req);
   if (!tenant) return (problem(res, 404, 'TENANT_NOT_FOUND'), true);
   const current = currentSession(req, tenant);
@@ -66,9 +78,119 @@ export async function handleFees(env) {
     return (problem(res, 403, 'TENANT_UNAVAILABLE'), true);
   const store = storeFor(tenant);
   res.setHeader('cache-control', 'no-store');
+  const findStudent = id => peopleStoreFor(tenant, env).students.get(id) ?? USERS.find(u => u.tenant === tenant.slug && u.kind === 'student' && u.id === id);
+  const openLines = student => {
+    if (!store.lines.has(student.id)) store.lines.set(student.id, ['2026-09-01', '2026-10-01'].map(month => ({
+      id: randomUUID(), invoiceId: randomUUID(), invoiceNumber: 'SAMPLE-I-26', enrollmentId: randomUUID(),
+      classId: randomUUID(), className: 'Sample Physics', month, dueOn: `${month.slice(0, 7)}-05`, amountCents: 250000,
+      paidCents: 0, openCents: 250000, paid: false, overdue: true, slipWaiting: false,
+    })));
+    return store.lines.get(student.id).map(l => {
+      const paidCents = store.payments.flatMap(p => p.lines).filter(a => a.lineId === l.id).reduce((sum, a) => sum + a.amountCents, 0);
+      return { ...l, paidCents, openCents: l.amountCents - paidCents, paid: paidCents >= l.amountCents };
+    }).filter(l => !l.paid);
+  };
+  if (mine) {
+    if (user.kind !== 'student') return (problem(res, 403, 'FORBIDDEN'), true);
+    if (req.method !== 'GET') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
+    json(res, 200, { openLines: openLines(user), payments: store.payments.filter(p => p.studentId === user.id).map(p => { const payment = { ...p }; delete payment.needsRefund; delete payment.unallocatedCents; return payment; }),
+      slips: [], cardEnabled: store.payhere.enabled, bankDetails: store.fees.bankDetails }); return true;
+  }
+  if (studentFees) {
+    if (!reader) return (problem(res, 403, 'FORBIDDEN'), true);
+    const student = findStudent(studentFees[1]);
+    if (!student) return (problem(res, 404, 'NOT_FOUND'), true);
+    json(res, 200, { studentId: student.id, studentNo: student.studentNo ?? 'SAMPLE-00001', displayName: student.displayName,
+      openLines: openLines(student), payments: store.payments.filter(p => p.studentId === student.id) }); return true;
+  }
+  if (cash || manual) {
+    if (!reader) return (problem(res, 403, 'FORBIDDEN'), true);
+    if (req.method !== 'POST') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
+    if (csrfRejected(req, res)) return true;
+    const body = await readJson(req);
+    if (!only(body, cash ? ['studentId', 'lineIds', 'cashReceivedCents', 'idempotencyKey'] : ['studentId', 'lineIds', 'kind', 'reference', 'receivedOn', 'note', 'idempotencyKey']) || !Array.isArray(body.lineIds) ||
+      body.lineIds.length < 1 || body.lineIds.length > 24 || new Set(body.lineIds).size !== body.lineIds.length ||
+      !/^[A-Za-z0-9_-]{16,64}$/.test(body.idempotencyKey) || (cash && !Number.isSafeInteger(body.cashReceivedCents)) ||
+      (manual && (!['bank_transfer', 'cheque', 'other'].includes(body.kind) || typeof body.reference !== 'string' || !body.reference.trim() || body.reference.length > 80 ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(body.receivedOn) || Number.isNaN(Date.parse(body.receivedOn)) || (body.note !== undefined && (typeof body.note !== 'string' || body.note.length > 300)))))
+      return (problem(res, 400, 'VALIDATION_FAILED'), true);
+    const fingerprint = JSON.stringify(cash ? ['cash', body.studentId, body.lineIds, body.cashReceivedCents] : ['manual', body.studentId, body.lineIds, body.kind, body.reference.trim(), body.receivedOn, body.note?.trim() ?? null]);
+    const retry = store.retries.get(body.idempotencyKey);
+    if (retry) {
+      if (retry.fingerprint !== fingerprint) return (problem(res, 409, 'CONFLICT'), true);
+      json(res, 200, retry.payment); return true;
+    }
+    const student = findStudent(body.studentId);
+    if (!student) return (problem(res, 404, 'NOT_FOUND'), true);
+    const open = openLines(student);
+    const all = store.lines.get(student.id);
+    if (body.lineIds.some(id => !all.some(l => l.id === id))) return (problem(res, 404, 'NOT_FOUND'), true);
+    const selected = open.filter(l => body.lineIds.includes(l.id));
+    if (selected.length !== body.lineIds.length) return (problem(res, 409, 'ALREADY_PAID'), true);
+    const total = selected.reduce((sum, l) => sum + l.openCents, 0);
+    if (cash && body.cashReceivedCents < total) return (problem(res, 400, 'VALIDATION_FAILED'), true);
+    const oldest = selected.map(l => l.month).sort()[0];
+    if (manual && (body.receivedOn > new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' }) || body.receivedOn < `${Number(oldest.slice(0, 4)) - 1}${oldest.slice(4)}`))
+      return (problem(res, 400, 'VALIDATION_FAILED'), true);
+    const payment = { id: randomUUID(), method: cash ? 'cash' : 'manual', amountCents: total, unallocatedCents: 0, needsRefund: false,
+      studentId: student.id, studentName: student.displayName, receivedAt: cash ? new Date().toISOString() : `${body.receivedOn}T12:00:00Z`, receivedByName: user.displayName,
+      reference: manual ? body.reference.trim() : null, note: body.note?.trim() ?? null, reversedByPaymentId: null, reversesPaymentId: null, receiptId: randomUUID(),
+      receiptNumber: `SAMPLE-R-26-${String(store.payments.length + 1).padStart(5, '0')}`,
+      lines: selected.map(l => ({ lineId: l.id, className: l.className, month: l.month, amountCents: l.openCents })) };
+    store.payments.unshift(payment); if (cash) store.cash.set(payment.id, body.cashReceivedCents); store.retries.set(body.idempotencyKey, { fingerprint, payment });
+    json(res, 200, payment); return true;
+  }
+  if (paymentList || paymentDetail || reverse) {
+    if (!reader || (reverse && !owner)) return (problem(res, 403, 'FORBIDDEN'), true);
+    if (reverse) {
+      if (req.method !== 'POST') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
+      if (csrfRejected(req, res)) return true;
+      const body = await readJson(req);
+      if (!only(body, ['reason']) || typeof body.reason !== 'string' || body.reason.trim().length < 3 || body.reason.trim().length > 300)
+        return (problem(res, 400, 'VALIDATION_FAILED'), true);
+      const original = store.payments.find(p => p.id === reverse[1]);
+      if (!original) return (problem(res, 404, 'NOT_FOUND'), true);
+      if (original.method === 'reversal' || original.reversedByPaymentId) return (problem(res, 409, 'CONFLICT'), true);
+      const reversed = { ...original, id: randomUUID(), method: 'reversal', amountCents: -original.amountCents,
+        receivedAt: new Date().toISOString(), receivedByName: user.displayName, note: body.reason.trim(),
+        receiptId: null, receiptNumber: null, reversesPaymentId: original.id, reversedByPaymentId: null,
+        lines: original.lines.map(l => ({ ...l, amountCents: -l.amountCents })) };
+      original.reversedByPaymentId = reversed.id;
+      store.payments.unshift(reversed); json(res, 200, reversed); return true;
+    }
+    if (req.method !== 'GET') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
+    if (paymentDetail) {
+      const payment = store.payments.find(p => p.id === paymentDetail[1]);
+      if (!payment) return (problem(res, 404, 'NOT_FOUND'), true);
+      json(res, 200, payment); return true;
+    }
+    const query = new URL(req.url, 'http://mock.local').searchParams;
+    if ([...query.keys()].some(k => !['from', 'to', 'method', 'studentId', 'needsRefund', 'page', 'pageSize'].includes(k)))
+      return (problem(res, 400, 'VALIDATION_FAILED'), true);
+    const date = p => new Date(p.receivedAt).toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+    const filtered = store.payments.filter(p => (!query.get('from') || date(p) >= query.get('from')) &&
+      (!query.get('to') || date(p) <= query.get('to')) && (!query.get('method') || p.method === query.get('method')) &&
+      (!query.get('studentId') || p.studentId === query.get('studentId')) &&
+      (!query.get('needsRefund') || p.needsRefund === (query.get('needsRefund') === 'true')));
+    const page = Math.max(1, Number(query.get('page')) || 1);
+    const pageSize = [25, 50, 100].includes(Number(query.get('pageSize'))) ? Number(query.get('pageSize')) : 25;
+    json(res, 200, { page, pageSize, total: filtered.length, items: filtered.slice((page - 1) * pageSize, page * pageSize) }); return true;
+  }
   if (receipt || pdf) {
     if (req.method !== 'GET') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
     if (!reader && !(pdf && user.kind === 'student')) return (problem(res, 403, 'FORBIDDEN'), true);
+    const dynamic = store.payments.find(p => p.receiptId === (receipt ?? pdf)[1]);
+    if (dynamic) {
+      if (user.kind === 'student' && user.id !== dynamic.studentId) return (problem(res, 404, 'NOT_FOUND'), true);
+      if (pdf) { json(res, 200, { url: `https://storage.mock.invalid/${tenant.id}/receipts/${dynamic.receiptId}.pdf?sig=mock`, expiresAt: new Date(Date.now() + 600000).toISOString() }); return true; }
+      const student = findStudent(dynamic.studentId); const theme = settingsFor(tenant); const received = store.cash.get(dynamic.id) ?? null;
+      json(res, 200, { id: dynamic.receiptId, number: dynamic.receiptNumber, paymentId: dynamic.id, issuedAt: dynamic.receivedAt,
+        method: dynamic.method, amountCents: dynamic.amountCents, cashReceivedCents: received, changeCents: received === null ? null : received - dynamic.amountCents,
+        studentNo: student?.studentNo ?? 'SAMPLE-00001', studentName: dynamic.studentName,
+        lines: dynamic.lines.map(({ className, month, amountCents }) => ({ className, month, amountCents })),
+        reversedAt: dynamic.reversedByPaymentId ? new Date().toISOString() : null,
+        institute: { name: theme.name, logoUrl: theme.logoUrl, ...store.fees.receipt } }); return true;
+    }
     const student = USERS.find((u) => u.tenant === tenant.slug && u.kind === 'student');
     if ((receipt ?? pdf)[1] !== RECEIPT_ID || (user.kind === 'student' && user.id !== student?.id))
       return (problem(res, 404, 'NOT_FOUND'), true);

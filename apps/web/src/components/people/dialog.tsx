@@ -15,6 +15,7 @@ export function Dialog({
   description,
   onClose,
   busy = false,
+  variant = 'modal',
   children,
 }: {
   open: boolean;
@@ -23,6 +24,7 @@ export function Dialog({
   onClose: () => void;
   /** While a request runs, Escape and the backdrop do not close the dialog. */
   busy?: boolean;
+  variant?: 'modal' | 'drawer';
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -64,6 +66,7 @@ export function Dialog({
       className={cn(
         'bg-surface text-ink rounded-card shadow-float m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg overflow-y-auto border-0 p-0',
         'backdrop:bg-scrim',
+        variant === 'drawer' && 'mr-0 ml-auto h-dvh max-h-dvh w-full max-w-xl rounded-none',
       )}
     >
       {open ? (

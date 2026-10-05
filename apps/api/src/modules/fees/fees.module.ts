@@ -26,6 +26,6 @@ import { ReceiptsService } from './receipts.service';
     ReceiptJobRunner,
     ReceiptsService,
   ],
-  exports: [FeesService, FeesHooks],
+  exports: [FeesService, FeesHooks, ReceiptJobRunner],
 })
 export class FeesModule {}

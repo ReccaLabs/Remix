@@ -36,6 +36,7 @@ Codex (`gpt-6.1-sol`) writes each track in its own worktree; Claude (lead) write
 | --- | --- |
 | 3-0 Contracts + ADRs | merged #43 |
 | 3-A Ledger | merged #44 |
-| 3-B Settings + receipts | PR open |
-| 3-C ... 3-G | waiting |
+| 3-B Settings + receipts | merged #52 |
+| 3-C Cash + manual | PR open |
+| 3-D ... 3-G | waiting |
 | 3-S | waiting |
