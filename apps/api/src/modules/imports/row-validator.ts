@@ -1,3 +1,4 @@
+import { normalizeStudentNo } from '@remix/db';
 import {
   GUARDIAN_RELATIONS,
   MEDIUMS,
@@ -92,7 +93,7 @@ export function phonesOf(rows: readonly ImportRow[]): string[] {
 export function studentNosOf(rows: readonly ImportRow[]): string[] {
   const numbers = new Set<string>();
   for (const row of rows) {
-    const value = clean(row.studentNo);
+    const value = normalizeStudentNo(row.studentNo ?? '');
     if (STUDENT_NO.test(value)) numbers.add(value);
   }
   return [...numbers];
@@ -126,6 +127,7 @@ export function validateStudentRows(
   const valid: ValidStudent[] = [];
   const phoneRows = new Map<string, number>();
   const numberRows = new Map<string, number>();
+  const existingNumbers = new Set([...ctx.studentNos].map(normalizeStudentNo));
 
   rows.forEach((row, index) => {
     const rowNo = index + 1;
@@ -164,20 +166,27 @@ export function validateStudentRows(
 
     // student number
     let studentNo: string | null = null;
-    const numberCell = clean(row.studentNo);
-    if (numberCell) {
-      if (!STUDENT_NO.test(numberCell)) {
-        errors.add('studentNo', 'Use letters, digits and dashes only (up to 32 characters)');
-      } else if (ctx.studentNos.has(numberCell)) {
-        errors.add('studentNo', 'This student number is already used');
-      } else if (numberRows.has(numberCell)) {
+    const numberCell = row.studentNo ?? '';
+    const numberKey = normalizeStudentNo(numberCell);
+    if (numberKey) {
+      if (numberCell.length > 32 || !STUDENT_NO.test(numberKey)) {
         errors.add(
           'studentNo',
-          `This student number is also used in row ${numberRows.get(numberCell)}`,
+          'Use letters, digits, spaces and dashes only (up to 32 characters)',
+        );
+      } else if (existingNumbers.has(numberKey)) {
+        errors.add(
+          'studentNo',
+          'This student number is already used (ignoring case and whitespace)',
+        );
+      } else if (numberRows.has(numberKey)) {
+        errors.add(
+          'studentNo',
+          `This student number is also used in row ${numberRows.get(numberKey)} (ignoring case and whitespace)`,
         );
       } else {
         studentNo = numberCell;
-        numberRows.set(numberCell, rowNo);
+        numberRows.set(numberKey, rowNo);
       }
     }
 

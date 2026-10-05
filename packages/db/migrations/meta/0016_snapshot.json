@@ -3545,6 +3545,27 @@
           "method": "btree",
           "where": "\"students\".\"archived_at\" IS NULL",
           "concurrently": false
+        },
+        "students_tenant_student_no_normal_key": {
+          "name": "students_tenant_student_no_normal_key",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "upper(regexp_replace(\"students\".\"student_no\", '\\s', '', 'g'))",
+              "isExpression": true,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {

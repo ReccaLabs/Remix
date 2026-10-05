@@ -105,7 +105,7 @@ describe('validateStudentRows — errors', () => {
     expect(fields({ alYear: '1999' })).toEqual(['alYear']);
     expect(fields({ medium: 'french' })).toEqual(['medium']);
     expect(fields({ school: 'x'.repeat(121) })).toEqual(['school']);
-    expect(fields({ studentNo: 'has space' })).toEqual(['studentNo']);
+    expect(fields({ studentNo: 'has$symbol' })).toEqual(['studentNo']);
   });
 
   it('refuses a student number that is already used, in the database or earlier in the file', () => {
@@ -119,6 +119,21 @@ describe('validateStudentRows — errors', () => {
       status: 'error',
       errors: [{ field: 'studentNo', message: expect.stringContaining('row 1') as string }],
     });
+  });
+
+  it('preserves display spelling and rejects case/whitespace collisions per row', () => {
+    const out = validateStudentRows(
+      [
+        row({ studentNo: ' old - 77 ' }),
+        row({ phone: '0773456789', studentNo: 'OLD-77' }),
+        row({ phone: '0774567890', studentNo: ' tt - 0001' }),
+      ],
+      ctx(),
+    );
+    expect(out.valid[0]?.studentNo).toBe(' old - 77 ');
+    expect(out.results.map((r) => r.status)).toEqual(['ok', 'error', 'error']);
+    expect(out.results[1]?.errors[0]?.message).toContain('row 1');
+    expect(out.results[2]?.errors[0]?.message).toContain('ignoring case and whitespace');
   });
 
   it('needs guardian name and phone together and a known relation', () => {

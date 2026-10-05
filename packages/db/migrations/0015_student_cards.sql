@@ -41,4 +41,6 @@ CREATE UNIQUE INDEX "student_cards_tenant_active_key" ON "student_cards" USING b
 CREATE UNIQUE INDEX "student_cards_tenant_ordered_key" ON "student_cards" USING btree ("tenant_id","student_id") WHERE "student_cards"."status" = 'ordered';--> statement-breakpoint
 CREATE INDEX "student_cards_tenant_student_issued_idx" ON "student_cards" USING btree ("tenant_id","student_id","issued_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "tenants_student_no_prefix_key" ON "tenants" USING btree ("student_no_prefix");--> statement-breakpoint
+-- Pre-launch: existing duplicates must fail migration rather than silently renumber students.
+CREATE UNIQUE INDEX "students_tenant_student_no_normal_key" ON "students" ("tenant_id", upper(regexp_replace(student_no, '\s', '', 'g')));--> statement-breakpoint
 ALTER TABLE "tenants" ADD CONSTRAINT "tenants_student_no_prefix_format" CHECK ("tenants"."student_no_prefix" ~ '^[A-Z]{2,4}$');

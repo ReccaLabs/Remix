@@ -12,6 +12,7 @@ export {
   type Tx,
 } from './client';
 export { withTenant } from './tenant';
+export { normalizeStudentNo, studentNoNormalForm } from './student-numbers';
 export {
   resolveTenantByHost,
   TENANT_CACHE_TTL_SECONDS,

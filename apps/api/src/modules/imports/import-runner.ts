@@ -4,6 +4,8 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   advanceCounter,
+  normalizeStudentNo,
+  studentNoNormalForm,
   studentNumberFloor,
   studentJoiningYear,
   allocateNumbers,
@@ -182,7 +184,7 @@ export class ImportRunner {
       tenant.prefix,
       year,
       valid.filter((v) => !v.studentNo).length,
-      kept,
+      new Set([...kept].map(normalizeStudentNo)),
     );
     const numbers = valid.map((v) => v.studentNo ?? generated.shift() ?? '');
 
@@ -296,8 +298,8 @@ export class ImportRunner {
         const rows = await tx
           .select({ studentNo: students.studentNo })
           .from(students)
-          .where(inArray(students.studentNo, part));
-        for (const row of rows) taken.add(row.studentNo);
+          .where(inArray(studentNoNormalForm(students.studentNo), part));
+        for (const row of rows) taken.add(normalizeStudentNo(row.studentNo));
       }
       for (const candidate of candidates) {
         if (!taken.has(candidate) && !reserved.has(candidate)) out.push(candidate);

@@ -15,6 +15,7 @@ import {
 import { id, instant, tenantId, timestamps } from './columns';
 import { appLocale, consentMethod, medium, staffRole, userKind, userStatus } from './enums';
 import { tenants } from './tenants';
+import { studentNoNormalForm } from '../student-numbers';
 
 /**
  * Students and institute staff of one tenant. A phone number is unique per tenant, not globally:
@@ -132,6 +133,10 @@ export const students = pgTable(
     }).onDelete('cascade'),
     unique('students_tenant_id_user_id_key').on(t.tenantId, t.userId),
     unique('students_tenant_student_no_key').on(t.tenantId, t.studentNo),
+    uniqueIndex('students_tenant_student_no_normal_key').on(
+      t.tenantId,
+      studentNoNormalForm(t.studentNo),
+    ),
     index('students_tenant_active_idx')
       .on(t.tenantId)
       .where(sql`${t.archivedAt} IS NULL`),

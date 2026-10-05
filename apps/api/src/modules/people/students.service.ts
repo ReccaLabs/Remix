@@ -18,6 +18,7 @@ import {
   allocateNumbers,
   formatStudentNo,
   studentJoiningYear,
+  studentNoNormalForm,
   schema,
   withTenant,
   type Db,
@@ -407,7 +408,16 @@ export class StudentsService {
 
       // Allocate last-but-inserts: the counter row lock is held until commit.
       const year = studentJoiningYear(now);
-      const block = await allocateNumbers(tx, 'student', 1, String(year));
+      let studentNo: string;
+      for (;;) {
+        const block = await allocateNumbers(tx, 'student', 1, String(year));
+        studentNo = formatStudentNo(tenant.prefix, year, block.first);
+        const [taken] = await tx
+          .select({ id: students.userId })
+          .from(students)
+          .where(eq(studentNoNormalForm(students.studentNo), studentNo));
+        if (!taken) break;
+      }
       let userId: string;
       try {
         const [user] = await tx
@@ -430,7 +440,7 @@ export class StudentsService {
       await tx.insert(students).values({
         tenantId,
         userId,
-        studentNo: formatStudentNo(tenant.prefix, year, block.first),
+        studentNo,
         school: body.school || null,
         alYear: body.alYear ?? null,
         medium: body.medium ?? null,
@@ -472,7 +482,7 @@ export class StudentsService {
         entity: 'student',
         entityId: userId,
         after: {
-          studentNo: formatStudentNo(tenant.prefix, year, block.first),
+          studentNo,
           classes: body.classIds.length,
           guardians: body.guardians.length,
           under18: body.under18,

@@ -370,6 +370,66 @@ describe('student import (STU-04 / DAT-01) against Postgres', () => {
       expect(added.body.studentNo).toBe(`${tenant.prefix}-26-${String(next + 1).padStart(4, '0')}`);
     });
 
+    it('rejects normalised duplicates per row, preserves spelling and skips them during allocation', async () => {
+      const [counter] = await db
+        .select({ value: schema.tenantCounters.value })
+        .from(schema.tenantCounters)
+        .where(
+          and(
+            eq(schema.tenantCounters.tenantId, tenant.id),
+            eq(schema.tenantCounters.period, '2026'),
+          ),
+        );
+      const next = (counter?.value ?? 0) + 1;
+      const canonical = `${tenant.prefix}-26-${String(next).padStart(4, '0')}`;
+      const spelling = canonical.toLowerCase().replace('-', ' -');
+      const done = await runImport([
+        { displayName: 'Kept Spelling', phone: '0771000080', studentNo: spelling },
+        { displayName: 'Number Collision', phone: '0771000081', studentNo: canonical },
+        { displayName: 'Generated After Spelling', phone: '0771000082' },
+      ]);
+      expect(done).toMatchObject({ created: 2, summary: { errors: 1 } });
+      expect(done.rows?.[1]?.errors[0]?.message).toContain('ignoring case and whitespace');
+      const kept = await db
+        .select({ no: schema.students.studentNo })
+        .from(schema.students)
+        .innerJoin(schema.tenantUsers, eq(schema.tenantUsers.id, schema.students.userId))
+        .where(eq(schema.tenantUsers.displayName, 'Kept Spelling'));
+      expect(kept[0]?.no).toBe(spelling);
+      const repeated = await runImport([
+        { displayName: 'Existing Collision', phone: '0771000083', studentNo: canonical },
+      ]);
+      expect(repeated.created).toBe(0);
+      expect(repeated.rows?.[0]?.errors[0]?.message).toContain('already used');
+      // A noncanonical supplied number does not advance the floor, but Add student skips it.
+      const [current] = await db
+        .select({ value: schema.tenantCounters.value })
+        .from(schema.tenantCounters)
+        .where(
+          and(
+            eq(schema.tenantCounters.tenantId, tenant.id),
+            eq(schema.tenantCounters.period, '2026'),
+          ),
+        );
+      const reservedNext = (current?.value ?? 0) + 1;
+      await runImport([
+        {
+          displayName: 'Noncanonical Next',
+          phone: '0771000084',
+          studentNo: `${tenant.prefix.toLowerCase()}-26-${String(reservedNext).padStart(4, '0')}`,
+        },
+      ]);
+      const added = await owner().post('/api/v1/admin/students', {
+        displayName: 'Skip Normalised',
+        phone: '0771000085',
+        under18: false,
+      });
+      expect(added.status).toBe(201);
+      expect(added.body.studentNo).toBe(
+        `${tenant.prefix}-26-${String(reservedNext + 1).padStart(4, '0')}`,
+      );
+    });
+
     it('re-validates in the worker: a phone taken after the preview becomes a duplicate', async () => {
       const rows = [{ displayName: 'Race Student', phone: '0771000030' }];
       const preview = await owner().post(PREVIEW, { rows });
