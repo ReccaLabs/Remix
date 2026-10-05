@@ -123,6 +123,7 @@ export function PaymentsForm({ initial }: { initial: PayhereSettings }) {
       {failure ? <FormAlert>{errors(failure)}</FormAlert> : null}
       <div className="flex flex-wrap justify-end gap-3">
         <Button
+          size="lg"
           type="button"
           variant="secondary"
           disabled={busy !== null}
@@ -131,7 +132,7 @@ export function PaymentsForm({ initial }: { initial: PayhereSettings }) {
         >
           {t('test')}
         </Button>
-        <Button type="submit" disabled={busy !== null} loading={busy === 'save'}>
+        <Button size="lg" type="submit" disabled={busy !== null} loading={busy === 'save'}>
           {t('save')}
         </Button>
       </div>

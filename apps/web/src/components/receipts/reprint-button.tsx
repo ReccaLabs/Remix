@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 export function ReprintButton() {
   const t = useTranslations('settings.receiptPrint');
   return (
-    <Button type="button" onClick={() => window.print()}>
+    <Button size="lg" type="button" onClick={() => window.print()}>
       <Printer aria-hidden="true" size={18} />
       {t('reprint')}
     </Button>

@@ -162,7 +162,7 @@ export function FeeSettingsForm({ initial }: { initial: FeeSettings }) {
       </fieldset>
       {failure ? <FormAlert>{errors(failure)}</FormAlert> : null}
       <div className="flex justify-end">
-        <Button type="submit" loading={busy}>
+        <Button size="lg" type="submit" loading={busy}>
           {t('save')}
         </Button>
       </div>
