@@ -52,7 +52,7 @@ describe('student-only myFees (FEE-10), real Postgres RLS', () => {
     }
     expectProblem(await api(t, tenant.host).get('/api/v1/me/fees'), 401, 'UNAUTHENTICATED');
     const attempted = await mine.api.get(`/api/v1/me/fees?studentId=${theirs.student.id}`);
-    expect(attempted.body.payments.map((p: { id: string }) => p.id)).toEqual([mine.paymentId]);
+    expect(myFeesResponseSchema.parse(attempted.body).payments.map(p => p.id)).toEqual([mine.paymentId]);
   });
   it('returns configured bank/card flags without secrets, isolated to the institute', async () => {
     const bankDetails = { bankName: 'Sample Bank', branch: 'Colombo', accountNumber: '123456789', accountName: 'Sample Institute' };

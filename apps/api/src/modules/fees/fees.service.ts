@@ -3,6 +3,7 @@ import { and, asc, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { schema, withTenant, type Db, type Tx } from '@remix/db';
 import type { API, CashPaymentRequest, ManualPaymentRequest, InvoiceLine, MyFeesResponse, Payment, Receipt } from '@remix/types/api';
+import { myFeesResponseSchema } from '@remix/types/api';
 import type { z } from 'zod';
 import type { AuthSession } from '../../common/auth/session-authenticator';
 import { AppException } from '../../common/errors/app-exception';
@@ -158,7 +159,7 @@ export class FeesService {
       const [payhere] = await tx.select({ config: schema.tenantIntegrations.config }).from(schema.tenantIntegrations)
         .where(eq(schema.tenantIntegrations.kind, 'payhere'));
       return { openLines: own.openLines,
-        payments: own.payments.map(({ needsRefund: _needsRefund, unallocatedCents: _unallocated, ...payment }) => payment),
+        payments: own.payments.map(payment => myFeesResponseSchema.shape.payments.element.parse(payment)),
         slips: [], // TODO(3-D): the slips table/lifecycle does not exist yet.
         cardEnabled: payhere?.config.enabled ?? false, bankDetails: settings?.bankDetails ?? null };
     });

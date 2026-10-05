@@ -21,7 +21,7 @@ export function PaymentHistory({ payments, admin = false }: { payments: MyFeesRe
       </li>)}</ul>
       <div className="hidden md:block"><DataTable caption={t('history')} rows={payments} rowKey={p => p.id} columns={[
         { id: 'date', header: t('date'), rowHeader: true, cell: p => date(p.receivedAt) },
-        { id: 'for', header: t('for'), wrap: true, cell: months },
+        { id: 'for', header: t('for'), wrap: true, className: 'min-w-64', cell: months },
         { id: 'method', header: t('method'), cell: p => t(`methods.${p.method}`) },
         { id: 'amount', header: t('amount'), align: 'end', cell: p => formatLKR(p.amountCents, { exact: true }) },
         { id: 'status', header: t('status'), cell: p => <PaymentStatus payment={p} /> },

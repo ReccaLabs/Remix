@@ -17,13 +17,13 @@ export function PaymentsPanel({ initial, query, owner }: { initial: ApiOutput<'l
   const [detail, setDetail] = useState<string | null>(null);
   const page = initial?.page ?? 1; const pages = Math.max(1, Math.ceil((initial?.total ?? 0) / (initial?.pageSize ?? 25)));
   return <div className="flex flex-col gap-5">
-    <form action="/admin/fees" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6" aria-label={t('filters')}>
+    <form action="/admin/fees" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label={t('filters')}>
       <Field label={t('from')}><Input name="from" type="date" defaultValue={query.from} /></Field>
       <Field label={t('to')}><Input name="to" type="date" defaultValue={query.to} /></Field>
       <Field label={t('method')}><Select name="method" defaultValue={query.method ?? ''}><option value="">{t('allMethods')}</option>{PAYMENT_METHODS.map(m => <option key={m} value={m}>{t(`methods.${m}`)}</option>)}</Select></Field>
       <Field label={t('studentFilter')}><Input name="studentId" defaultValue={query.studentId} placeholder={t('allStudents')} /></Field>
       <Field label={t('refund')}><Select name="needsRefund" defaultValue={query.needsRefund ?? ''}><option value="">{t('anyRefund')}</option><option value="true">{t('refundYes')}</option><option value="false">{t('refundNo')}</option></Select></Field>
-      <div className="flex items-end gap-2"><Button size="lg" type="submit" variant="secondary">{t('apply')}</Button><a href="/admin/fees" className={buttonClass({ size: 'lg', variant: 'ghost' })}>{t('clear')}</a></div>
+      <div className="flex flex-wrap items-end gap-2 sm:col-span-2 xl:col-span-5"><Button size="lg" type="submit" variant="secondary">{t('apply')}</Button><a href="/admin/fees" className={buttonClass({ size: 'lg', variant: 'ghost' })}>{t('clear')}</a></div>
     </form>
     <FeeError failure={initial === null ? 'load' : null} />
     {initial === null ? <a href={paymentsHref(query)} className={buttonClass({ size: 'lg', variant: 'secondary' })}>{t('retry')}</a> : <>
@@ -31,7 +31,7 @@ export function PaymentsPanel({ initial, query, owner }: { initial: ApiOutput<'l
         <DataTable caption={t('payments')} rows={initial.items} rowKey={p => p.id} onRowActivate={p => setDetail(p.id)} columns={[
           { id: 'date', header: t('date'), cell: p => format.dateTime(new Date(p.receivedAt), { dateStyle: 'medium', timeZone: 'Asia/Colombo' }) },
           { id: 'student', header: t('student'), rowHeader: true, cell: p => p.studentName },
-          { id: 'for', header: t('for'), wrap: true, cell: p => p.lines.map(l => `${l.className} · ${format.dateTime(new Date(l.month), { month: 'short', year: 'numeric' })}`).join(', ') },
+          { id: 'for', header: t('for'), wrap: true, className: 'min-w-64', cell: p => p.lines.map(l => `${l.className} · ${format.dateTime(new Date(l.month), { month: 'short', year: 'numeric' })}`).join(', ') },
           { id: 'method', header: t('method'), cell: p => t(`methods.${p.method}`) },
           { id: 'amount', header: t('amount'), align: 'end', cell: p => formatLKR(p.amountCents, { exact: true }) },
           { id: 'status', header: t('status'), cell: p => <PaymentStatus payment={p} /> },

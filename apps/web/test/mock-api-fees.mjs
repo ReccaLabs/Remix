@@ -93,7 +93,7 @@ export async function handleFees(env) {
   if (mine) {
     if (user.kind !== 'student') return (problem(res, 403, 'FORBIDDEN'), true);
     if (req.method !== 'GET') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
-    json(res, 200, { openLines: openLines(user), payments: store.payments.filter(p => p.studentId === user.id).map(({ needsRefund: _refund, unallocatedCents: _surplus, ...p }) => p),
+    json(res, 200, { openLines: openLines(user), payments: store.payments.filter(p => p.studentId === user.id).map(p => { const payment = { ...p }; delete payment.needsRefund; delete payment.unallocatedCents; return payment; }),
       slips: [], cardEnabled: store.payhere.enabled, bankDetails: store.fees.bankDetails }); return true;
   }
   if (studentFees) {
