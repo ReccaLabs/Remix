@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { schema, withTenant, type Db, type Tx } from '@remix/db';
-import type { API, CashPaymentRequest, InvoiceLine, Payment, Receipt } from '@remix/types/api';
+import type { API, CashPaymentRequest, ManualPaymentRequest, InvoiceLine, Payment, Receipt } from '@remix/types/api';
 import type { z } from 'zod';
 import type { AuthSession } from '../../common/auth/session-authenticator';
 import { AppException } from '../../common/errors/app-exception';
@@ -11,7 +11,7 @@ import { CLOCK, type Clock } from '../../common/time/clock';
 import { AuditService } from '../audit/audit.service';
 import { DB } from '../db/db.module';
 import { canAccess } from './access';
-import { collectCash } from './collection';
+import { collectCash, collectManual } from './collection';
 import { receiptData } from './receipt-data';
 import { FeesHooks } from './fees-hooks';
 import { generateInvoices } from './invoice-generation';
@@ -30,6 +30,13 @@ export class FeesService {
 
   async recordCashPayment(tenantId: string, session: AuthSession, body: CashPaymentRequest): Promise<Payment> {
     const recorded = await withTenant(this.db, tenantId, tx => collectCash(tx, body, session.userId, this.clock.now(), this.audit));
+    if (recorded.receiptId && !recorded.replayed) await this.hooks.onPaymentCommitted({ tenantId, paymentId: recorded.payment.id,
+      receiptId: recorded.receiptId, jobKey: `receipt:${tenantId}:${recorded.payment.id}` });
+    return this.getPayment(tenantId, recorded.payment.id);
+  }
+
+  async recordManualPayment(tenantId: string, session: AuthSession, body: ManualPaymentRequest): Promise<Payment> {
+    const recorded = await withTenant(this.db, tenantId, tx => collectManual(tx, body, session.userId, this.clock.now(), this.audit));
     if (recorded.receiptId && !recorded.replayed) await this.hooks.onPaymentCommitted({ tenantId, paymentId: recorded.payment.id,
       receiptId: recorded.receiptId, jobKey: `receipt:${tenantId}:${recorded.payment.id}` });
     return this.getPayment(tenantId, recorded.payment.id);

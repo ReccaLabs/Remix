@@ -14,6 +14,8 @@ export class FeesController {
   constructor(private readonly fees: FeesService, private readonly receipts: ReceiptsService) {}
   @RequirePermission('fees.collect') @Header('cache-control', 'no-store') @Endpoint(API.recordCashPayment)
   recordCashPayment(@CurrentTenant() t: ResolvedTenant, @CurrentSession() s: AuthSession, @Body() b: EndpointBody<typeof API.recordCashPayment>) { return this.fees.recordCashPayment(t.id, s, b); }
+  @RequirePermission('fees.collect') @Header('cache-control', 'no-store') @Endpoint(API.recordManualPayment)
+  recordManualPayment(@CurrentTenant() t: ResolvedTenant, @CurrentSession() s: AuthSession, @Body() b: EndpointBody<typeof API.recordManualPayment>) { return this.fees.recordManualPayment(t.id, s, b); }
   @SessionKinds('staff', 'student') @Header('cache-control', 'no-store') @Endpoint(API.receiptPdf)
   receiptPdf(@CurrentTenant() t: ResolvedTenant, @CurrentSession() s: AuthSession, @EndpointParams() p: IdParams) { return this.receipts.pdf(t.id, s, p.id); }
   @RequirePermission('fees.read') @Header('cache-control', 'no-store') @Endpoint(API.listInvoices)

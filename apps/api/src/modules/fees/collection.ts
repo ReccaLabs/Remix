@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { schema, type Tx } from '@remix/db';
-import type { CashPaymentRequest } from '@remix/types/api';
+import type { CashPaymentRequest, ManualPaymentRequest } from '@remix/types/api';
 import { AppException } from '../../common/errors/app-exception';
+import { calendarDate } from '../../common/time/business-date';
 import { AuditService } from '../audit/audit.service';
 import { feeNotFound, lockLedger, recordPayment } from './ledger';
 import { safeCents } from './projections';
@@ -46,7 +47,9 @@ async function openSelection(tx: Tx, studentId: string, lineIds: string[]) {
   const paid = new Map(sums.map(r => [r.id, safeCents(r.paid)]));
   const balances = selected.map(r => r.line.amountCents - (paid.get(r.line.id) ?? 0));
   if (balances.some(n => n <= 0)) throw new AppException('ALREADY_PAID', 409, 'A selected month is already paid');
-  return { total: safeCents(balances.reduce((a, b) => a + b, 0)), oldestMonth: selected[0]!.line.month };
+  const first = selected[0];
+  if (!first) throw feeNotFound();
+  return { total: safeCents(balances.reduce((a, b) => a + b, 0)), oldestMonth: first.line.month };
 }
 
 export async function collectCash(tx: Tx, body: CashPaymentRequest, actorId: string, now: Date, audit: AuditService) {
@@ -58,4 +61,33 @@ export async function collectCash(tx: Tx, body: CashPaymentRequest, actorId: str
   return recordPayment(tx, { method: 'cash', studentId: body.studentId, lines: body.lineIds,
     amountCents: total, cashReceivedCents: body.cashReceivedCents, idempotencyKey: body.idempotencyKey,
     receivedBy: actorId, requestFingerprint }, now, audit);
+}
+
+export function manualFingerprint(body: ManualPaymentRequest): string {
+  return createHash('sha256').update(JSON.stringify(['manual', body.studentId, body.lineIds,
+    body.kind, body.reference, body.receivedOn, body.note ?? null])).digest('hex');
+}
+
+export function validateReceivedOn(date: string, oldestMonth: string, now: Date): void {
+  const earliest = `${Number(oldestMonth.slice(0, 4)) - 1}${oldestMonth.slice(4)}`;
+  if (date > calendarDate(now) || date < earliest) {
+    throw new AppException('VALIDATION_FAILED', 400, 'Received date must be between the oldest month minus one year and today');
+  }
+}
+
+export async function collectManual(tx: Tx, body: ManualPaymentRequest, actorId: string, now: Date, audit: AuditService) {
+  await lockLedger(tx);
+  const requestFingerprint = manualFingerprint(body);
+  const isReplay = await replay(tx, body.idempotencyKey, requestFingerprint);
+  let total = 0;
+  if (!isReplay) {
+    const selected = await openSelection(tx, body.studentId, body.lineIds);
+    validateReceivedOn(body.receivedOn, selected.oldestMonth, now);
+    total = selected.total;
+  }
+  // The input is a business date, not a claimed clock time. UTC noon stays on that date in Colombo.
+  const receivedAt = new Date(`${body.receivedOn}T12:00:00Z`);
+  return recordPayment(tx, { method: 'manual', studentId: body.studentId, lines: body.lineIds,
+    amountCents: total, idempotencyKey: body.idempotencyKey, receivedBy: actorId,
+    providerRef: body.reference, note: body.note, receivedAt, requestFingerprint, manualKind: body.kind }, now, audit);
 }
