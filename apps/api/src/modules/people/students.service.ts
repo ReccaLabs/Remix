@@ -14,7 +14,16 @@ import {
   sql,
   type SQL,
 } from 'drizzle-orm';
-import { allocateNumbers, formatStudentNo, schema, withTenant, type Db, type Tx } from '@remix/db';
+import {
+  allocateNumbers,
+  formatStudentNo,
+  studentJoiningYear,
+  studentNoNormalForm,
+  schema,
+  withTenant,
+  type Db,
+  type Tx,
+} from '@remix/db';
 import { can } from '@remix/types';
 import type {
   BulkResult,
@@ -398,7 +407,17 @@ export class StudentsService {
       if (!tenant) throw new Error('tenant row missing inside its own context');
 
       // Allocate last-but-inserts: the counter row lock is held until commit.
-      const block = await allocateNumbers(tx, 'student');
+      const year = studentJoiningYear(now);
+      let studentNo: string;
+      for (;;) {
+        const block = await allocateNumbers(tx, 'student', 1, String(year));
+        studentNo = formatStudentNo(tenant.prefix, year, block.first);
+        const [taken] = await tx
+          .select({ id: students.userId })
+          .from(students)
+          .where(eq(studentNoNormalForm(students.studentNo), studentNo));
+        if (!taken) break;
+      }
       let userId: string;
       try {
         const [user] = await tx
@@ -421,7 +440,7 @@ export class StudentsService {
       await tx.insert(students).values({
         tenantId,
         userId,
-        studentNo: formatStudentNo(tenant.prefix, block.first),
+        studentNo,
         school: body.school || null,
         alYear: body.alYear ?? null,
         medium: body.medium ?? null,
@@ -463,7 +482,7 @@ export class StudentsService {
         entity: 'student',
         entityId: userId,
         after: {
-          studentNo: formatStudentNo(tenant.prefix, block.first),
+          studentNo,
           classes: body.classIds.length,
           guardians: body.guardians.length,
           under18: body.under18,

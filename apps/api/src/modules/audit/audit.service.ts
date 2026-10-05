@@ -5,6 +5,9 @@ import { currentContext } from '../../common/context/request-context';
 
 /** Audited auth/session events (dotted verbs, `audit_logs.action`). */
 export type AuditAction =
+  | 'card.issue'
+  | 'card.activate'
+  | 'card.revoke'
   | 'settings.payhere_update'
   | 'settings.payhere_test'
   | 'settings.fees_update'

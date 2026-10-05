@@ -1,6 +1,6 @@
 import { can } from '@remix/types';
 import { buttonClass, EmptyState } from '@remix/ui';
-import { CircleAlert, FileUp, UserPlus } from 'lucide-react';
+import { CircleAlert, FileUp, UserPlus, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { PeopleIsland } from '@/components/people/people-island';
@@ -33,6 +33,7 @@ export default async function StudentsPage({
   const canWrite = can(roles, 'students.write');
   const canDevices = can(roles, 'students.devices');
   const canImport = can(roles, 'students.import');
+  const tCards = await getTranslations('students.cards');
 
   const [result, classes, t, tImport] = await Promise.all([
     loadStudents(query),
@@ -49,6 +50,15 @@ export default async function StudentsPage({
           subtitle={result.ok ? t('count', { count: result.data.total }) : undefined}
         />
         <div className="flex flex-wrap gap-2">
+          {can(roles, 'students.read') ? (
+            <Link
+              href="/admin/students/cards"
+              className={buttonClass({ variant: 'secondary', size: 'lg' })}
+            >
+              <CreditCard aria-hidden size={18} />
+              {tCards('cardsLink')}
+            </Link>
+          ) : null}
           {canImport ? (
             <Link
               href={`${ADMIN_PATHS.students}/import`}
@@ -87,7 +97,7 @@ export default async function StudentsPage({
           </>
         ) : (
           <EmptyState
-            className="bg-surface border-line rounded-lg border"
+            className="rounded-lg border border-line bg-surface"
             icon={<CircleAlert />}
             title={t('loadError.title')}
             description={t('loadError.body')}

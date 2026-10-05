@@ -14,6 +14,7 @@ import {
   staffInvites,
   staffRoles,
   students,
+  studentCards,
   tenantCounters,
   tenantDomains,
   tenants,
@@ -77,6 +78,21 @@ async function insertChunked<T>(rows: readonly T[], insert: (chunk: T[]) => Prom
 export async function seed(owner: Db, passwordHash: string): Promise<SeedSummary[]> {
   const rng = createRng(RNG_SEED);
   return owner.transaction(async (tx) => {
+    // DEV reset only: cards deliberately prevent parent deletion and the app has no DELETE.
+    // Remove this seed's card rows under their tenant policy before recreating seed tenants.
+    const previous = await tx
+      .select({ id: tenants.id })
+      .from(tenants)
+      .where(
+        inArray(
+          tenants.slug,
+          SEED_TENANTS.map((t) => t.slug),
+        ),
+      );
+    for (const tenant of previous)
+      await withTenant(tx, tenant.id, (scoped) =>
+        scoped.delete(studentCards).where(eq(studentCards.tenantId, tenant.id)),
+      );
     await tx.delete(tenants).where(
       inArray(
         tenants.slug,
@@ -217,9 +233,11 @@ async function seedTenant(
   );
 
   // Student numbers come from the tenant counter, exactly as the API allocates them (ADR 0007).
-  await tx.insert(tenantCounters).values({ tenantId, kind: 'student', value: spec.counterStart });
+  await tx
+    .insert(tenantCounters)
+    .values({ tenantId, kind: 'student', period: '2026', value: spec.counterStart });
   const block = await withTenant(tx, tenantId, (scoped) =>
-    allocateNumbers(scoped, 'student', spec.students),
+    allocateNumbers(scoped, 'student', spec.students, '2026'),
   );
 
   const alYears = [...new Set(spec.classes.map((c) => c.alYear))];
@@ -230,7 +248,7 @@ async function seedTenant(
     const alYear = rng.pick(alYears);
     return {
       no,
-      studentNo: formatStudentNo(spec.studentNoPrefix, no),
+      studentNo: formatStudentNo(spec.studentNoPrefix, 2026, no),
       phone: `+94${spec.phoneBase}${String(no).padStart(7, '0')}`,
       alYear,
       name,
@@ -365,7 +383,9 @@ async function seedTenant(
     after: { slug: spec.slug, students: spec.students },
   });
 
-  await withTenant(tx, tenantId, scoped => seedFees(scoped, tenantId, spec.studentNoPrefix, staffIds[0] ?? ''));
+  await withTenant(tx, tenantId, (scoped) =>
+    seedFees(scoped, tenantId, spec.studentNoPrefix, staffIds[0] ?? ''),
+  );
   return {
     slug: spec.slug,
     tenantId,

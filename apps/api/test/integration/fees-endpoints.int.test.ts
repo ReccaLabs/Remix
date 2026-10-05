@@ -87,13 +87,14 @@ describe('fee read and reversal endpoints (FEE-01, FEE-11) against Postgres', ()
     await db.$client.end();
   });
 
-  const reads = () => [
-    ['listInvoices', '/api/v1/admin/invoices'],
-    ['studentFees', `/api/v1/admin/students/${student.id}/fees`],
-    ['listPayments', '/api/v1/admin/payments'],
-    ['getPayment', `/api/v1/admin/payments/${paymentId}`],
-    ['getReceipt', `/api/v1/admin/receipts/${receiptId}`],
-  ] as const;
+  const reads = () =>
+    [
+      ['listInvoices', '/api/v1/admin/invoices'],
+      ['studentFees', `/api/v1/admin/students/${student.id}/fees`],
+      ['listPayments', '/api/v1/admin/payments'],
+      ['getPayment', `/api/v1/admin/payments/${paymentId}`],
+      ['getReceipt', `/api/v1/admin/receipts/${receiptId}`],
+    ] as const;
 
   describe('per role', () => {
     for (const role of ROLES) {
@@ -130,7 +131,11 @@ describe('fee read and reversal endpoints (FEE-01, FEE-11) against Postgres', ()
         if (role === 'owner') {
           expect(res.status).toBe(200);
           const body = paymentSchema.strict().parse(res.body);
-          expect(body).toMatchObject({ method: 'reversal', amountCents: -FEE, reversesPaymentId: p.payment.id });
+          expect(body).toMatchObject({
+            method: 'reversal',
+            amountCents: -FEE,
+            reversesPaymentId: p.payment.id,
+          });
         } else {
           expectProblem(res, 403, 'FORBIDDEN');
           const got = await staff.owner.api.get(`/api/v1/admin/payments/${p.payment.id}`);
@@ -161,27 +166,64 @@ describe('fee read and reversal endpoints (FEE-01, FEE-11) against Postgres', ()
       const parsed = listInvoicesResponseSchema.strict().parse(inv.body);
       expect(parsed.items.every((i) => i.month === '2026-10-01')).toBe(true);
       expect(parsed.items).toHaveLength(1);
-      expect(parsed.items[0]).toMatchObject({ studentId: student.id, totalCents: FEE, paidCents: FEE, status: 'paid' });
+      expect(parsed.items[0]).toMatchObject({
+        studentId: student.id,
+        totalCents: FEE,
+        paidCents: FEE,
+        status: 'paid',
+      });
       const pays = await staff.cashier.api.get('/api/v1/admin/payments?method=cash');
       expect(listPaymentsResponseSchema.strict().parse(pays.body).items.length).toBeGreaterThan(0);
-      studentFeesSchema.strict().parse((await staff.cashier.api.get(`/api/v1/admin/students/${student.id}/fees`)).body);
-      paymentSchema.strict().parse((await staff.cashier.api.get(`/api/v1/admin/payments/${paymentId}`)).body);
-      const receipt = receiptSchema.strict().parse((await staff.cashier.api.get(`/api/v1/admin/receipts/${receiptId}`)).body);
-      expect(receipt.number).toMatch(/^TT-R-26-\d{5}$/);
-      expect((await staff.owner.api.get('/api/v1/admin/invoices')).headers['cache-control']).toBe('no-store');
+      studentFeesSchema
+        .strict()
+        .parse((await staff.cashier.api.get(`/api/v1/admin/students/${student.id}/fees`)).body);
+      paymentSchema
+        .strict()
+        .parse((await staff.cashier.api.get(`/api/v1/admin/payments/${paymentId}`)).body);
+      const receipt = receiptSchema
+        .strict()
+        .parse((await staff.cashier.api.get(`/api/v1/admin/receipts/${receiptId}`)).body);
+      expect(receipt.number).toMatch(/^[A-Z]{2,4}-R-26-\d{5}$/);
+      expect((await staff.owner.api.get('/api/v1/admin/invoices')).headers['cache-control']).toBe(
+        'no-store',
+      );
     });
 
     it('filters invoices by status, class and search, and rejects bad queries', async () => {
-      expect((await staff.owner.api.get('/api/v1/admin/invoices?filter=paid&q=Mine')).body.items).toHaveLength(1);
-      expect((await staff.owner.api.get('/api/v1/admin/invoices?filter=unpaid&q=Mine')).body.items).toHaveLength(0);
-      expect((await staff.owner.api.get('/api/v1/admin/invoices?filter=overdue&q=Mine')).body.items).toHaveLength(0);
-      expect((await staff.owner.api.get(`/api/v1/admin/invoices?classId=${classId}`)).body.items).toHaveLength(1);
-      expect((await staff.owner.api.get(`/api/v1/admin/invoices?classId=${GHOST}`)).body.items).toHaveLength(0);
-      expect((await staff.owner.api.get('/api/v1/admin/invoices?q=Mine')).body.items).toHaveLength(1);
-      expect((await staff.owner.api.get('/api/v1/admin/invoices?q=Theirs')).body.items).toHaveLength(0);
-      expect((await staff.owner.api.get('/api/v1/admin/invoices?q=%25')).body.items).toHaveLength(0);
-      expectProblem(await staff.owner.api.get('/api/v1/admin/invoices?month=not-a-month'), 400, 'VALIDATION_FAILED');
-      expectProblem(await staff.owner.api.get('/api/v1/admin/payments?from=2026-12-01&to=2026-01-01'), 400, 'VALIDATION_FAILED');
+      expect(
+        (await staff.owner.api.get('/api/v1/admin/invoices?filter=paid&q=Mine')).body.items,
+      ).toHaveLength(1);
+      expect(
+        (await staff.owner.api.get('/api/v1/admin/invoices?filter=unpaid&q=Mine')).body.items,
+      ).toHaveLength(0);
+      expect(
+        (await staff.owner.api.get('/api/v1/admin/invoices?filter=overdue&q=Mine')).body.items,
+      ).toHaveLength(0);
+      expect(
+        (await staff.owner.api.get(`/api/v1/admin/invoices?classId=${classId}`)).body.items,
+      ).toHaveLength(1);
+      expect(
+        (await staff.owner.api.get(`/api/v1/admin/invoices?classId=${GHOST}`)).body.items,
+      ).toHaveLength(0);
+      expect((await staff.owner.api.get('/api/v1/admin/invoices?q=Mine')).body.items).toHaveLength(
+        1,
+      );
+      expect(
+        (await staff.owner.api.get('/api/v1/admin/invoices?q=Theirs')).body.items,
+      ).toHaveLength(0);
+      expect((await staff.owner.api.get('/api/v1/admin/invoices?q=%25')).body.items).toHaveLength(
+        0,
+      );
+      expectProblem(
+        await staff.owner.api.get('/api/v1/admin/invoices?month=not-a-month'),
+        400,
+        'VALIDATION_FAILED',
+      );
+      expectProblem(
+        await staff.owner.api.get('/api/v1/admin/payments?from=2026-12-01&to=2026-01-01'),
+        400,
+        'VALIDATION_FAILED',
+      );
     });
 
     it('reversal needs a reason, conflicts the second time and shows on the original', async () => {
@@ -191,7 +233,11 @@ describe('fee read and reversal endpoints (FEE-01, FEE-11) against Postgres', ()
       await feesOf(t).generateInvoices(tenant.id, '2026-10');
       const l = (await lines(db, tenant.id)).find((x) => x.class_id === k)!;
       const p = await feesOf(t).recordPayment(tenant.id, {
-        method: 'cash', amountCents: FEE, lines: [l.id], idempotencyKey: 'rev-twice', receivedBy: null,
+        method: 'cash',
+        amountCents: FEE,
+        lines: [l.id],
+        idempotencyKey: 'rev-twice',
+        receivedBy: null,
       });
       const url = `/api/v1/admin/payments/${p.payment.id}/reverse`;
       expectProblem(await staff.owner.api.post(url, {}), 400, 'VALIDATION_FAILED');
@@ -220,16 +266,22 @@ describe('fee read and reversal endpoints (FEE-01, FEE-11) against Postgres', ()
         expectProblem(await b.get(url), 404, 'NOT_FOUND');
       }
       expectProblem(
-        await b.post(`/api/v1/admin/payments/${paymentId}/reverse`, { reason: 'Cross tenant attempt' }),
+        await b.post(`/api/v1/admin/payments/${paymentId}/reverse`, {
+          reason: 'Cross tenant attempt',
+        }),
         404,
         'NOT_FOUND',
       );
       const inv = await b.get('/api/v1/admin/invoices');
-      expect((inv.body.items as { studentId: string }[]).map((i) => i.studentId)).toEqual([otherStudent.id]);
+      expect((inv.body.items as { studentId: string }[]).map((i) => i.studentId)).toEqual([
+        otherStudent.id,
+      ]);
       expect(inv.body.total).toBe(1);
       const pays = await b.get('/api/v1/admin/payments');
       expect((pays.body.items as { id: string }[]).map((p) => p.id)).toEqual([otherPaymentId]);
-      expect((await b.get(`/api/v1/admin/payments?studentId=${student.id}`)).body.items).toEqual([]);
+      expect((await b.get(`/api/v1/admin/payments?studentId=${student.id}`)).body.items).toEqual(
+        [],
+      );
       expect((await b.get(`/api/v1/admin/invoices?classId=${classId}`)).body.items).toEqual([]);
       // And A is untouched by all of it.
       const mine = await staff.owner.api.get(`/api/v1/admin/payments/${paymentId}`);
@@ -237,11 +289,18 @@ describe('fee read and reversal endpoints (FEE-01, FEE-11) against Postgres', ()
     });
 
     it("A's staff cannot read B's records either (symmetry)", async () => {
-      for (const url of [`/api/v1/admin/payments/${otherPaymentId}`, `/api/v1/admin/receipts/${otherReceiptId}`]) {
+      for (const url of [
+        `/api/v1/admin/payments/${otherPaymentId}`,
+        `/api/v1/admin/receipts/${otherReceiptId}`,
+      ]) {
         expectProblem(await staff.owner.api.get(url), 404, 'NOT_FOUND');
       }
       expectProblem(await staff.owner.api.get(`/api/v1/admin/payments/${GHOST}`), 404, 'NOT_FOUND');
-      expectProblem(await staff.owner.api.get('/api/v1/admin/payments/not-a-uuid'), 400, 'VALIDATION_FAILED');
+      expectProblem(
+        await staff.owner.api.get('/api/v1/admin/payments/not-a-uuid'),
+        400,
+        'VALIDATION_FAILED',
+      );
     });
 
     it("A's host with B's session cookie is refused (sessions are tenant-bound)", async () => {

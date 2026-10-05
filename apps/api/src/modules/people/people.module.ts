@@ -1,5 +1,7 @@
 import { Global, Module, Optional, type OnModuleInit } from '@nestjs/common';
 import { AuthNotifications } from '../auth/auth-notifications';
+import { CardsController } from './cards.controller';
+import { CardsService } from './cards.service';
 import { PeopleHooks } from './people-hooks';
 import { StaffController } from './staff.controller';
 import { StaffService } from './staff.service';
@@ -12,8 +14,8 @@ import { StudentsService } from './students.service';
  */
 @Global()
 @Module({
-  controllers: [StudentsController, StaffController],
-  providers: [StudentsService, StaffService, PeopleHooks],
+  controllers: [StudentsController, StaffController, CardsController],
+  providers: [StudentsService, StaffService, PeopleHooks, CardsService],
   exports: [PeopleHooks],
 })
 export class PeopleModule implements OnModuleInit {

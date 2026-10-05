@@ -46,6 +46,16 @@ import {
   updateClassSchema,
   updateEnrollmentSchema,
 } from './classes';
+import {
+  activateStudentCardSchema,
+  cardLookupResponseSchema,
+  cardLookupSchema,
+  issueStudentCardSchema,
+  orderedCardsResponseSchema,
+  revokeStudentCardSchema,
+  studentCardSchema,
+  studentCardsResponseSchema,
+} from './cards';
 import { idParamsSchema } from './common';
 import {
   approveSlipSchema,
@@ -526,6 +536,50 @@ export const API = {
     path: '/api/v1/admin/payments/manual',
     request: manualPaymentSchema,
     response: paymentSchema,
+  },
+  /** STU-06 - a student's cards, newest first (`students.read`). */
+  listStudentCards: {
+    method: 'GET',
+    path: '/api/v1/admin/students/:id/cards',
+    params: idParamsSchema,
+    response: studentCardsResponseSchema,
+  },
+  /** STU-06 - temporary (active now, replaces the active card) or permanent (ordered) card (`students.write`). 409 CONFLICT if an ordered card exists; 400 for archived students. */
+  issueStudentCard: {
+    method: 'POST',
+    path: '/api/v1/admin/students/:id/cards',
+    params: idParamsSchema,
+    request: issueStudentCardSchema,
+    response: studentCardSchema,
+  },
+  /** STU-06 - hand over an ordered permanent card (`students.write`); revokes the current active card ("replaced"). 409 CONFLICT if not ordered or the chip UID is used by another card. */
+  activateStudentCard: {
+    method: 'POST',
+    path: '/api/v1/admin/cards/:id/activate',
+    params: idParamsSchema,
+    request: activateStudentCardSchema,
+    response: studentCardSchema,
+  },
+  /** STU-06 - lost, damaged or cancelled card (`students.write`). 409 CONFLICT if already revoked. */
+  revokeStudentCard: {
+    method: 'POST',
+    path: '/api/v1/admin/cards/:id/revoke',
+    params: idParamsSchema,
+    request: revokeStudentCardSchema,
+    response: studentCardSchema,
+  },
+  /** STU-06 - permanent cards waiting for ReMix to print (`students.read`), oldest first. */
+  listOrderedCards: {
+    method: 'GET',
+    path: '/api/v1/admin/cards/ordered',
+    response: orderedCardsResponseSchema,
+  },
+  /** STU-06, FEE-07 - resolve a scan or typed card code / student number / chip UID (`students.read`, rate limited). 404 if nothing matches. */
+  lookupCard: {
+    method: 'POST',
+    path: '/api/v1/admin/cards/lookup',
+    request: cardLookupSchema,
+    response: cardLookupResponseSchema,
   },
   /** FEE-11 - owner only; returns the reversal payment. 409 CONFLICT if already reversed. */
   reversePayment: {

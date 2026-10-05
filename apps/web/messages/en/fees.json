@@ -1,4 +1,19 @@
 {
+  "scan": {
+    "camera": "Scan with camera",
+    "cameraHint": "Point the camera at the card's barcode or QR code.",
+    "preview": "Card scanner camera preview",
+    "cameraError": "Could not scan with the camera. Use a reader or type the student number.",
+    "tap": "Tap card",
+    "tapHint": "Hold the card near your phone.",
+    "tapError": "Could not read the card. Use a reader or type the student number.",
+    "close": "Close scanner",
+    "card": "Card",
+    "temporary": "Temporary card",
+    "ordered": "This card has not been handed over yet — hand it over on the student profile or use search.",
+    "revoked": "Card revoked — ask for ID and use search.",
+    "archived": "Archived student — confirm their status before taking a payment."
+  },
   "title": "Fees & payments",
   "subtitle": "Collect fees and find receipts.",
   "payments": "Payments",
@@ -15,7 +30,13 @@
   "reversal": "Reversal entry",
   "unpaid": "Unpaid",
   "overdue": "Overdue",
-  "methods": { "cash": "Cash", "manual": "Manual", "card": "Card", "slip": "Bank slip", "reversal": "Reversal" },
+  "methods": {
+    "cash": "Cash",
+    "manual": "Manual",
+    "card": "Card",
+    "slip": "Bank slip",
+    "reversal": "Reversal"
+  },
   "kinds": { "bank_transfer": "Bank transfer", "cheque": "Cheque", "other": "Other" },
   "filters": "Filter payments",
   "from": "From date",
@@ -62,7 +83,7 @@
     "popup": "Receipt ready. Use the print link to open it."
   },
   "search": "Search student",
-  "searchHint": "Type a name or phone. A USB scanner types here; student cards are not available yet.",
+  "searchHint": "Scan a card or type the student number and press Enter. Use Search for a name or phone.",
   "searchButton": "Find student",
   "noStudents": "No students found. Try a name or phone.",
   "chooseStudent": "Choose {name} · {number}",

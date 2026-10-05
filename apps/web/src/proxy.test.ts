@@ -94,6 +94,20 @@ describe('proxy', () => {
     expect(res.headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
     expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
   });
+  it('allows camera only on tenant admin pages, never the portal, platform or internal paths', async () => {
+    for (const path of ['/admin', '/admin/fees/counter', '/admin/students'])
+      expect(
+        (await run(`http://kamalphysics.localhost:3001${path}`)).headers.get('permissions-policy'),
+      ).toContain('camera=(self)');
+    for (const url of [
+      'http://kamalphysics.localhost:3001/app',
+      'http://kamalphysics.localhost:3001/administrator',
+      'http://admin.localhost:3001/admin/fees',
+      'http://kamalphysics.localhost:3001/tenant/admin',
+      'http://localhost:3001/admin',
+    ])
+      expect((await run(url)).headers.get('permissions-policy')).toContain('camera=()');
+  });
 });
 
 describe('proxy session refresh', () => {

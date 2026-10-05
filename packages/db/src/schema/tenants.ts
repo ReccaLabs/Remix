@@ -18,7 +18,7 @@ export const tenants = pgTable(
     plan: planId('plan').notNull(),
     defaultLocale: appLocale('default_locale').notNull().default('en'),
     timezone: text('timezone').notNull().default('Asia/Colombo'),
-    /** Student numbers are `<prefix>-<zero-padded counter>`, e.g. "BR-1042" (TEN-02, ADR 0007). */
+    /** Globally unique prefix for `<prefix>-<YY>-<sequence>` (STU-07, ADR 0007). */
     studentNoPrefix: text('student_no_prefix').notNull(),
     brandColor: text('brand_color'),
     logoUrl: text('logo_url'),
@@ -27,6 +27,7 @@ export const tenants = pgTable(
   },
   (t) => [
     uniqueIndex('tenants_slug_key').on(t.slug),
+    uniqueIndex('tenants_student_no_prefix_key').on(t.studentNoPrefix),
     // Mirrors tenantSlugSchema (@remix/types) so a row can never hold a slug the API would reject.
     check(
       'tenants_slug_format',
@@ -35,7 +36,7 @@ export const tenants = pgTable(
     check('tenants_name_length', sql`char_length(${t.name}) BETWEEN 2 AND 120`),
     // ADR 0007: only Asia/Colombo until another zone has been tested end to end.
     check('tenants_timezone_supported', sql`${t.timezone} = 'Asia/Colombo'`),
-    check('tenants_student_no_prefix_format', sql`${t.studentNoPrefix} ~ '^[A-Z]{1,6}$'`),
+    check('tenants_student_no_prefix_format', sql`${t.studentNoPrefix} ~ '^[A-Z]{2,4}$'`),
     check('tenants_brand_color_format', sql`${t.brandColor} ~ '^#[0-9a-fA-F]{6}$'`),
     check('tenants_logo_url_https', sql`${t.logoUrl} ~ '^https://'`),
     check('tenants_favicon_url_https', sql`${t.faviconUrl} ~ '^https://'`),

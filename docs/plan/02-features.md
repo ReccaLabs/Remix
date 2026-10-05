@@ -88,7 +88,8 @@ Legend — **Rel**: R1 Must · R1s Should · R2 · R3.
 | STU-03 | Add student (name, phone, school, A/L year, medium, classes, guardian) → auto student number | 12a | N-OWN-2 | R1 |
 | STU-04 | **CSV/Excel import** with column mapping, validation preview, duplicate phone detection, dry run, error file | 12a "Import CSV" | N-OWN-2 | R1 |
 | STU-05 | Profile tabs: Overview (owes, paid this year, attendance %, lessons watched, recent activity) · Classes · Payments · Attendance · Devices · Parent | 12b/12c/12f | N-OWN-1 | R1 |
-| STU-06 | Student card QR (rotating signed token) for gate & cash counter; shown in Me | Student Me 16 | N-GTE-1, N-CSH-2 | R1s |
+| STU-06 | Student cards. **Permanent** cards printed by ReMix (barcode always; QR and NFC optional on the same card), ordered → active on hand-over; **temporary** barcode cards printed by the institute. Card code = student number + card sequence (`NIL-26-0042-1`), so a lost card is revoked alone; NFC chips carry the code or are linked by UID. Scan at the cash counter (USB/keyboard-wedge reader, camera, Web NFC); typed student number also works | Student profile, 11c | N-GTE-1, N-CSH-2 | R1 (Phase 3, track 3-C2) |
+| STU-07 | Student number `<PREFIX>-<YY>-<seq>` (e.g. `NIL-26-0042`): institute prefix of 2–4 English capitals from its name, unique across ReMix; joining year (Asia/Colombo); sequence restarts each year, at least 4 digits and grows as needed; imported students keep their own numbers | Student profile | N-CSH-2 | R1 (Phase 3, track 3-C2) |
 | STU-07 | Archive / reactivate student (archived = not active, keeps history) | — | N-OWN-2 | R1 |
 | STU-08 | Student self-registration from public site "Enrol" (see WEB-05) | Public Site | N-VIS-1 | R2 |
 

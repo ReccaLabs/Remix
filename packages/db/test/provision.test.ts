@@ -85,9 +85,30 @@ describe('createTenant (tenant:create CLI)', () => {
   });
 
   it('derives the student-number prefix from the name', () => {
-    expect(defaultPrefix('Kamal Physics')).toBe('KP');
+    expect(defaultPrefix('Kamal Physics')).toBe('KPA');
     expect(defaultPrefix('  royal   science classes ')).toBe('RSC');
     expect(defaultPrefix('ශ්‍රී')).toBe('ST');
+  });
+  it('reserves globally unique prefixes under concurrent provisioning and rejects explicit reuse', async () => {
+    const input = {
+      name: 'Nilanka Institute',
+      plan: 'institute',
+      ownerPhone: '0771234567',
+      ownerName: 'Owner',
+    } as const;
+    const created = await Promise.all(
+      Array.from({ length: 3 }, () =>
+        createTenant(db.owner, { ...input, slug: `prefix-${uniqueTag()}` }),
+      ),
+    );
+    const prefixes = await db.owner.select({ prefix: tenants.studentNoPrefix }).from(tenants);
+    expect(prefixes.map((p) => p.prefix)).toEqual(expect.arrayContaining(['NIL', 'NILA', 'NLI']));
+    expect(new Set(prefixes.map((p) => p.prefix)).size).toBe(prefixes.length);
+    await expectPgError(
+      createTenant(db.owner, { ...input, slug: `prefix-${uniqueTag()}`, studentNoPrefix: 'NIL' }),
+      '23505',
+    );
+    expect(created).toHaveLength(3);
   });
 });
 

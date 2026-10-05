@@ -34,6 +34,10 @@ export async function proxy(request: NextRequest) {
   const requestId = resolveRequestId(request.headers.get(REQUEST_HEADERS.requestId));
   const headers = securityHeaders({
     nonce,
+    allowCamera:
+      decision.action === 'rewrite' &&
+      decision.area === 'tenant' &&
+      (request.nextUrl.pathname === '/admin' || request.nextUrl.pathname.startsWith('/admin/')),
     allowPayhereCheckout:
       decision.action === 'rewrite' &&
       decision.area === 'tenant' &&

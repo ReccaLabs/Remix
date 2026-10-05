@@ -43,7 +43,6 @@ export async function StudentHeader({
     getFormatter(),
   ]);
   const meta = [
-    student.studentNo,
     formatPhone(student.phone),
     student.school,
     t('joined', {
@@ -77,6 +76,7 @@ export async function StudentHeader({
                 {tStatus(student.status)}
               </StatusBadge>
             </div>
+            <p className="m-0 break-all font-mono text-xl font-semibold">{student.studentNo}</p>
             <p className="text-muted m-0 text-sm">{meta.join(' · ')}</p>
           </div>
         </div>

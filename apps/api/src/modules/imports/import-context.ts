@@ -1,5 +1,5 @@
 import { eq, inArray } from 'drizzle-orm';
-import { schema, type Tx } from '@remix/db';
+import { normalizeStudentNo, studentNoNormalForm, schema, type Tx } from '@remix/db';
 import type { ImportRow } from '@remix/types';
 import {
   classKey,
@@ -37,8 +37,8 @@ export async function loadValidationContext(
     const taken = await tx
       .select({ studentNo: students.studentNo })
       .from(students)
-      .where(inArray(students.studentNo, wantedNos));
-    for (const row of taken) studentNos.add(row.studentNo);
+      .where(inArray(studentNoNormalForm(students.studentNo), wantedNos));
+    for (const row of taken) studentNos.add(normalizeStudentNo(row.studentNo));
   }
 
   const classMap = new Map<string, ClassMatch>();

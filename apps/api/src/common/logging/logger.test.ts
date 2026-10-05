@@ -24,11 +24,26 @@ describe('REDACT_PATHS', () => {
         req: { headers: { cookie: 'sid=1', authorization: 'Bearer x', 'set-cookie': 'y' } },
         token: 'c',
         otp: '123456',
+        input: 'CARD-LOOKUP-PRIVATE',
+        body: { nfcUid: '04A21B9C', input: 'NFC-LOOKUP-PRIVATE' },
+        row: { nfc_uid: '11223344556677' },
       },
       'm',
     );
     const line = JSON.stringify(lines[0]);
-    for (const secret of ['"a"', '"b"', 'sid=1', 'Bearer', '"c"', '123456', '"y"']) {
+    for (const secret of [
+      '"a"',
+      '"b"',
+      'sid=1',
+      'Bearer',
+      '"c"',
+      '123456',
+      '"y"',
+      '04A21B9C',
+      '11223344556677',
+      'CARD-LOOKUP-PRIVATE',
+      'NFC-LOOKUP-PRIVATE',
+    ]) {
       expect(line).not.toContain(secret);
     }
     expect(line).toContain('kept');

@@ -72,6 +72,7 @@ export interface World {
   spareEnrollmentId: string;
   receiptId: string;
   settingsId: string;
+  cardId: string;
 }
 
 type Row = Record<string, unknown>;
@@ -91,6 +92,19 @@ export interface TableSpec {
 }
 
 const hash = (char: string) => char.repeat(64);
+const freshCard = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  student_id: w.studentUserId,
+  code: 'IS-0001-2',
+  card_seq: 2,
+  kind: 'permanent',
+  formats: ['barcode', 'qr'],
+  status: 'revoked',
+  issued_by: w.staffUserId,
+  revoked_at: new Date(),
+  revoked_by: w.staffUserId,
+  revoke_reason: 'Lost card',
+});
 const inOneHour = () => new Date(Date.now() + 3_600_000);
 
 const freshStaffRole = (w: World): Row => ({
@@ -182,52 +196,105 @@ const freshImportJob = (w: World): Row => ({
   input: JSON.stringify([]),
 });
 
-const freshInvoice = (w: World): Row => ({ tenant_id: w.tenantId, student_id: w.studentUserId, number: 'IS-I-26-10-IS-0001', month: '2026-10-01', due_on: '2026-10-05' });
-const freshLine = (w: World): Row => ({ tenant_id: w.tenantId, invoice_id: w.invoiceId, enrollment_id: w.spareEnrollmentId, class_id: w.classId, month: '2026-09-01', amount_cents: 250000 });
-const freshPayment = (w: World): Row => ({ tenant_id: w.tenantId, student_id: w.studentUserId, method: 'cash', amount_cents: 250000, idempotency_key: 'fresh-payment' });
-const freshAllocation = (w: World): Row => ({ tenant_id: w.tenantId, payment_id: w.sparePaymentId, invoice_line_id: w.lineId, amount_cents: 1 });
-const freshReceipt = (w: World): Row => ({ tenant_id: w.tenantId, payment_id: w.sparePaymentId, number: 'IS-R-26-00002' });
+const freshInvoice = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  student_id: w.studentUserId,
+  number: 'IS-I-26-10-IS-0001',
+  month: '2026-10-01',
+  due_on: '2026-10-05',
+});
+const freshLine = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  invoice_id: w.invoiceId,
+  enrollment_id: w.spareEnrollmentId,
+  class_id: w.classId,
+  month: '2026-09-01',
+  amount_cents: 250000,
+});
+const freshPayment = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  student_id: w.studentUserId,
+  method: 'cash',
+  amount_cents: 250000,
+  idempotency_key: 'fresh-payment',
+});
+const freshAllocation = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  payment_id: w.sparePaymentId,
+  invoice_line_id: w.lineId,
+  amount_cents: 1,
+});
+const freshReceipt = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  payment_id: w.sparePaymentId,
+  number: 'IS-R-26-00002',
+});
 
 export const TABLES = {
   tenant_integrations: {
-    access: 'projection', singleton: true, tenantColumn: 'tenant_id',
+    access: 'projection',
+    singleton: true,
+    tenantColumn: 'tenant_id',
     key: (w) => ({ tenant_id: w.tenantId, kind: 'payhere' }),
     fresh: (w) => ({ tenant_id: w.tenantId, kind: 'payhere', config: '{}' }),
   },
   tenant_settings: {
-    access: 'projection', singleton: true, tenantColumn: 'tenant_id',
-    key: (w) => ({ id: w.settingsId }), fresh: (w) => ({ tenant_id: w.tenantId }),
+    access: 'projection',
+    singleton: true,
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.settingsId }),
+    fresh: (w) => ({ tenant_id: w.tenantId }),
   },
   invoices: {
-    access: 'projection', tenantColumn: 'tenant_id', key: (w) => ({ id: w.invoiceId }), fresh: freshInvoice,
-    crossTenantRefs: { student: (a,b) => ({ ...freshInvoice(a), student_id: b.studentUserId }) },
+    access: 'projection',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.invoiceId }),
+    fresh: freshInvoice,
+    crossTenantRefs: { student: (a, b) => ({ ...freshInvoice(a), student_id: b.studentUserId }) },
   },
   invoice_lines: {
-    access: 'projection', tenantColumn: 'tenant_id', key: (w) => ({ id: w.lineId }), fresh: freshLine,
+    access: 'projection',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.lineId }),
+    fresh: freshLine,
     crossTenantRefs: {
-      invoice: (a,b) => ({ ...freshLine(a), invoice_id: b.invoiceId }),
-      enrollment: (a,b) => ({ ...freshLine(a), enrollment_id: b.spareEnrollmentId }),
-      class: (a,b) => ({ ...freshLine(a), class_id: b.classId }),
+      invoice: (a, b) => ({ ...freshLine(a), invoice_id: b.invoiceId }),
+      enrollment: (a, b) => ({ ...freshLine(a), enrollment_id: b.spareEnrollmentId }),
+      class: (a, b) => ({ ...freshLine(a), class_id: b.classId }),
     },
   },
   payments: {
-    access: 'append', tenantColumn: 'tenant_id', key: (w) => ({ id: w.paymentId }), fresh: freshPayment,
+    access: 'append',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.paymentId }),
+    fresh: freshPayment,
     crossTenantRefs: {
-      student: (a,b) => ({ ...freshPayment(a), student_id: b.studentUserId }),
-      receivedBy: (a,b) => ({ ...freshPayment(a), received_by: b.staffUserId }),
-      reversal: (a,b) => ({ ...freshPayment(a), method: 'reversal', amount_cents: -250000, reverses_payment_id: b.paymentId }),
+      student: (a, b) => ({ ...freshPayment(a), student_id: b.studentUserId }),
+      receivedBy: (a, b) => ({ ...freshPayment(a), received_by: b.staffUserId }),
+      reversal: (a, b) => ({
+        ...freshPayment(a),
+        method: 'reversal',
+        amount_cents: -250000,
+        reverses_payment_id: b.paymentId,
+      }),
     },
   },
   payment_allocations: {
-    access: 'append', tenantColumn: 'tenant_id', key: (w) => ({ payment_id: w.paymentId, invoice_line_id: w.lineId }), fresh: freshAllocation,
+    access: 'append',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ payment_id: w.paymentId, invoice_line_id: w.lineId }),
+    fresh: freshAllocation,
     crossTenantRefs: {
-      payment: (a,b) => ({ ...freshAllocation(a), payment_id: b.sparePaymentId }),
-      line: (a,b) => ({ ...freshAllocation(a), invoice_line_id: b.lineId }),
+      payment: (a, b) => ({ ...freshAllocation(a), payment_id: b.sparePaymentId }),
+      line: (a, b) => ({ ...freshAllocation(a), invoice_line_id: b.lineId }),
     },
   },
   receipts: {
-    access: 'projection', tenantColumn: 'tenant_id', key: (w) => ({ id: w.receiptId }), fresh: freshReceipt,
-    crossTenantRefs: { payment: (a,b) => ({ ...freshReceipt(a), payment_id: b.sparePaymentId }) },
+    access: 'projection',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.receiptId }),
+    fresh: freshReceipt,
+    crossTenantRefs: { payment: (a, b) => ({ ...freshReceipt(a), payment_id: b.sparePaymentId }) },
   },
   tenants: {
     access: 'settings',
@@ -274,6 +341,22 @@ export const TABLES = {
     fresh: freshStudent,
     crossTenantRefs: {
       user: (home, other) => ({ ...freshStudent(home), user_id: other.spareStudentUserId }),
+    },
+  },
+  student_cards: {
+    access: 'projection',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.cardId }),
+    fresh: freshCard,
+    crossTenantRefs: {
+      student: (a, b) => ({ ...freshCard(a), student_id: b.studentUserId }),
+      issuedBy: (a, b) => ({ ...freshCard(a), issued_by: b.staffUserId }),
+      activatedBy: (a, b) => ({
+        ...freshCard(a),
+        activated_at: new Date(),
+        activated_by: b.staffUserId,
+      }),
+      revokedBy: (a, b) => ({ ...freshCard(a), revoked_by: b.staffUserId }),
     },
   },
   devices: {
@@ -420,7 +503,7 @@ const columnList = (row: Row) =>
   );
 const valueList = (row: Row) =>
   sql.join(
-    Object.values(row).map((value) => sql`${value}`),
+    Object.values(row).map((value) => sql`${Array.isArray(value) ? sql.param(value) : value}`),
     sql`, `,
   );
 
@@ -459,18 +542,23 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
   const slug = `iso-${label}-${tag}`;
   const domainHost = `${label}-${tag}.example.test`;
   return owner.transaction(async (tx) => {
-    const { id: tenantId } = one(
-      await tx
+    let tenantId = '';
+    while (!tenantId) {
+      const prefix = [...uniqueTag().slice(0, 4)]
+        .map((c) => String.fromCharCode(65 + parseInt(c, 16)))
+        .join('');
+      const [tenant] = await tx
         .insert(schema.tenants)
         .values({
           slug,
           name: `Isolation ${label} ${tag}`,
           plan: 'institute',
-          studentNoPrefix: 'IS',
+          studentNoPrefix: prefix,
         })
-        .returning({ id: schema.tenants.id }),
-      'tenant',
-    );
+        .onConflictDoNothing({ target: schema.tenants.studentNoPrefix })
+        .returning({ id: schema.tenants.id });
+      tenantId = tenant?.id ?? '';
+    }
 
     const domain = one(
       await tx
@@ -645,22 +733,142 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
       'import job',
     );
 
-    const ledger = includeLedger ? await (async () => {
-    await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
-    const settings = one(await tx.insert(schema.tenantSettings).values({ tenantId }).returning(), 'settings');
-    await tx.insert(schema.tenantIntegrations).values({ tenantId, kind: 'payhere', config: { enabled: false, mode: 'sandbox', merchantId: null, lastTest: null } });
-    const spareEnrollment = one(await tx.insert(schema.enrollments).values({ tenantId, classId: klass.id, studentId: student.id, fromMonth: '2026-09-01' }).returning(), 'spare enrolment');
-    const invoice = one(await tx.insert(schema.invoices).values({ tenantId, studentId: student.id, number: 'IS-I-26-09-IS-0001', month: '2026-09-01', dueOn: '2026-09-05', status: 'paid', paidCents: 250000 }).returning(), 'invoice');
-    const line = one(await tx.insert(schema.invoiceLines).values({ tenantId, invoiceId: invoice.id, enrollmentId: enrollment.id, classId: klass.id, month: '2026-09-01', amountCents: 250000 }).returning(), 'line');
-    const payment = one(await tx.insert(schema.payments).values({ tenantId, studentId: student.id, method: 'cash', amountCents: 250000, idempotencyKey: 'world-payment', receivedBy: staff.id }).returning(), 'payment');
-    const sparePayment = one(await tx.insert(schema.payments).values({ tenantId, studentId: student.id, method: 'cash', amountCents: 250000, idempotencyKey: 'spare-payment' }).returning(), 'spare payment');
-    await tx.insert(schema.paymentAllocations).values({ tenantId, paymentId: payment.id, invoiceLineId: line.id, amountCents: 250000 });
-    const receipt = one(await tx.insert(schema.receipts).values({ tenantId, paymentId: payment.id, number: 'IS-R-26-00001' }).returning(), 'receipt');
-    return { invoiceId: invoice.id, lineId: line.id, paymentId: payment.id, sparePaymentId: sparePayment.id,
-      spareEnrollmentId: spareEnrollment.id, receiptId: receipt.id, settingsId: settings.id };
-    })() : { invoiceId: '', lineId: '', paymentId: '', sparePaymentId: '', spareEnrollmentId: '', receiptId: '', settingsId: '' };
+    const ledger = includeLedger
+      ? await (async () => {
+          await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
+          const settings = one(
+            await tx.insert(schema.tenantSettings).values({ tenantId }).returning(),
+            'settings',
+          );
+          await tx.insert(schema.tenantIntegrations).values({
+            tenantId,
+            kind: 'payhere',
+            config: { enabled: false, mode: 'sandbox', merchantId: null, lastTest: null },
+          });
+          const spareEnrollment = one(
+            await tx
+              .insert(schema.enrollments)
+              .values({
+                tenantId,
+                classId: klass.id,
+                studentId: student.id,
+                fromMonth: '2026-09-01',
+              })
+              .returning(),
+            'spare enrolment',
+          );
+          const invoice = one(
+            await tx
+              .insert(schema.invoices)
+              .values({
+                tenantId,
+                studentId: student.id,
+                number: 'IS-I-26-09-IS-0001',
+                month: '2026-09-01',
+                dueOn: '2026-09-05',
+                status: 'paid',
+                paidCents: 250000,
+              })
+              .returning(),
+            'invoice',
+          );
+          const line = one(
+            await tx
+              .insert(schema.invoiceLines)
+              .values({
+                tenantId,
+                invoiceId: invoice.id,
+                enrollmentId: enrollment.id,
+                classId: klass.id,
+                month: '2026-09-01',
+                amountCents: 250000,
+              })
+              .returning(),
+            'line',
+          );
+          const payment = one(
+            await tx
+              .insert(schema.payments)
+              .values({
+                tenantId,
+                studentId: student.id,
+                method: 'cash',
+                amountCents: 250000,
+                idempotencyKey: 'world-payment',
+                receivedBy: staff.id,
+              })
+              .returning(),
+            'payment',
+          );
+          const sparePayment = one(
+            await tx
+              .insert(schema.payments)
+              .values({
+                tenantId,
+                studentId: student.id,
+                method: 'cash',
+                amountCents: 250000,
+                idempotencyKey: 'spare-payment',
+              })
+              .returning(),
+            'spare payment',
+          );
+          await tx.insert(schema.paymentAllocations).values({
+            tenantId,
+            paymentId: payment.id,
+            invoiceLineId: line.id,
+            amountCents: 250000,
+          });
+          const receipt = one(
+            await tx
+              .insert(schema.receipts)
+              .values({ tenantId, paymentId: payment.id, number: 'IS-R-26-00001' })
+              .returning(),
+            'receipt',
+          );
+          return {
+            invoiceId: invoice.id,
+            lineId: line.id,
+            paymentId: payment.id,
+            sparePaymentId: sparePayment.id,
+            spareEnrollmentId: spareEnrollment.id,
+            receiptId: receipt.id,
+            settingsId: settings.id,
+          };
+        })()
+      : {
+          invoiceId: '',
+          lineId: '',
+          paymentId: '',
+          sparePaymentId: '',
+          spareEnrollmentId: '',
+          receiptId: '',
+          settingsId: '',
+        };
 
+    await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
+    const card = includeLedger
+      ? one(
+          await tx
+            .insert(schema.studentCards)
+            .values({
+              tenantId,
+              studentId: student.id,
+              code: 'IS-0001-1',
+              cardSeq: 1,
+              kind: 'temporary',
+              formats: ['barcode'],
+              status: 'active',
+              activatedAt: new Date(),
+              activatedBy: staff.id,
+              issuedBy: staff.id,
+            })
+            .returning(),
+          'card',
+        )
+      : { id: '' };
     return {
+      cardId: card.id,
       tag,
       tenantId,
       slug,
