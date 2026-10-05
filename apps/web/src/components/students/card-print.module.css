@@ -32,10 +32,10 @@
 }
 .crop {
   position: absolute;
-  left: -3mm;
-  top: -3mm;
-  width: 91.6mm;
-  height: 60mm;
+  left: -1mm;
+  top: -1mm;
+  width: 87.6mm;
+  height: 56mm;
   pointer-events: none;
 }
 .institute {
@@ -69,6 +69,7 @@
   font-family: var(--font-mono);
   font-size: 3.8mm;
   line-height: 4.2mm;
+  overflow-wrap: anywhere;
 }
 .kind {
   margin: 0;
@@ -108,6 +109,9 @@
   height: 278mm;
   margin: 4mm;
 }
+.sheetPreview {
+  overflow-x: auto;
+}
 @media print {
   @page {
     size: A4;
@@ -137,6 +141,9 @@
   .sheet {
     margin: 0 auto;
     break-after: page;
+  }
+  .sheetPreview {
+    overflow: visible;
   }
   .sheet:last-child {
     break-after: auto;

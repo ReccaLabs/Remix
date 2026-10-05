@@ -27,12 +27,12 @@ export function CardFront({
 }: CardFrontProps) {
   return (
     <div className={styles.frame}>
-      <svg aria-hidden="true" className={styles.crop} viewBox="-3 -3 91.6 60">
+      <svg aria-hidden="true" className={styles.crop} viewBox="-1 -1 87.6 56">
         <path
           fill="none"
           stroke="currentColor"
           strokeWidth="0.15"
-          d="M-3 0h2 M0-3v2 M86.6 0h2 M85.6-3v2 M-3 54h2 M0 55v2 M86.6 54h2 M85.6 55v2"
+          d="M-1 0h0.7 M0-1v0.7 M85.9 0h0.7 M85.6-1v0.7 M-1 54h0.7 M0 54.3v0.7 M85.9 54h0.7 M85.6 54.3v0.7"
         />
       </svg>
       <article aria-label={`${kindLabel}: ${name}`} className={styles.card}>
