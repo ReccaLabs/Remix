@@ -95,9 +95,10 @@ const hash = (char: string) => char.repeat(64);
 const freshCard = (w: World): Row => ({
   tenant_id: w.tenantId,
   student_id: w.studentUserId,
-  code: randomUUID().replaceAll('-', '').toUpperCase(),
-  format: 'qr',
-  source: 'linked',
+  code: 'IS-0001-2',
+  card_seq: 2,
+  kind: 'permanent',
+  formats: ['barcode', 'qr'],
   status: 'revoked',
   issued_by: w.staffUserId,
   revoked_at: new Date(),
@@ -350,6 +351,11 @@ export const TABLES = {
     crossTenantRefs: {
       student: (a, b) => ({ ...freshCard(a), student_id: b.studentUserId }),
       issuedBy: (a, b) => ({ ...freshCard(a), issued_by: b.staffUserId }),
+      activatedBy: (a, b) => ({
+        ...freshCard(a),
+        activated_at: new Date(),
+        activated_by: b.staffUserId,
+      }),
       revokedBy: (a, b) => ({ ...freshCard(a), revoked_by: b.staffUserId }),
     },
   },
@@ -497,7 +503,7 @@ const columnList = (row: Row) =>
   );
 const valueList = (row: Row) =>
   sql.join(
-    Object.values(row).map((value) => sql`${value}`),
+    Object.values(row).map((value) => sql`${Array.isArray(value) ? sql.param(value) : value}`),
     sql`, `,
   );
 
@@ -538,9 +544,17 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
   return owner.transaction(async (tx) => {
     let tenantId = '';
     while (!tenantId) {
-      const prefix = [...uniqueTag().slice(0, 4)].map(c => String.fromCharCode(65 + parseInt(c, 16))).join('');
-      const [tenant] = await tx.insert(schema.tenants)
-        .values({ slug, name: `Isolation ${label} ${tag}`, plan: 'institute', studentNoPrefix: prefix })
+      const prefix = [...uniqueTag().slice(0, 4)]
+        .map((c) => String.fromCharCode(65 + parseInt(c, 16)))
+        .join('');
+      const [tenant] = await tx
+        .insert(schema.tenants)
+        .values({
+          slug,
+          name: `Isolation ${label} ${tag}`,
+          plan: 'institute',
+          studentNoPrefix: prefix,
+        })
         .onConflictDoNothing({ target: schema.tenants.studentNoPrefix })
         .returning({ id: schema.tenants.id });
       tenantId = tenant?.id ?? '';
@@ -726,13 +740,11 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
             await tx.insert(schema.tenantSettings).values({ tenantId }).returning(),
             'settings',
           );
-          await tx
-            .insert(schema.tenantIntegrations)
-            .values({
-              tenantId,
-              kind: 'payhere',
-              config: { enabled: false, mode: 'sandbox', merchantId: null, lastTest: null },
-            });
+          await tx.insert(schema.tenantIntegrations).values({
+            tenantId,
+            kind: 'payhere',
+            config: { enabled: false, mode: 'sandbox', merchantId: null, lastTest: null },
+          });
           const spareEnrollment = one(
             await tx
               .insert(schema.enrollments)
@@ -801,14 +813,12 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
               .returning(),
             'spare payment',
           );
-          await tx
-            .insert(schema.paymentAllocations)
-            .values({
-              tenantId,
-              paymentId: payment.id,
-              invoiceLineId: line.id,
-              amountCents: 250000,
-            });
+          await tx.insert(schema.paymentAllocations).values({
+            tenantId,
+            paymentId: payment.id,
+            invoiceLineId: line.id,
+            amountCents: 250000,
+          });
           const receipt = one(
             await tx
               .insert(schema.receipts)
@@ -844,9 +854,13 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
             .values({
               tenantId,
               studentId: student.id,
-              code: 'ISOLATIONCARD',
-              format: 'qr',
-              source: 'issued',
+              code: 'IS-0001-1',
+              cardSeq: 1,
+              kind: 'temporary',
+              formats: ['barcode'],
+              status: 'active',
+              activatedAt: new Date(),
+              activatedBy: staff.id,
               issuedBy: staff.id,
             })
             .returning(),

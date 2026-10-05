@@ -40,7 +40,15 @@ const OWNER = 'remix_owner';
 
 /** ADR 0008: FORCE binds even the owner, through a separate tenant-scoped owner policy. */
 export const LEDGER_UPDATE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
-  student_cards: ['status', 'revoked_at', 'revoked_by', 'revoke_reason'],
+  student_cards: [
+    'status',
+    'nfc_uid',
+    'activated_at',
+    'activated_by',
+    'revoked_at',
+    'revoked_by',
+    'revoke_reason',
+  ],
   tenant_settings: [
     'due_day',
     'reminders_enabled',

@@ -1,5 +1,5 @@
 {
-  "id": "47183e2a-44e9-4be9-9a22-abe4cb92524d",
+  "id": "3c93a77c-b373-4b4c-97eb-117da9c23269",
   "prevId": "42dc2fa4-10f9-40cd-988c-86865cbce817",
   "version": "7",
   "dialect": "postgresql",
@@ -3135,33 +3135,44 @@
           "primaryKey": false,
           "notNull": true
         },
+        "card_seq": {
+          "name": "card_seq",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "code": {
           "name": "code",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "format": {
-          "name": "format",
-          "type": "card_format",
+        "kind": {
+          "name": "kind",
+          "type": "card_kind",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
-        "source": {
-          "name": "source",
-          "type": "card_source",
+        "formats": {
+          "name": "formats",
+          "type": "card_format[]",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
+        },
+        "nfc_uid": {
+          "name": "nfc_uid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "status": {
           "name": "status",
           "type": "card_status",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'active'"
+          "notNull": true
         },
         "issued_at": {
           "name": "issued_at",
@@ -3175,6 +3186,18 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "activated_at": {
+          "name": "activated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "activated_by": {
+          "name": "activated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "revoked_at": {
           "name": "revoked_at",
@@ -3214,6 +3237,28 @@
           ],
           "isUnique": true,
           "where": "\"student_cards\".\"status\" = 'active'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "student_cards_tenant_ordered_key": {
+          "name": "student_cards_tenant_ordered_key",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"student_cards\".\"status\" = 'ordered'",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -3290,6 +3335,21 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
+        "student_cards_activated_by_fk": {
+          "name": "student_cards_activated_by_fk",
+          "tableFrom": "student_cards",
+          "tableTo": "tenant_users",
+          "columnsFrom": [
+            "tenant_id",
+            "activated_by"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "student_cards_revoked_by_fk": {
           "name": "student_cards_revoked_by_fk",
           "tableFrom": "student_cards",
@@ -3316,6 +3376,15 @@
             "id"
           ]
         },
+        "student_cards_tenant_seq_key": {
+          "name": "student_cards_tenant_seq_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "student_id",
+            "card_seq"
+          ]
+        },
         "student_cards_tenant_code_key": {
           "name": "student_cards_tenant_code_key",
           "nullsNotDistinct": false,
@@ -3323,17 +3392,45 @@
             "tenant_id",
             "code"
           ]
+        },
+        "student_cards_tenant_nfc_key": {
+          "name": "student_cards_tenant_nfc_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "nfc_uid"
+          ]
         }
       },
       "policies": {},
       "checkConstraints": {
-        "student_cards_code_format": {
-          "name": "student_cards_code_format",
-          "value": "\"student_cards\".\"code\" ~ '^[A-Z0-9]{4,64}$'"
+        "student_cards_seq_positive": {
+          "name": "student_cards_seq_positive",
+          "value": "\"student_cards\".\"card_seq\" >= 1"
+        },
+        "student_cards_code_length": {
+          "name": "student_cards_code_length",
+          "value": "char_length(\"student_cards\".\"code\") BETWEEN 3 AND 64"
+        },
+        "student_cards_formats": {
+          "name": "student_cards_formats",
+          "value": "array_position(\"student_cards\".\"formats\", NULL) IS NULL AND 'barcode' = ANY(\"student_cards\".\"formats\") AND cardinality(\"student_cards\".\"formats\") = (('barcode' = ANY(\"student_cards\".\"formats\"))::int + ('qr' = ANY(\"student_cards\".\"formats\"))::int + ('nfc' = ANY(\"student_cards\".\"formats\"))::int)"
+        },
+        "student_cards_temporary": {
+          "name": "student_cards_temporary",
+          "value": "\"student_cards\".\"kind\" <> 'temporary' OR (\"student_cards\".\"formats\" = ARRAY['barcode']::card_format[] AND \"student_cards\".\"status\" <> 'ordered')"
+        },
+        "student_cards_nfc": {
+          "name": "student_cards_nfc",
+          "value": "\"student_cards\".\"nfc_uid\" IS NULL OR (\"student_cards\".\"nfc_uid\" ~ '^[0-9A-F]{8,20}$' AND 'nfc' = ANY(\"student_cards\".\"formats\"))"
+        },
+        "student_cards_activation": {
+          "name": "student_cards_activation",
+          "value": "(\"student_cards\".\"activated_at\" IS NULL) = (\"student_cards\".\"activated_by\" IS NULL) AND (\"student_cards\".\"status\" <> 'active' OR \"student_cards\".\"activated_at\" IS NOT NULL) AND (\"student_cards\".\"status\" <> 'ordered' OR \"student_cards\".\"activated_at\" IS NULL)"
         },
         "student_cards_revocation": {
           "name": "student_cards_revocation",
-          "value": "(\"student_cards\".\"status\" = 'active' AND \"student_cards\".\"revoked_at\" IS NULL AND \"student_cards\".\"revoked_by\" IS NULL AND \"student_cards\".\"revoke_reason\" IS NULL) OR (\"student_cards\".\"status\" = 'revoked' AND \"student_cards\".\"revoked_at\" IS NOT NULL AND \"student_cards\".\"revoked_by\" IS NOT NULL AND \"student_cards\".\"revoke_reason\" IS NOT NULL AND char_length(btrim(\"student_cards\".\"revoke_reason\")) BETWEEN 3 AND 200)"
+          "value": "(\"student_cards\".\"status\" <> 'revoked' AND \"student_cards\".\"revoked_at\" IS NULL AND \"student_cards\".\"revoked_by\" IS NULL AND \"student_cards\".\"revoke_reason\" IS NULL) OR (\"student_cards\".\"status\" = 'revoked' AND \"student_cards\".\"revoked_at\" IS NOT NULL AND \"student_cards\".\"revoked_by\" IS NOT NULL AND \"student_cards\".\"revoke_reason\" IS NOT NULL AND char_length(btrim(\"student_cards\".\"revoke_reason\")) BETWEEN 3 AND 200)"
         }
       },
       "isRLSEnabled": false
@@ -4373,18 +4470,19 @@
         "nfc"
       ]
     },
-    "public.card_source": {
-      "name": "card_source",
+    "public.card_kind": {
+      "name": "card_kind",
       "schema": "public",
       "values": [
-        "issued",
-        "linked"
+        "permanent",
+        "temporary"
       ]
     },
     "public.card_status": {
       "name": "card_status",
       "schema": "public",
       "values": [
+        "ordered",
         "active",
         "revoked"
       ]
