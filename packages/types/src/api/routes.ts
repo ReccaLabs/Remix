@@ -47,9 +47,11 @@ import {
   updateEnrollmentSchema,
 } from './classes';
 import {
+  activateStudentCardSchema,
   cardLookupResponseSchema,
   cardLookupSchema,
   issueStudentCardSchema,
+  orderedCardsResponseSchema,
   revokeStudentCardSchema,
   studentCardSchema,
   studentCardsResponseSchema,
@@ -542,7 +544,7 @@ export const API = {
     params: idParamsSchema,
     response: studentCardsResponseSchema,
   },
-  /** STU-06 - issue or link a card (`students.write`); revokes the previous active card. 409 CONFLICT if the code belongs to another card. */
+  /** STU-06 - temporary (active now, replaces the active card) or permanent (ordered) card (`students.write`). 409 CONFLICT if an ordered card exists; 400 for archived students. */
   issueStudentCard: {
     method: 'POST',
     path: '/api/v1/admin/students/:id/cards',
@@ -550,7 +552,15 @@ export const API = {
     request: issueStudentCardSchema,
     response: studentCardSchema,
   },
-  /** STU-06 - lost or damaged card (`students.write`). 409 CONFLICT if already revoked. */
+  /** STU-06 - hand over an ordered permanent card (`students.write`); revokes the current active card ("replaced"). 409 CONFLICT if not ordered or the chip UID is used by another card. */
+  activateStudentCard: {
+    method: 'POST',
+    path: '/api/v1/admin/cards/:id/activate',
+    params: idParamsSchema,
+    request: activateStudentCardSchema,
+    response: studentCardSchema,
+  },
+  /** STU-06 - lost, damaged or cancelled card (`students.write`). 409 CONFLICT if already revoked. */
   revokeStudentCard: {
     method: 'POST',
     path: '/api/v1/admin/cards/:id/revoke',
@@ -558,7 +568,13 @@ export const API = {
     request: revokeStudentCardSchema,
     response: studentCardSchema,
   },
-  /** STU-06, FEE-07 - resolve a scanned code at the counter (`students.read`, rate limited). 404 for unknown codes. */
+  /** STU-06 - permanent cards waiting for ReMix to print (`students.read`), oldest first. */
+  listOrderedCards: {
+    method: 'GET',
+    path: '/api/v1/admin/cards/ordered',
+    response: orderedCardsResponseSchema,
+  },
+  /** STU-06, FEE-07 - resolve a scan or typed card code / student number / chip UID (`students.read`, rate limited). 404 if nothing matches. */
   lookupCard: {
     method: 'POST',
     path: '/api/v1/admin/cards/lookup',
