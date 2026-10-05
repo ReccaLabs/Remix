@@ -4309,6 +4309,21 @@
           "with": {},
           "method": "btree",
           "concurrently": false
+        },
+        "tenants_student_no_prefix_key": {
+          "name": "tenants_student_no_prefix_key",
+          "columns": [
+            {
+              "expression": "student_no_prefix",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -4330,7 +4345,7 @@
         },
         "tenants_student_no_prefix_format": {
           "name": "tenants_student_no_prefix_format",
-          "value": "\"tenants\".\"student_no_prefix\" ~ '^[A-Z]{1,6}$'"
+          "value": "\"tenants\".\"student_no_prefix\" ~ '^[A-Z]{2,4}$'"
         },
         "tenants_brand_color_format": {
           "name": "tenants_brand_color_format",

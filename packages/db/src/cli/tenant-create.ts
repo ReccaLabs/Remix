@@ -52,7 +52,7 @@ try {
     fail(`Invalid input:\n${lines.join('\n')}\n${USAGE}`);
   }
   const code = (error as { cause?: { code?: string } }).cause?.code;
-  fail(code === '23505' ? 'That slug is already taken.' : 'Could not create the tenant', error);
+  fail(code === '23505' ? 'That slug or explicit student prefix is already taken.' : 'Could not create the tenant', error);
 } finally {
   await db.$client.end();
 }

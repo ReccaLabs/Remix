@@ -71,3 +71,9 @@ returning value;                                                           -- $3
 
 - Reviewers reject floats in money paths, `now()::date`, and session-level time-zone assumptions. Pricing and money changes update `pricing.test.ts` and the money property tests.
 - The FEE-01 invoice format assumes one invoice per student per month. ADR 0008 must keep that true (a mid-month enrolment adds lines to the open invoice) or switch invoices to a counter. Until then, `unique (tenant_id, number)` makes a collision fail loudly instead of producing a duplicate.
+
+## Amendment - STU-07 and STU-06 (2026-10-05)
+
+- New student numbers are `<PREFIX>-<YY>-<seq>`: the joining year in Asia/Colombo and a per-tenant `student` counter whose period is the four-digit year. Sequences restart at 1 each year, pad to at least four digits and grow without truncation. Existing students are never renumbered; imports keep supplied numbers, and only canonical numbers of the same year advance that year's counter.
+- Prefixes contain 2-4 English capitals and are globally unique. Provisioning derives padded initials (Nilanka Institute: NIL) and tries deterministic alternatives on collision; the tenant-create CLI also accepts an explicit prefix, rejecting collisions.
+- Card codes are stable student numbers plus a per-student card sequence (`NIL-26-0042-1`), not authentication tokens. Barcode, optional QR and optional NFC on one permanent card carry the same code. Codes and linked UIDs are never reused, even after revocation; access still requires tenant isolation and staff permissions.

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import {
   advanceCounter,
   studentNumberFloor,
+  studentJoiningYear,
   allocateNumbers,
   formatStudentNo,
   schema,
@@ -115,7 +116,7 @@ export class ImportRunner {
 
       // Serialize with Add student and other imports BEFORE reading the duplicate context.
       // A competing allocation that commits first must be visible to re-validation.
-      await advanceCounter(tx, 'student', 0);
+      await advanceCounter(tx, 'student', 0, String(studentJoiningYear(now)));
       const context = await loadValidationContext(tx, rows);
       const outcome = validateStudentRows(rows, context);
       const created = await this.write(tx, tenantId, job.createdBy, outcome.valid, month, now);
@@ -169,10 +170,17 @@ export class ImportRunner {
 
     // Generated numbers come last-but-inserts: the counter row lock is held until commit.
     const kept = new Set(valid.flatMap((v) => (v.studentNo ? [v.studentNo] : [])));
-    await advanceCounter(tx, 'student', studentNumberFloor(tenant.prefix, [...kept]));
+    const year = studentJoiningYear(now);
+    await advanceCounter(
+      tx,
+      'student',
+      studentNumberFloor(tenant.prefix, year, [...kept]),
+      String(year),
+    );
     const generated = await this.generateNumbers(
       tx,
       tenant.prefix,
+      year,
       valid.filter((v) => !v.studentNo).length,
       kept,
     );
@@ -273,14 +281,16 @@ export class ImportRunner {
   private async generateNumbers(
     tx: Tx,
     prefix: string,
+    year: number,
     count: number,
     reserved: ReadonlySet<string>,
   ): Promise<string[]> {
     const out: string[] = [];
     while (out.length < count) {
-      const block = await allocateNumbers(tx, 'student', count - out.length);
+      const block = await allocateNumbers(tx, 'student', count - out.length, String(year));
       const candidates: string[] = [];
-      for (let n = block.first; n <= block.last; n++) candidates.push(formatStudentNo(prefix, n));
+      for (let n = block.first; n <= block.last; n++)
+        candidates.push(formatStudentNo(prefix, year, n));
       const taken = new Set<string>();
       for (const part of chunks(candidates, 5000)) {
         const rows = await tx

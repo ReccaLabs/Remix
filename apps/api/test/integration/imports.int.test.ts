@@ -252,7 +252,7 @@ describe('student import (STU-04 / DAT-01) against Postgres', () => {
       });
       // Generated numbers come from the counter, in file order, and do not touch KEEP-7.
       const generated = ['Imported Nimali', 'Imported Third'].map((n) => byName(n)?.no);
-      expect(generated.every((n) => /^TT-\d{4}$/.test(n ?? ''))).toBe(true);
+      expect(generated.every((n) => /^[A-Z]{2,4}-26-\d{4,}$/.test(n ?? ''))).toBe(true);
       expect(new Set(generated).size).toBe(2);
 
       const minor = await db
@@ -333,7 +333,7 @@ describe('student import (STU-04 / DAT-01) against Postgres', () => {
         .from(schema.tenantCounters)
         .where(eq(schema.tenantCounters.tenantId, tenant.id));
       // The next number the counter would hand out.
-      const taken = `TT-${String((counter?.value ?? 0) + 1).padStart(4, '0')}`;
+      const taken = `${tenant.prefix}-26-${String((counter?.value ?? 0) + 1).padStart(4, '0')}`;
       const done = await runImport([
         { displayName: 'Brings Number', phone: '0771000020', studentNo: taken },
         { displayName: 'Gets Number', phone: '0771000021' },
@@ -347,7 +347,7 @@ describe('student import (STU-04 / DAT-01) against Postgres', () => {
       expect(numbers.find((n) => n.name === 'Brings Number')?.no).toBe(taken);
       const gets = numbers.find((n) => n.name === 'Gets Number')?.no;
       expect(gets).not.toBe(taken);
-      expect(gets).toMatch(/^TT-\d{4}$/);
+      expect(gets).toMatch(/^[A-Z]{2,4}-26-\d{4,}$/);
     });
 
     it('reserves supplied numbers for a later Add student, even without generated rows', async () => {
@@ -356,7 +356,7 @@ describe('student import (STU-04 / DAT-01) against Postgres', () => {
         .from(schema.tenantCounters)
         .where(eq(schema.tenantCounters.tenantId, tenant.id));
       const next = (counter?.value ?? 0) + 1;
-      const taken = `TT-${String(next).padStart(4, '0')}`;
+      const taken = `${tenant.prefix}-26-${String(next).padStart(4, '0')}`;
       const done = await runImport([
         { displayName: 'Reserved Number', phone: '0771000022', studentNo: taken },
       ]);
@@ -367,7 +367,7 @@ describe('student import (STU-04 / DAT-01) against Postgres', () => {
         under18: false,
       });
       expect(added.status).toBe(201);
-      expect(added.body.studentNo).toBe(`TT-${String(next + 1).padStart(4, '0')}`);
+      expect(added.body.studentNo).toBe(`${tenant.prefix}-26-${String(next + 1).padStart(4, '0')}`);
     });
 
     it('re-validates in the worker: a phone taken after the preview becomes a duplicate', async () => {

@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import type { Tx } from './client';
 import { tenantCounters } from './schema';
 
-/** Counter kinds in use (ADR 0007). `period` is '' for `student`, the Colombo year for `receipt`. */
+/** Counter kinds in use (ADR 0007). Both use the four-digit Colombo year as `period`. */
 export type CounterKind = 'student' | 'receipt';
 
 export interface NumberBlock {
@@ -60,21 +60,47 @@ export async function advanceCounter(
 }
 
 /** Only canonical generated numbers reserve a counter position; arbitrary legacy IDs do not. */
-export function studentNumberFloor(prefix: string, numbers: readonly string[]): number {
+export function studentNumberFloor(
+  prefix: string,
+  year: number,
+  numbers: readonly string[],
+): number {
   let highest = 0;
   for (const number of numbers) {
-    if (!number.startsWith(`${prefix}-`)) continue;
-    const suffix = number.slice(prefix.length + 1);
+    const start = `${prefix}-${String(year).slice(-2)}-`;
+    if (!number.startsWith(start)) continue;
+    const suffix = number.slice(start.length);
     if (!/^\d+$/.test(suffix)) continue;
     const value = Number(suffix);
-    if (Number.isSafeInteger(value) && formatStudentNo(prefix, value) === number) {
+    if (
+      value >= 1 &&
+      Number.isSafeInteger(value) &&
+      formatStudentNo(prefix, year, value) === number
+    ) {
       highest = Math.max(highest, value);
     }
   }
   return highest;
 }
 
-/** `formatStudentNo('BR', 1042)` → "BR-1042"; numbers are zero-padded to at least 4 digits. */
-export function formatStudentNo(prefix: string, value: number): string {
-  return `${prefix}-${String(value).padStart(4, '0')}`;
+/** Joining year in Asia/Colombo, including the boundary before UTC midnight. */
+export function studentJoiningYear(instant: Date): number {
+  return Number(
+    new Intl.DateTimeFormat('en', { timeZone: 'Asia/Colombo', year: 'numeric' }).format(instant),
+  );
+}
+
+/** `formatStudentNo('NIL', 2026, 42)` → "NIL-26-0042"; padding never truncates. */
+export function formatStudentNo(prefix: string, year: number, value: number): string {
+  if (
+    !/^[A-Z]{2,4}$/.test(prefix) ||
+    !Number.isInteger(year) ||
+    year < 1000 ||
+    year > 9999 ||
+    !Number.isSafeInteger(value) ||
+    value < 1
+  ) {
+    throw new RangeError('Invalid student number prefix, year or sequence');
+  }
+  return `${prefix}-${String(year).slice(-2)}-${String(value).padStart(4, '0')}`;
 }

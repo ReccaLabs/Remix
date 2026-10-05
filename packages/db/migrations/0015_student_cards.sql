@@ -26,3 +26,9 @@ ALTER TABLE "student_cards" ADD CONSTRAINT "student_cards_issued_by_fk" FOREIGN 
 ALTER TABLE "student_cards" ADD CONSTRAINT "student_cards_revoked_by_fk" FOREIGN KEY ("tenant_id","revoked_by") REFERENCES "public"."tenant_users"("tenant_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "student_cards_tenant_active_key" ON "student_cards" USING btree ("tenant_id","student_id") WHERE "student_cards"."status" = 'active';--> statement-breakpoint
 CREATE INDEX "student_cards_tenant_student_issued_idx" ON "student_cards" USING btree ("tenant_id","student_id","issued_at");
+--> statement-breakpoint
+ALTER TABLE public.tenants DROP CONSTRAINT tenants_student_no_prefix_format;
+--> statement-breakpoint
+ALTER TABLE public.tenants ADD CONSTRAINT tenants_student_no_prefix_format CHECK (student_no_prefix ~ '^[A-Z]{2,4}$');
+--> statement-breakpoint
+CREATE UNIQUE INDEX tenants_student_no_prefix_key ON public.tenants (student_no_prefix);

@@ -321,7 +321,7 @@ describe('admin students (STU-01/02/03/05/07, PAR-01/03) against Postgres', () =
         under18: false,
         activeDevices: 0,
       });
-      expect(profile.studentNo).toMatch(/^TT-\d{4}$/);
+      expect(profile.studentNo).toMatch(/^[A-Z]{2,4}-26-\d{4,}$/);
       expect(profile.guardians.map((g) => [g.name, g.smsOptIn])).toEqual([
         ['Mala Rajapaksha', true],
         ['Nimal Rajapaksha', false],
@@ -363,10 +363,26 @@ describe('admin students (STU-01/02/03/05/07, PAR-01/03) against Postgres', () =
       );
       expect(results.map((r) => r.status)).toEqual(Array(6).fill(201));
       const numbers = results
-        .map((r) => Number((r.body.studentNo as string).slice(3)))
+        .map((r) => Number((r.body.studentNo as string).split('-').at(-1)))
         .sort((a, b) => a - b);
       expect(new Set(numbers).size).toBe(6);
       expect(numbers.at(-1)! - numbers[0]!).toBe(5);
+    });
+    it('uses the joining year across Colombo New Year and preserves existing numbers', async () => {
+      const instant = t.clock.now();
+      const yearTenant = await f.tenant();
+      const yearOwner = await f.staff(yearTenant, ['owner']);
+      try {
+        t.clock.set(new Date('2026-12-31T18:27:00.000Z'));
+        const client = api(t, yearTenant.host, await signInStaff(t, yearTenant, yearOwner));
+        t.clock.set(new Date('2026-12-31T18:29:59.999Z'));
+        const first = await client.post(LIST, { ...base(), sendWelcomeSms: false });
+        t.clock.set(new Date('2026-12-31T18:30:00.000Z'));
+        const next = await client.post(LIST, { ...base(), sendWelcomeSms: false });
+        expect(first.body.studentNo).toBe(`${yearTenant.prefix}-26-0001`);
+        expect(next.body.studentNo).toBe(`${yearTenant.prefix}-27-0001`);
+        expect((await client.get(one(first.body.id as string))).body.studentNo).toBe(first.body.studentNo);
+      } finally { t.clock.set(instant); }
     });
 
     it('sends no welcome SMS when sendWelcomeSms is false', async () => {

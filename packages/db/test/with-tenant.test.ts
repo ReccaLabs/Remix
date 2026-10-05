@@ -97,6 +97,13 @@ describe('verifyAppRole', () => {
 });
 
 describe('allocateNumbers (tenant_counters, ADR 0007)', () => {
+  it('restarts the student sequence independently each year', async () => {
+    const allocate = (year: string) =>
+      withTenant(db.app, A.tenantId, (tx) => allocateNumbers(tx, 'student', 1, year));
+    expect(await allocate('2026')).toEqual({ first: 1, last: 1 });
+    expect(await allocate('2026')).toEqual({ first: 2, last: 2 });
+    expect(await allocate('2027')).toEqual({ first: 1, last: 1 });
+  });
   it('allocates consecutive blocks per tenant and kind', async () => {
     // createWorld seeded A's 'student' counter at 1.
     const first = await withTenant(db.app, A.tenantId, (tx) => allocateNumbers(tx, 'student'));

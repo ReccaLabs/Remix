@@ -217,9 +217,11 @@ async function seedTenant(
   );
 
   // Student numbers come from the tenant counter, exactly as the API allocates them (ADR 0007).
-  await tx.insert(tenantCounters).values({ tenantId, kind: 'student', value: spec.counterStart });
+  await tx
+    .insert(tenantCounters)
+    .values({ tenantId, kind: 'student', period: '2026', value: spec.counterStart });
   const block = await withTenant(tx, tenantId, (scoped) =>
-    allocateNumbers(scoped, 'student', spec.students),
+    allocateNumbers(scoped, 'student', spec.students, '2026'),
   );
 
   const alYears = [...new Set(spec.classes.map((c) => c.alYear))];
@@ -230,7 +232,7 @@ async function seedTenant(
     const alYear = rng.pick(alYears);
     return {
       no,
-      studentNo: formatStudentNo(spec.studentNoPrefix, no),
+      studentNo: formatStudentNo(spec.studentNoPrefix, 2026, no),
       phone: `+94${spec.phoneBase}${String(no).padStart(7, '0')}`,
       alYear,
       name,
@@ -365,7 +367,9 @@ async function seedTenant(
     after: { slug: spec.slug, students: spec.students },
   });
 
-  await withTenant(tx, tenantId, scoped => seedFees(scoped, tenantId, spec.studentNoPrefix, staffIds[0] ?? ''));
+  await withTenant(tx, tenantId, (scoped) =>
+    seedFees(scoped, tenantId, spec.studentNoPrefix, staffIds[0] ?? ''),
+  );
   return {
     slug: spec.slug,
     tenantId,

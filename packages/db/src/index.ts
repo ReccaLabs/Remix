@@ -24,6 +24,7 @@ export {
   advanceCounter,
   studentNumberFloor,
   formatStudentNo,
+  studentJoiningYear,
   MAX_NUMBER_BLOCK,
   type CounterKind,
   type NumberBlock,

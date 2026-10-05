@@ -475,7 +475,7 @@ describe('admin classes (CLS-01/02/03) against Postgres', () => {
         feeOverrideCents: 100_000,
         reason: 'Sibling discount',
       });
-      expect(body.items[0]?.studentNo).toMatch(/^TT-/);
+      expect(body.items[0]?.studentNo).toMatch(/^[A-Z]{2,4}-/);
     });
 
     it('uses the class fee when there is no override', async () => {

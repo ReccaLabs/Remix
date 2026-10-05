@@ -1,7 +1,45 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 import type { Db } from './client';
-import { resetOwnerPassword, resetOwnerPasswordInputSchema } from './provision';
+import {
+  createTenantInputSchema,
+  defaultPrefix,
+  studentPrefixCandidates,
+  resetOwnerPassword,
+  resetOwnerPasswordInputSchema,
+} from './provision';
+
+describe('STU-07 prefix selection', () => {
+  it('uses padded English initials with a valid fallback', () => {
+    expect(defaultPrefix('Nilanka Institute')).toBe('NIL');
+    expect(defaultPrefix('royal science classes')).toBe('RSC');
+    expect(defaultPrefix('Nilanka')).toBe('NIL');
+    for (const name of ['A', 'ශ්‍රී', 'École', 'A B C D E'])
+      expect(defaultPrefix(name)).toMatch(/^[A-Z]{2,4}$/);
+  });
+  it('tries collision alternatives deterministically', () => {
+    const candidates = studentPrefixCandidates('Nilanka Institute');
+    expect([candidates.next().value, candidates.next().value, candidates.next().value]).toEqual([
+      'NIL',
+      'NILA',
+      'NLI',
+    ]);
+  });
+  it('validates the CLI explicit prefix', () => {
+    const base = {
+      slug: 'nilanka',
+      name: 'Nilanka Institute',
+      plan: 'institute',
+      ownerPhone: '0771234567',
+      ownerName: 'Owner',
+    };
+    expect(createTenantInputSchema.parse({ ...base, studentNoPrefix: 'br' }).studentNoPrefix).toBe(
+      'BR',
+    );
+    for (const studentNoPrefix of ['A', 'ABCDE', 'N1', 'ශ්‍රී'])
+      expect(createTenantInputSchema.safeParse({ ...base, studentNoPrefix }).success).toBe(false);
+  });
+});
 
 /** A database that fails the test if anything touches it. */
 const untouchable = new Proxy(

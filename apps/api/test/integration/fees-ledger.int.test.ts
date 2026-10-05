@@ -108,7 +108,7 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       );
       expect(inv).toHaveLength(2);
       for (const row of inv) {
-        expect(row.number).toMatch(/^TT-I-26-10-TT-[0-9a-f]{6}$/);
+        expect(row.number).toMatch(/^[A-Z]{2,4}-I-26-10-TT-[0-9a-f]{6}$/);
         expect(row.due_on).toBe('2026-10-05');
         expect(row.month).toBe(MONTH);
         expect(row.status).toBe('overdue'); // today is 15 October
@@ -137,7 +137,10 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       const future = await f.student(tenant);
       const archived = await f.student(tenant, { archived: true });
       const inArchivedClass = await f.student(tenant);
-      await f.enroll(tenant, discounted.id, klass, { from: '2026-01-01', feeOverrideCents: 100_000 });
+      await f.enroll(tenant, discounted.id, klass, {
+        from: '2026-01-01',
+        feeOverrideCents: 100_000,
+      });
       await f.enroll(tenant, ended.id, klass, { from: '2026-01-01', to: '2026-09-01' });
       await f.enroll(tenant, future.id, klass, { from: '2026-11-01' });
       await f.enroll(tenant, archived.id, klass, { from: '2026-01-01' });
@@ -163,9 +166,9 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       expect(
         await fees().canAccess(w.tenant.id, l?.student_id ?? '', l?.class_id ?? '', MONTH),
       ).toBe(true);
-      expect(await scalar<string>(db, w.tenant.id, sql`select status::text as v from invoices`)).toBe(
-        'paid',
-      );
+      expect(
+        await scalar<string>(db, w.tenant.id, sql`select status::text as v from invoices`),
+      ).toBe('paid');
     });
 
     it('enrolling through the API bills the current month at once; moving voids the unpaid old line', async () => {
@@ -181,7 +184,9 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       });
       expect(res.status).toBe(201);
       const first = await lines(db, tenant.id);
-      expect(first.map((l) => [l.month, l.amount_cents, l.class_id])).toEqual([[MONTH, FEE, klass]]);
+      expect(first.map((l) => [l.month, l.amount_cents, l.class_id])).toEqual([
+        [MONTH, FEE, klass],
+      ]);
       const [enrollment] = await db
         .select()
         .from(schema.enrollments)
@@ -210,7 +215,7 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       const s = w.students[0]!;
       expect(await fees().canAccess(w.tenant.id, s.id, l!.class_id, MONTH)).toBe(false);
       const r = await cash(w.tenant, [l!.id], FEE, 'k1', w.staff.id);
-      expect(r.receiptNumber).toBe('TT-R-26-00001');
+      expect(r.receiptNumber).toBe(`${w.tenant.prefix}-R-26-00001`);
       expect(r.payment).toMatchObject({
         method: 'cash',
         amountCents: FEE,
@@ -218,9 +223,9 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
         needsRefund: false,
       });
       expect(await fees().canAccess(w.tenant.id, s.id, l!.class_id, MONTH)).toBe(true);
-      expect(await scalar<string>(db, w.tenant.id, sql`select status::text as v from invoices`)).toBe(
-        'paid',
-      );
+      expect(
+        await scalar<string>(db, w.tenant.id, sql`select status::text as v from invoices`),
+      ).toBe('paid');
       expect(
         await scalar<number>(db, w.tenant.id, sql`select paid_cents::float8 as v from invoices`),
       ).toBe(FEE);
@@ -315,7 +320,12 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       const ls = await lines(db, w.tenant.id);
       const foreign = await lines(db, other.tenant.id);
       await expect(
-        cash(w.tenant, ls.map((l) => l.id), FEE * 2, 'two'),
+        cash(
+          w.tenant,
+          ls.map((l) => l.id),
+          FEE * 2,
+          'two',
+        ),
       ).rejects.toMatchObject({ status: 404 });
       await expect(cash(w.tenant, [foreign[0]!.id], FEE, 'foreign')).rejects.toMatchObject({
         status: 404,
@@ -409,19 +419,28 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
         )
       ).map((r) => r.number);
       expect(numbers).toEqual(
-        Array.from({ length: n }, (_, i) => `TT-R-26-${String(i + 1).padStart(5, '0')}`),
+        Array.from(
+          { length: n },
+          (_, i) => `${w.tenant.prefix}-R-26-${String(i + 1).padStart(5, '0')}`,
+        ),
       );
       const w2 = await world(1);
       const [l2] = await lines(db, w2.tenant.id);
-      expect((await cash(w2.tenant, [l2!.id], FEE, 'x')).receiptNumber).toBe('TT-R-26-00001');
+      expect((await cash(w2.tenant, [l2!.id], FEE, 'x')).receiptNumber).toBe(
+        `${w2.tenant.prefix}-R-26-00001`,
+      );
     });
 
     it('a failed payment leaves no receipt-number hole (the counter rolls back with it)', async () => {
       const w = await world(2);
       const ls = await lines(db, w.tenant.id);
       await expect(cash(w.tenant, [ls[0]!.id], FEE - 1, 'bad')).rejects.toBeTruthy();
-      expect((await cash(w.tenant, [ls[0]!.id], FEE, 'good1')).receiptNumber).toBe('TT-R-26-00001');
-      expect((await cash(w.tenant, [ls[1]!.id], FEE, 'good2')).receiptNumber).toBe('TT-R-26-00002');
+      expect((await cash(w.tenant, [ls[0]!.id], FEE, 'good1')).receiptNumber).toBe(
+        `${w.tenant.prefix}-R-26-00001`,
+      );
+      expect((await cash(w.tenant, [ls[1]!.id], FEE, 'good2')).receiptNumber).toBe(
+        `${w.tenant.prefix}-R-26-00002`,
+      );
     });
 
     it('a cash receipt keeps the cash handed over and refuses less than the amount', async () => {
@@ -484,7 +503,11 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
         false,
       );
       expect(
-        await scalar<boolean>(db, w.tenant.id, sql`select reversed_at is not null as v from receipts`),
+        await scalar<boolean>(
+          db,
+          w.tenant.id,
+          sql`select reversed_at is not null as v from receipts`,
+        ),
       ).toBe(true);
       expect((await fees().getPayment(w.tenant.id, p.payment.id)).reversedByPaymentId).toBe(
         reversal.id,
@@ -615,7 +638,12 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
         .set({ toMonth: '2026-09-01' })
         .where(eq(schema.enrollments.tenantId, tenant.id));
       const voided = await withTenant(appDb(t), tenant.id, (tx) =>
-        voidEndedLines(tx, enrollments.map((e) => e.id), 'Enrolment ended', t.clock.now()),
+        voidEndedLines(
+          tx,
+          enrollments.map((e) => e.id),
+          'Enrolment ended',
+          t.clock.now(),
+        ),
       );
       expect(voided).toBe(1);
       const after = await lines(db, tenant.id);
@@ -632,7 +660,9 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
   });
 
   describe('Asia/Colombo month boundaries', () => {
-    afterAll(() => { t.clock.set(START); });
+    afterAll(() => {
+      t.clock.set(START);
+    });
 
     it('the monthly tick bills the Colombo month: 23:59:59 on 31 Oct is October, midnight is November', async () => {
       const w = await world(1);
@@ -688,9 +718,13 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       const w = await world(2);
       const [a, b] = await lines(db, w.tenant.id);
       t.clock.set(new Date('2026-12-31T18:29:59Z'));
-      expect((await cash(w.tenant, [a!.id], FEE, 'ny-1')).receiptNumber).toBe('TT-R-26-00001');
+      expect((await cash(w.tenant, [a!.id], FEE, 'ny-1')).receiptNumber).toBe(
+        `${w.tenant.prefix}-R-26-00001`,
+      );
       t.clock.set(new Date('2026-12-31T18:30:00Z'));
-      expect((await cash(w.tenant, [b!.id], FEE, 'ny-2')).receiptNumber).toBe('TT-R-27-00001');
+      expect((await cash(w.tenant, [b!.id], FEE, 'ny-2')).receiptNumber).toBe(
+        `${w.tenant.prefix}-R-27-00001`,
+      );
     });
   });
 
@@ -728,9 +762,9 @@ describe('fee ledger engine (FEE-01, FEE-11) against Postgres', () => {
       const p = processorFor((_tenant, ids) => alerts.push(ids));
       await p.run({ kind: 'recompute', tenantId: w.tenant.id, date: '2026-10-15' }, {} as never);
       expect(alerts).toHaveLength(1);
-      expect(await scalar<string>(db, w.tenant.id, sql`select status::text as v from invoices`)).toBe(
-        'paid',
-      );
+      expect(
+        await scalar<string>(db, w.tenant.id, sql`select status::text as v from invoices`),
+      ).toBe('paid');
       await p.run({ kind: 'recompute', tenantId: w.tenant.id, date: '2026-10-15' }, {} as never);
       expect(alerts).toHaveLength(1);
     });

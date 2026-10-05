@@ -87,7 +87,7 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
   configureApp(app, config);
   await app.init();
   const importRunner = app.get(ImportRunner);
-  processors.receipts = payload => app.get(ReceiptJobRunner).run(payload);
+  processors.receipts = (payload) => app.get(ReceiptJobRunner).run(payload);
   processors.imports = async (payload, ctx) => {
     await importRunner.run(payload, ctx);
   };
@@ -123,6 +123,7 @@ export interface TenantFixture {
   id: string;
   slug: string;
   host: string;
+  prefix: string;
 }
 
 export interface UserFixture {
@@ -144,12 +145,15 @@ export class Factory {
 
   async tenant(status: TenantStatus = 'active'): Promise<TenantFixture> {
     const slug = `t-${tag()}`;
-    const [row] = await this.db
-      .insert(schema.tenants)
-      .values({ slug, name: `Test ${slug}`, plan: 'institute', status, studentNoPrefix: 'TT' })
-      .returning({ id: schema.tenants.id });
-    if (!row) throw new Error('tenant not created');
-    return { id: row.id, slug, host: `${slug}.${BASE_DOMAIN}` };
+    for (;;) {
+      const prefix = [...randomBytes(4)].map((n) => String.fromCharCode(65 + (n % 26))).join('');
+      const [row] = await this.db
+        .insert(schema.tenants)
+        .values({ slug, name: `Test ${slug}`, plan: 'institute', status, studentNoPrefix: prefix })
+        .onConflictDoNothing({ target: schema.tenants.studentNoPrefix })
+        .returning({ id: schema.tenants.id });
+      if (row) return { id: row.id, slug, host: `${slug}.${BASE_DOMAIN}`, prefix };
+    }
   }
 
   async student(

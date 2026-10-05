@@ -58,7 +58,7 @@ describe('dev seed', () => {
         sql`select u.display_name, u.phone, (select count(*)::int from enrollments e
               where e.student_id = s.user_id) as classes
             from students s join tenant_users u on u.id = s.user_id
-            where s.student_no = 'BR-1042'`,
+            where s.student_no = 'BR-26-1042'`,
       ),
     );
     expect(nimali).toEqual([

@@ -21,12 +21,12 @@ export const createTenantInputSchema = z.strictObject({
   plan: z.enum(PLAN_IDS),
   ownerPhone: sriLankaMobile,
   ownerName: singleLine(1, 120),
-  /** Student-number prefix; defaults to the initials of the name (e.g. "Kamal Physics" → "KP"). */
+  /** Globally unique student-number prefix; defaults to padded name initials. */
   studentNoPrefix: z
     .string()
     .trim()
     .toUpperCase()
-    .regex(/^[A-Z]{1,6}$/, 'Use 1–6 letters')
+    .regex(/^[A-Z]{2,4}$/, 'Use 2–4 English letters')
     .optional(),
 });
 export type CreateTenantInput = z.input<typeof createTenantInputSchema>;
@@ -40,14 +40,57 @@ export interface CreatedTenant {
 }
 
 export function defaultPrefix(name: string): string {
-  const initials = name
+  const words = name
     .normalize('NFKD')
-    .split(/\s+/)
-    .map((word) => word.replace(/[^A-Za-z]/g, '').charAt(0))
-    .join('')
     .toUpperCase()
-    .slice(0, 6);
-  return initials.length > 0 ? initials : 'ST';
+    .split(/\s+/)
+    .map((w) => w.replace(/[^A-Z]/g, ''))
+    .filter(Boolean);
+  let prefix = words
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 4);
+  for (const letter of words[0]?.slice(1) ?? '') {
+    if (prefix.length >= 3) break;
+    if (!prefix.includes(letter)) prefix += letter;
+  }
+  return prefix.length >= 2 ? prefix : `${prefix}ST`.slice(0, 3);
+}
+
+/** Name-derived alternatives first, then the finite English namespace, all in stable order. */
+export function* studentPrefixCandidates(name: string): Generator<string> {
+  const prefix = defaultPrefix(name);
+  const seen = new Set<string>();
+  const first =
+    name
+      .normalize('NFKD')
+      .toUpperCase()
+      .trim()
+      .split(/\s+/)[0]
+      ?.replace(/[^A-Z]/g, '') ?? '';
+  const preferred = [
+    prefix,
+    first.slice(0, 4),
+    `${prefix[0]}${prefix[2] ?? ''}${prefix[1] ?? ''}`,
+    first.slice(0, 2),
+  ];
+  for (const candidate of preferred) {
+    if (/^[A-Z]{2,4}$/.test(candidate) && !seen.has(candidate)) {
+      seen.add(candidate);
+      yield candidate;
+    }
+  }
+  for (let length = 2; length <= 4; length++) {
+    for (let n = 0; n < 26 ** length; n++) {
+      let value = n;
+      let candidate = '';
+      for (let digit = 0; digit < length; digit++) {
+        candidate = String.fromCharCode(65 + (value % 26)) + candidate;
+        value = Math.floor(value / 26);
+      }
+      if (!seen.has(candidate)) yield candidate;
+    }
+  }
 }
 
 /**
@@ -62,17 +105,26 @@ export async function createTenant(owner: Db, input: CreateTenantInput): Promise
   const passwordHash = await hashPassword(password);
 
   return owner.transaction(async (tx) => {
-    const [tenant] = await tx
-      .insert(tenants)
-      .values({
+    let tenant: { id: string } | undefined;
+    const candidates = data.studentNoPrefix
+      ? [data.studentNoPrefix]
+      : studentPrefixCandidates(data.name);
+    for (const prefix of candidates) {
+      const query = tx.insert(tenants).values({
         slug: data.slug,
         name: data.name,
         plan: data.plan,
         status: 'trial',
-        studentNoPrefix: data.studentNoPrefix ?? defaultPrefix(data.name),
-      })
-      .returning({ id: tenants.id });
-    if (!tenant) throw new Error('createTenant: tenant insert returned nothing');
+        studentNoPrefix: prefix,
+      });
+      [tenant] = await (
+        data.studentNoPrefix
+          ? query
+          : query.onConflictDoNothing({ target: tenants.studentNoPrefix })
+      ).returning({ id: tenants.id });
+      if (tenant) break;
+    }
+    if (!tenant) throw new Error('createTenant: student prefix namespace exhausted');
 
     const [user] = await tx
       .insert(tenantUsers)

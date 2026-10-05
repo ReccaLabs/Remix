@@ -20,13 +20,16 @@ export const ALLOW = {
   },
   /** Unique indexes on tenant tables that do not include `tenant_id` (primary keys excluded). */
   globalUnique: {
+    tenants_student_no_prefix_key:
+      'STU-07: student prefixes are globally unique; provisioning is owner-only.',
     tenants_slug_key: 'Slugs are global: `<slug>.remix.lk` must map to exactly one tenant.',
     tenant_domains_host_key:
       'A host belongs to exactly one tenant. The app role cannot write tenant_domains, so this constraint can never leak another tenant to it.',
   },
   /** SECURITY DEFINER functions (each returns only tenantPublicSchema fields). */
   securityDefiner: {
-    invoice_job_tenants: 'ADR 0012 cron fan-out: active/trial tenant UUIDs only, no tenant data; actual jobs use withTenant.',
+    invoice_job_tenants:
+      'ADR 0012 cron fan-out: active/trial tenant UUIDs only, no tenant data; actual jobs use withTenant.',
     resolve_tenant_by_slug: 'TEN-01 host → tenant before a tenant context exists.',
     resolve_tenant_by_domain: 'TEN-01 verified custom domain → tenant.',
   },
@@ -38,9 +41,21 @@ const OWNER = 'remix_owner';
 /** ADR 0008: FORCE binds even the owner, through a separate tenant-scoped owner policy. */
 export const LEDGER_UPDATE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
   student_cards: ['status', 'revoked_at', 'revoked_by', 'revoke_reason'],
-  tenant_settings: ['due_day', 'reminders_enabled', 'remind_before_days', 'remind_after_days', 'bank_details', 'receipt_address', 'receipt_phone', 'receipt_footer'],
-  tenant_integrations: ['config', 'secret_ciphertext', 'secret_nonce', 'key_id'], invoices: ['paid_cents', 'status'],
-  invoice_lines: ['void_reason', 'voided_at'], payments: [], payment_allocations: [],
+  tenant_settings: [
+    'due_day',
+    'reminders_enabled',
+    'remind_before_days',
+    'remind_after_days',
+    'bank_details',
+    'receipt_address',
+    'receipt_phone',
+    'receipt_footer',
+  ],
+  tenant_integrations: ['config', 'secret_ciphertext', 'secret_nonce', 'key_id'],
+  invoices: ['paid_cents', 'status'],
+  invoice_lines: ['void_reason', 'voided_at'],
+  payments: [],
+  payment_allocations: [],
   receipts: ['pdf_key', 'reversed_at'],
 };
 
@@ -149,7 +164,8 @@ export async function policyViolations(db: Queryable): Promise<string[]> {
   for (const p of policies) {
     const label = `${p.table}.${p.policy}`;
     for (const role of p.roles) {
-      const tenantBoundOwner = role === OWNER && p.table in LEDGER_UPDATE_COLUMNS && p.policy === 'tenant_owner';
+      const tenantBoundOwner =
+        role === OWNER && p.table in LEDGER_UPDATE_COLUMNS && p.policy === 'tenant_owner';
       if (role !== 'remix_app' && role !== 'remix_readonly' && !tenantBoundOwner) {
         problems.push(`${label}: applies to ${role} (only remix_app / remix_readonly allowed)`);
       }
@@ -412,17 +428,21 @@ export async function grantViolations(
       );
     }
   }
-  const columns = await rows<{ table: string; column: string; granted: boolean; forced: boolean }>(db, sql`
+  const columns = await rows<{ table: string; column: string; granted: boolean; forced: boolean }>(
+    db,
+    sql`
     select c.relname as table, a.attname as column, c.relforcerowsecurity as forced,
       has_column_privilege('remix_app', c.oid, a.attname, 'UPDATE') as granted
     from pg_class c join pg_attribute a on a.attrelid = c.oid
     where c.relnamespace = 'public'::regnamespace and a.attnum > 0 and not a.attisdropped
-  `);
+  `,
+  );
   for (const c of columns) {
     const allowed = LEDGER_UPDATE_COLUMNS[c.table];
     if (!allowed) continue;
     if (!c.forced) problems.push(`${c.table}: ledger RLS is not forced`);
-    if (c.granted !== allowed.includes(c.column)) problems.push(`${c.table}.${c.column}: unexpected UPDATE grant=${c.granted}`);
+    if (c.granted !== allowed.includes(c.column))
+      problems.push(`${c.table}.${c.column}: unexpected UPDATE grant=${c.granted}`);
   }
   return problems;
 }
