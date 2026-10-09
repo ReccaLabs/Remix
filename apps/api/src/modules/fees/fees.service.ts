@@ -18,11 +18,17 @@ import { FeesHooks } from './fees-hooks';
 import { generateInvoices } from './invoice-generation';
 import { feeNotFound, recordPayment, reversePayment, type RecordPaymentInput } from './ledger';
 import { projectionCtes, safeCents, type ProjectionRow } from './projections';
+import { mySlips, slipWaitingSql } from '../slips/slips.service';
 
 const { payments, receipts, students, tenantUsers, invoiceLines, invoices, paymentAllocations, classes } = schema;
 type InvoiceQuery = z.output<typeof API.listInvoices.query>;
 type PaymentQuery = z.output<typeof API.listPayments.query>;
 const receiver = alias(tenantUsers, 'receiver');
+/** FEE-02 `slip_waiting`: a slip waiting for review covers a line of the projected invoice `p`. */
+const invoiceSlipWaiting = sql`exists (select 1 from public.bank_slip_lines bl
+  join public.bank_slips bs on bs.tenant_id = bl.tenant_id and bs.id = bl.slip_id
+  join public.invoice_lines il on il.tenant_id = bl.tenant_id and il.id = bl.invoice_line_id
+  where il.invoice_id = p.id and il.voided_at is null and bs.status in ('processing', 'submitted'))`;
 
 @Injectable()
 export class FeesService {
@@ -75,8 +81,7 @@ export class FeesService {
       if (query.filter === 'paid') conditions.push(sql`p.status = 'paid'`);
       if (query.filter === 'unpaid') conditions.push(sql`p.status <> 'paid'`);
       if (query.filter === 'overdue') conditions.push(sql`p.status = 'overdue'`);
-      // Slip lifecycle arrives in 3-D; no submitted slips can exist yet.
-      if (query.filter === 'slip_waiting') conditions.push(sql`false`);
+      if (query.filter === 'slip_waiting') conditions.push(invoiceSlipWaiting);
       if (query.classId) conditions.push(sql`exists (select 1 from public.invoice_lines l where l.invoice_id = p.id and l.class_id = ${query.classId}::uuid and l.voided_at is null)`);
       if (query.q) {
         const q = `%${query.q.replace(/[\\%_]/g, c => `\\${c}`)}%`;
@@ -88,13 +93,13 @@ export class FeesService {
       const ctes = projectionCtes(this.clock.now());
       const [totals] = (await tx.execute<{ total: string; total_cents: string; paid_cents: string }>(sql`${ctes}
         select count(*) as total, coalesce(sum(p.total_cents), 0) as total_cents, coalesce(sum(p.paid_cents), 0) as paid_cents ${joined}`)).rows;
-      const rows = (await tx.execute<ProjectionRow & { student_no: string; student_name: string }>(sql`${ctes}
-        select p.*, s.student_no, u.display_name as student_name ${joined}
+      const rows = (await tx.execute<ProjectionRow & { student_no: string; student_name: string; slip_waiting: boolean }>(sql`${ctes}
+        select p.*, s.student_no, u.display_name as student_name, ${invoiceSlipWaiting} as slip_waiting ${joined}
         order by p.month desc, p.id desc limit ${query.pageSize} offset ${(query.page - 1) * query.pageSize}`)).rows;
       return { page: query.page, pageSize: query.pageSize, total: Number(totals?.total ?? 0),
         totals: { totalCents: safeCents(totals?.total_cents ?? 0), paidCents: safeCents(totals?.paid_cents ?? 0) },
         items: rows.map(r => ({ id: r.id, number: r.number, studentId: r.student_id, studentNo: r.student_no, studentName: r.student_name,
-          month: r.month, dueOn: r.due_on, totalCents: safeCents(r.total_cents), paidCents: safeCents(r.paid_cents), status: r.status, slipWaiting: false })) };
+          month: r.month, dueOn: r.due_on, totalCents: safeCents(r.total_cents), paidCents: safeCents(r.paid_cents), status: r.status, slipWaiting: r.slip_waiting })) };
     });
   }
 
@@ -160,7 +165,7 @@ export class FeesService {
         .where(eq(schema.tenantIntegrations.kind, 'payhere'));
       return { openLines: own.openLines,
         payments: own.payments.map(payment => myFeesResponseSchema.shape.payments.element.parse(payment)),
-        slips: [], // TODO(3-D): the slips table/lifecycle does not exist yet.
+        slips: await mySlips(tx, session.userId),
         cardEnabled: payhere?.config.enabled ?? false, bankDetails: settings?.bankDetails ?? null };
     });
   }
@@ -170,7 +175,8 @@ export class FeesService {
         .innerJoin(tenantUsers, and(eq(tenantUsers.tenantId, students.tenantId), eq(tenantUsers.id, students.userId))).where(eq(students.userId, studentId));
       if (!student) throw feeNotFound();
       const lines = await tx.select({ line: invoiceLines, number: invoices.number, dueOn: invoices.dueOn, className: classes.name,
-        paid: sql<string>`coalesce((select sum(a.amount_cents) from public.payment_allocations a where a.tenant_id = ${invoiceLines.tenantId} and a.invoice_line_id = ${invoiceLines.id}), 0)` }).from(invoiceLines)
+        paid: sql<string>`coalesce((select sum(a.amount_cents) from public.payment_allocations a where a.tenant_id = ${invoiceLines.tenantId} and a.invoice_line_id = ${invoiceLines.id}), 0)`,
+        slipWaiting: slipWaitingSql() }).from(invoiceLines)
         .innerJoin(invoices, and(eq(invoices.tenantId, invoiceLines.tenantId), eq(invoices.id, invoiceLines.invoiceId)))
         .innerJoin(classes, and(eq(classes.tenantId, invoiceLines.tenantId), eq(classes.id, invoiceLines.classId)))
         .where(and(eq(invoices.studentId, studentId), sql`${invoiceLines.voidedAt} is null`)).orderBy(asc(invoiceLines.month), asc(invoiceLines.id));
@@ -178,7 +184,7 @@ export class FeesService {
       const openLines: InvoiceLine[] = lines.filter(r => safeCents(r.paid) < r.line.amountCents).map(r => ({ id: r.line.id, invoiceId: r.line.invoiceId,
         invoiceNumber: r.number, enrollmentId: r.line.enrollmentId, classId: r.line.classId, className: r.className,
         month: r.line.month, dueOn: r.dueOn, amountCents: r.line.amountCents, paidCents: safeCents(r.paid),
-        openCents: r.line.amountCents - safeCents(r.paid), paid: false, overdue: today > r.dueOn, slipWaiting: false }));
+        openCents: r.line.amountCents - safeCents(r.paid), paid: false, overdue: today > r.dueOn, slipWaiting: r.slipWaiting }));
       return { studentId, ...student, openLines, payments: await this.paymentRows(tx, eq(payments.studentId, studentId)) };
   }
 

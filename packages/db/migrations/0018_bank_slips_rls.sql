@@ -13,7 +13,7 @@ REVOKE ALL ON public.uploads FROM remix_app, remix_readonly, remix_platform, PUB
 --> statement-breakpoint
 GRANT SELECT ON public.uploads TO remix_app, remix_readonly;
 --> statement-breakpoint
-GRANT INSERT (tenant_id, kind, created_by, content_type, size_bytes, object_key) ON public.uploads TO remix_app;
+GRANT INSERT (tenant_id, kind, created_by, content_type, size_bytes, object_key, created_at) ON public.uploads TO remix_app;
 --> statement-breakpoint
 GRANT UPDATE (status, processed_key, processed_at) ON public.uploads TO remix_app;
 --> statement-breakpoint
@@ -32,7 +32,7 @@ REVOKE ALL ON public.bank_slips FROM remix_app, remix_readonly, remix_platform, 
 --> statement-breakpoint
 GRANT SELECT ON public.bank_slips TO remix_app, remix_readonly;
 --> statement-breakpoint
-GRANT INSERT (tenant_id, student_id, upload_id, amount_cents, reference, reference_norm, slip_date) ON public.bank_slips TO remix_app;
+GRANT INSERT (tenant_id, student_id, upload_id, amount_cents, reference, reference_norm, slip_date, submitted_at) ON public.bank_slips TO remix_app;
 --> statement-breakpoint
 GRANT UPDATE (status, reviewed_by, reviewed_at, reject_reason, payment_id, duplicate_confirmed) ON public.bank_slips TO remix_app;
 --> statement-breakpoint

@@ -18,6 +18,7 @@ import { createSmsProcessor } from '../../../src/jobs/sms/sms.processor';
 import { InlineJobProducer } from '../../../src/jobs/testing/inline-jobs';
 import { ImportRunner } from '../../../src/modules/imports/import-runner';
 import { ReceiptJobRunner } from '../../../src/modules/fees/receipt-jobs';
+import { MediaJobRunner } from '../../../src/modules/slips/media-jobs';
 import { TENANT_CACHE } from '../../../src/modules/tenancy/db-tenant-resolver';
 import type { InMemoryTenantCache } from '../../../src/modules/tenancy/tenant-cache';
 import { LogCapture } from '../../fixtures/test-app';
@@ -88,6 +89,7 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
   await app.init();
   const importRunner = app.get(ImportRunner);
   processors.receipts = (payload) => app.get(ReceiptJobRunner).run(payload);
+  processors.media = (payload) => app.get(MediaJobRunner).run(payload, jobs);
   processors.imports = async (payload, ctx) => {
     await importRunner.run(payload, ctx);
   };
