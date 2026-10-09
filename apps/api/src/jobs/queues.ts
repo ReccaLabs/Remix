@@ -37,6 +37,11 @@ export const smsPayload = z.strictObject({
   /** Normalised Sri Lankan mobile. */
   to: z.string().regex(/^\+947\d{8}$/),
   text: z.string().min(1).max(1000),
+  /**
+   * The wallet was debited for this message (MSG-02): the worker marks it sent, or refunds it when
+   * the send fails for good. Absent for OTP/invite SMS, which are platform cost.
+   */
+  billed: z.literal(true).optional(),
 });
 
 export const importsPayload = z.strictObject({
@@ -51,12 +56,16 @@ const feeTenant = tenantId.refine(id => id !== FEES_SYSTEM_TENANT);
 export const feesPayload = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('monthly_tick'), tenantId: z.literal(FEES_SYSTEM_TENANT) }),
   z.strictObject({ kind: z.literal('nightly_tick'), tenantId: z.literal(FEES_SYSTEM_TENANT) }),
+  z.strictObject({ kind: z.literal('reminders_tick'), tenantId: z.literal(FEES_SYSTEM_TENANT) }),
   z.strictObject({ kind: z.literal('invoices'), tenantId: feeTenant, month: feeMonth }),
   z.strictObject({ kind: z.literal('recompute'), tenantId: feeTenant, date: z.iso.date() }),
+  /** FEE-12: send the automatic fee reminders that fall due on `date` (Asia/Colombo). */
+  z.strictObject({ kind: z.literal('reminders'), tenantId: feeTenant, date: z.iso.date() }),
 ]);
 export function feesBusinessKey(p: z.output<typeof feesPayload>): string {
   if (p.kind === 'invoices') return `invoices:${p.tenantId}:${p.month}`;
   if (p.kind === 'recompute') return `fee-projections:${p.tenantId}:${p.date}`;
+  if (p.kind === 'reminders') return `fee-reminders:${p.tenantId}:${p.date}`;
   return `fees:${p.kind}`;
 }
 

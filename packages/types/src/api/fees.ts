@@ -380,6 +380,8 @@ export const feeSettingsSchema = z.object({
   /** Day of the month fees are due (FEE-12; default 5). */
   dueDay: z.number().int().min(1).max(28),
   remindersEnabled: z.boolean(),
+  /** MSG-04: text the guardian (or student) a receipt SMS for each payment; costs wallet credit. */
+  receiptSmsEnabled: z.boolean(),
   remindBeforeDays: z.number().int().min(0).max(10),
   remindAfterDays: z.number().int().min(1).max(30),
   bankDetails: bankDetailsSchema.nullable(),
@@ -395,6 +397,7 @@ export const updateFeeSettingsSchema = z
   .strictObject({
     dueDay: feeSettingsSchema.shape.dueDay.optional(),
     remindersEnabled: z.boolean().optional(),
+    receiptSmsEnabled: z.boolean().optional(),
     remindBeforeDays: feeSettingsSchema.shape.remindBeforeDays.optional(),
     remindAfterDays: feeSettingsSchema.shape.remindAfterDays.optional(),
     bankDetails: bankDetailsSchema.nullable().optional(),
@@ -430,6 +433,10 @@ export const smsWalletSchema = z.object({
   balanceCents: z.number().int(),
   senderId: z.string().nullable(),
   lowBalanceThresholdCents: cents,
+  /** Balance is under the threshold: show the "top up" warning (MSG-02 low-balance alert). */
+  lowBalance: z.boolean(),
+  /** A "Buy SMS" request is waiting for Recca staff (at most a few open at once). */
+  openTopUpRequests: z.number().int().nonnegative(),
   segmentPriceCents: cents,
   recent: z.array(
     z.object({
@@ -467,7 +474,9 @@ export type ReminderPreview = z.infer<typeof reminderPreviewSchema>;
 export const sendRemindersSchema = reminderTargetSchema.extend({
   idempotencyKey: idempotencyKeySchema,
 });
+export type SendRemindersRequest = z.output<typeof sendRemindersSchema>;
 export const sendRemindersResponseSchema = z.object({
   queued: z.number().int().nonnegative(),
   costCents: totalCents,
 });
+export type SendRemindersResponse = z.infer<typeof sendRemindersResponseSchema>;

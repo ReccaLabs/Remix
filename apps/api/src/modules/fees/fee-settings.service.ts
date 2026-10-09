@@ -14,6 +14,7 @@ export function feeSettingsView(row?: typeof tenantSettings.$inferSelect): FeeSe
   return {
     dueDay: row?.dueDay ?? 5,
     remindersEnabled: row?.remindersEnabled ?? false,
+    receiptSmsEnabled: row?.receiptSmsEnabled ?? false,
     remindBeforeDays: row?.remindBeforeDays ?? 0,
     remindAfterDays: row?.remindAfterDays ?? 1,
     bankDetails: row?.bankDetails ?? null,
@@ -70,6 +71,7 @@ export class FeeSettingsService {
       const changes: Partial<typeof tenantSettings.$inferInsert> = {};
       if (body.dueDay !== undefined) changes.dueDay = body.dueDay;
       if (body.remindersEnabled !== undefined) changes.remindersEnabled = body.remindersEnabled;
+      if (body.receiptSmsEnabled !== undefined) changes.receiptSmsEnabled = body.receiptSmsEnabled;
       if (body.remindBeforeDays !== undefined) changes.remindBeforeDays = body.remindBeforeDays;
       if (body.remindAfterDays !== undefined) changes.remindAfterDays = body.remindAfterDays;
       if (body.bankDetails !== undefined) changes.bankDetails = body.bankDetails;

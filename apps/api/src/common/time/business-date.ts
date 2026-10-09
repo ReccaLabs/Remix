@@ -36,3 +36,10 @@ export function calendarDate(instant: Date, timeZone = BUSINESS_TIME_ZONE): stri
 export function monthStart(instant: Date, timeZone = BUSINESS_TIME_ZONE): string {
   return `${calendarDate(instant, timeZone).slice(0, 7)}-01`;
 }
+
+/** `date` (`YYYY-MM-DD`) shifted by whole days. Calendar arithmetic, so DST-free and zone-free. */
+export function addDays(date: string, days: number): string {
+  const [y, m, d] = date.split('-').map(Number);
+  if (y === undefined || m === undefined || d === undefined) throw new RangeError(`Bad date: ${date}`);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}

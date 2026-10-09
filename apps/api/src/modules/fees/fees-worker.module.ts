@@ -10,6 +10,7 @@ import { JOB_PRODUCER, type JobProducer } from '../../jobs/job-producer';
 import { JobsModule } from '../../jobs/jobs.module';
 import { ProcessorRegistry } from '../../jobs/processor-registry';
 import { DB } from '../db/db.module';
+import { FeeRemindersService } from '../sms/fee-reminders.service';
 import { createFeesProcessor, FEES_SCHEDULES } from './fees-processor';
 
 @Injectable()
@@ -18,9 +19,10 @@ class FeesJobs implements OnApplicationBootstrap, OnApplicationShutdown {
   private connection?: Redis;
   private queue?: Queue;
   constructor(@Inject(APP_CONFIG) private readonly config: AppConfig, registry: ProcessorRegistry,
-    @Inject(DB) db: Db, @Inject(JOB_PRODUCER) jobs: JobProducer, @Inject(CLOCK) clock: Clock) {
+    @Inject(DB) db: Db, @Inject(JOB_PRODUCER) jobs: JobProducer, @Inject(CLOCK) clock: Clock,
+    reminders: FeeRemindersService) {
     registry.register('fees', createFeesProcessor(db, jobs, clock,
-      (tenantId, invoiceIds) => { this.logger.error({ tenantId, invoiceIds }, 'Fee projection drift repaired'); }));
+      (tenantId, invoiceIds) => { this.logger.error({ tenantId, invoiceIds }, 'Fee projection drift repaired'); }, reminders));
   }
   async onApplicationBootstrap(): Promise<void> {
     if (!this.config.valkeyUrl) return;
@@ -33,6 +35,8 @@ class FeesJobs implements OnApplicationBootstrap, OnApplicationShutdown {
         { name: 'fees', data: { kind: 'monthly_tick', tenantId: FEES_SYSTEM_TENANT }, opts: DEFAULT_JOB_OPTIONS });
       await this.queue.upsertJobScheduler('fees-nightly', FEES_SCHEDULES.nightly,
         { name: 'fees', data: { kind: 'nightly_tick', tenantId: FEES_SYSTEM_TENANT }, opts: DEFAULT_JOB_OPTIONS });
+      await this.queue.upsertJobScheduler('fees-reminders', FEES_SCHEDULES.reminders,
+        { name: 'fees', data: { kind: 'reminders_tick', tenantId: FEES_SYSTEM_TENANT }, opts: DEFAULT_JOB_OPTIONS });
     } catch (error) { await this.onApplicationShutdown(); throw error; }
   }
   async onApplicationShutdown(): Promise<void> {
