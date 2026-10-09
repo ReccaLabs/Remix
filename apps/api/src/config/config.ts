@@ -36,6 +36,13 @@ const hostList = list
  */
 export const DEV_AUTH_CODE_SECRET = 'remix-dev-only-auth-code-secret-never-in-production';
 
+/** Optional env value: unset or empty -> undefined. */
+const optionalText = (max: number) =>
+  z.string().trim().min(1).max(max).optional().or(z.literal('').transform(() => undefined));
+
+const SMS_GATEWAYS = ['notifylk', 'textlk'] as const;
+export type SmsGatewayName = (typeof SMS_GATEWAYS)[number];
+
 const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
 
 /**
@@ -103,12 +110,27 @@ const envSchema = z
       .max(512)
       .optional()
       .or(z.literal('').transform(() => undefined)),
+    /** MSG-01 platform SMS gateways. Credentials are secrets: env only, never logged. */
+    NOTIFYLK_USER_ID: optionalText(40),
+    NOTIFYLK_API_KEY: optionalText(200),
+    NOTIFYLK_SENDER_ID: optionalText(11),
+    TEXTLK_API_TOKEN: optionalText(300),
+    TEXTLK_SENDER_ID: optionalText(11),
+    SMS_PRIMARY: z.enum(SMS_GATEWAYS).default('notifylk'),
+    SMS_FALLBACK: z
+      .enum(SMS_GATEWAYS)
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    SMS_HTTP_TIMEOUT_MS: z.coerce.number().int().min(1000).max(30000).default(8000),
   })
   .transform((env) => ({
     ...env,
     COOKIE_SECURE: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
   }))
   .superRefine((env, ctx) => {
+    if (env.SMS_FALLBACK && env.SMS_FALLBACK === env.SMS_PRIMARY) {
+      ctx.addIssue({ code: 'custom', path: ['SMS_FALLBACK'], message: 'must differ from SMS_PRIMARY' });
+    }
     if (env.NODE_ENV !== 'production') return;
     if (!env.INTEGRATIONS_KEY) {
       ctx.addIssue({ code: 'custom', path: ['INTEGRATIONS_KEY'], message: 'required in production (AES-256-GCM)' });
@@ -165,6 +187,16 @@ export interface AppConfig {
   authCodeSecret: string;
   integrationsKey: string | undefined;
   integrationsKeyId: string;
+  sms: SmsConfig;
+}
+
+/** Platform SMS gateways (MSG-01). A gateway with incomplete credentials is simply absent. */
+export interface SmsConfig {
+  primary: SmsGatewayName;
+  fallback: SmsGatewayName | undefined;
+  timeoutMs: number;
+  notifyLk: { userId: string; apiKey: string; senderId: string } | undefined;
+  textLk: { apiToken: string; senderId: string } | undefined;
 }
 
 /** Thrown when the environment is invalid. Lists variable names and reasons, never values. */
@@ -215,6 +247,19 @@ export function loadConfig(
     authCodeSecret: e.AUTH_CODE_SECRET ?? DEV_AUTH_CODE_SECRET,
     integrationsKey: e.INTEGRATIONS_KEY,
     integrationsKeyId: e.INTEGRATIONS_KEY_ID,
+    sms: {
+      primary: e.SMS_PRIMARY,
+      fallback: e.SMS_FALLBACK,
+      timeoutMs: e.SMS_HTTP_TIMEOUT_MS,
+      notifyLk:
+        e.NOTIFYLK_USER_ID && e.NOTIFYLK_API_KEY && e.NOTIFYLK_SENDER_ID
+          ? { userId: e.NOTIFYLK_USER_ID, apiKey: e.NOTIFYLK_API_KEY, senderId: e.NOTIFYLK_SENDER_ID }
+          : undefined,
+      textLk:
+        e.TEXTLK_API_TOKEN && e.TEXTLK_SENDER_ID
+          ? { apiToken: e.TEXTLK_API_TOKEN, senderId: e.TEXTLK_SENDER_ID }
+          : undefined,
+    },
   };
 }
 
