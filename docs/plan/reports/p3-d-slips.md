@@ -1,0 +1,36 @@
+# p3-d-slips report
+
+- Status: done
+- Branch / PR: `feat/p3-d-slips` / https://github.com/ReccaLabs/Remix/pull/60
+- Feature IDs: done: FEE-05 (slip upload, bank details, "Checking"), FEE-06 (queue oldest first, image viewer zoom/rotate, expected vs written, duplicate check, A/R/S, auto-advance, audit), ADR 0009 storage + media worker | not done: SMS to the student on approve/reject (3-F; TODOs at the call sites in `slips.service.ts`), OCR (FEE-13), PayHere (3-E)
+- Gates: lint · typecheck · build passed locally; tests: API 971 (unit + integration + valkey + new `s3` project against SeaweedFS), db 439 (incl. isolation for the 3 new tables), web 445, UI 58, types 146, site 77. Under full-parallel load on the shared machine a few jsdom/perf tests hit 15 s timeouts; each passed when re-run alone.
+- CI: all 6 pass — lint/typecheck/test/build (with SeaweedFS); tenant isolation (Postgres 18); E2E journeys; API image/smoke/Trivy; gitleaks; Semgrep. The first run failed `pnpm audit` and Trivy on new advisories (sharp 0.35.4 GHSA-wq5f-xc86-pv6w, source-map-js GHSA-68fv-2mgg-jv7q); fixed by bumping sharp to 0.35.5 and overriding source-map-js to 1.2.2.
+- Migrations added: `packages/db/migrations/0017_bank_slips.sql` (tables), `0018_bank_slips_rls.sql` (forced RLS, column grants, lifecycle triggers)
+- Contract changes (packages/types): none
+- New dependencies:
+  - `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner` — S3/R2 adapter with SigV4 presigning (nothing equivalent was installed).
+  - `sharp` (already in the lockfile via next; now a direct API dependency, bumped to 0.35.5) — decode, orient, resize, re-encode.
+  - `heic-decode` (ISC; pulls `libheif-js`, LGPL-3.0, server-side only) — verified that sharp's prebuilt libvips cannot decode HEVC HEIC (`sharp.format.heif.input` = `.avif` only; the fixture fails in sharp and converts with heic-decode).
+- Security-relevant changes:
+  - S3 provider: presigned PUT signs `content-type` + exact `content-length` (verified against SeaweedFS: wrong size/type → rejected), GET ≤ 10 min with server-set disposition, tenant prefix enforced before any call, no checksum params, URLs/bodies never logged: `apps/api/src/integrations/storage/storage.s3.ts`.
+  - Binding never selects the mock in production (unconfigured → failing provider); `STORAGE_S3_*` all-or-none, https in production: `storage-binding.ts`, `apps/api/src/config/config.ts`.
+  - Tables: forced RLS + owner policy, column-level INSERT/UPDATE grants, `uploads` DELETE only for `pending` rows (trigger), one-way upload and slip lifecycles, slip lines must belong to the slip's student (AFTER trigger so composite FKs report cross-tenant ids): `packages/db/migrations/0018_bank_slips_rls.sql`.
+  - Media worker: magic-byte sniffing, pixel cap 50 MP before decode, re-encode drops EXIF/GPS/XMP/ICC, original deleted, unreadable → slip `rejected` "Unreadable file": `apps/api/src/modules/slips/media.ts`, `media-jobs.ts`.
+  - Approve: tenant ledger advisory lock + slip row lock + idempotency key `slip:<id>` → one payment for concurrent/double approve; pays the expected open amount; `confirmDuplicate` required and audited; reject audited; students never see `duplicateOf`: `apps/api/src/modules/slips/slips.service.ts`.
+  - Payments by any method supersede waiting slips for those months: `apps/api/src/modules/fees/ledger.ts` (`supersedeWaitingSlips`).
+  - Rate limits on upload (20/h/user), submit (10/h/user), image and review: `slips.controller.ts`.
+  - CSP: only `/app/pay` and `/admin/fees` get `STORAGE_ORIGIN` in `connect-src`/`img-src`; everything else keeps `connect-src 'self'`: `apps/web/src/lib/security-headers.ts`, `apps/web/src/proxy.ts`, `apps/web/src/server/env.ts`.
+- Deviations from plan/ADRs:
+  - Supersede rule (ADR 0008 §5 "same lines"): a new slip supersedes waiting slips whose months it fully covers; a partial overlap is refused (409) so a paid-at-the-bank month is never dropped silently.
+  - Uploads must be submitted within 1 h of the presigned URL (the clean-up stays at 24 h); slip dates must be within 400 days and not in the future.
+  - Clean-up fans out over `invoice_job_tenants()` (active/trial tenants), so a suspended tenant's stale uploads wait until it is active again; no new SECURITY DEFINER function.
+  - Isolation suite gained an access level `lifecycle` (column UPDATE + DELETE) for `uploads`.
+  - CI `check` job now starts SeaweedFS (compose) for the new API `s3` test project.
+  - `pnpm dev` passes SeaweedFS storage env to the API (unless `apps/api/.env` exists) and `STORAGE_ORIGIN` to the web app; in development the API creates the bucket and a permissive CORS rule. Production R2 needs the bucket CORS set by the operator (PUT/GET from tenant origins, header `content-type`).
+  - `STORAGE_S3_PUBLIC_ENDPOINT` added for local staging (API in a container signs for the published port).
+- Known issues / TODO:
+  - SMS to the student on approve/reject: TODO(3-F) at both call sites in `apps/api/src/modules/slips/slips.service.ts`.
+  - SeaweedFS ignores `response-content-disposition`; R2 honours it (unit test pins the signed value).
+  - The 3 slips/minute target is met by design (keyboard-only, auto-advance, one request per action) but was not timed in a browser journey; 3-G owns the journeys.
+  - Production deploy must set `STORAGE_S3_*` (API + worker) and `STORAGE_ORIGIN` (web), else uploads fail closed.
+- Review these files first (max 10): `apps/api/src/modules/slips/slips.service.ts`, `packages/db/migrations/0018_bank_slips_rls.sql`, `apps/api/src/integrations/storage/storage.s3.ts`, `apps/api/src/modules/slips/media-jobs.ts`, `apps/api/src/modules/slips/media.ts`, `apps/api/src/modules/fees/ledger.ts`, `apps/api/test/integration/slips.int.test.ts`, `apps/web/src/components/fees/slip-queue.tsx`, `apps/web/src/lib/security-headers.ts`, `apps/api/src/config/config.ts`.
