@@ -35,6 +35,16 @@ export const envSchema = z.object({
   TENANT_BASE_DOMAINS: hostList,
   /** Comma-separated: `admin.remix.lk` (prod), `admin.localhost` (dev). */
   PLATFORM_HOSTS: hostList,
+  /**
+   * ADR 0009: origin of the private slip bucket (R2 / dev SeaweedFS) that browsers PUT slip
+   * photos to and load signed slip images from. Origin only; the CSP allows exactly this.
+   */
+  STORAGE_ORIGIN: z
+    .url({ protocol: /^https?$/ })
+    .refine((url) => new URL(url).origin === url.replace(/\/+$/, ''), 'Use an origin only, without a path')
+    .transform((url) => new URL(url).origin)
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
 });
 
 export type Env = z.output<typeof envSchema>;

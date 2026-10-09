@@ -5,6 +5,7 @@ beforeAll(() => {
   vi.stubEnv('API_INTERNAL_URL', 'http://localhost:4000');
   vi.stubEnv('TENANT_BASE_DOMAINS', 'localhost');
   vi.stubEnv('PLATFORM_HOSTS', 'admin.localhost');
+  vi.stubEnv('STORAGE_ORIGIN', 'http://127.0.0.1:8333');
 });
 
 afterEach(() => {
@@ -107,6 +108,16 @@ describe('proxy', () => {
       'http://localhost:3001/admin',
     ])
       expect((await run(url)).headers.get('permissions-policy')).toContain('camera=()');
+  });
+  it('lets only the slip pages reach the storage origin (ADR 0009)', async () => {
+    const csp = async (url: string) => (await run(url)).headers.get('content-security-policy') ?? '';
+    for (const path of ['/app/pay', '/admin/fees']) {
+      const policy = await csp(`http://kamalphysics.localhost:3001${path}`);
+      expect(policy).toContain("connect-src 'self' http://127.0.0.1:8333");
+      expect(policy).toMatch(/img-src [^;]*http:\/\/127\.0\.0\.1:8333/);
+    }
+    for (const url of ['http://kamalphysics.localhost:3001/app', 'http://kamalphysics.localhost:3001/admin/students', 'http://admin.localhost:3001/admin/fees'])
+      expect(await csp(url)).toContain("connect-src 'self';");
   });
 });
 

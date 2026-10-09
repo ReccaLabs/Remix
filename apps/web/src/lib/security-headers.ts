@@ -10,6 +10,11 @@ export interface CspOptions {
   isDev: boolean;
   /** SET-02: only the Payments settings page may submit a checkout to these exact gateways. */
   allowPayhereCheckout?: boolean;
+  /**
+   * ADR 0009: the storage origin for slip pages only (student Pay: presigned PUT; admin Fees:
+   * signed slip images). Exactly one origin, added to connect-src and img-src.
+   */
+  storageOrigin?: string;
 }
 
 /** 128-bit random nonce, base64. Unpredictable and unique per request. */
@@ -18,7 +23,7 @@ export function createNonce(): string {
   return btoa(String.fromCharCode(...bytes));
 }
 
-export function buildCsp({ nonce, isDev, allowPayhereCheckout = false }: CspOptions): string {
+export function buildCsp({ nonce, isDev, allowPayhereCheckout = false, storageOrigin }: CspOptions): string {
   const n = `'nonce-${nonce}'`;
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
@@ -31,9 +36,9 @@ export function buildCsp({ nonce, isDev, allowPayhereCheckout = false }: CspOpti
     'style-src-attr': ["'unsafe-inline'"],
     // https: for the institute's own logo and tab icon (TEN-03: https URLs until the upload
     // pipeline lands). Images cannot run script; http: stays blocked.
-    'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+    'img-src': ["'self'", 'data:', 'blob:', 'https:', ...(storageOrigin ? [storageOrigin] : [])],
     'font-src': ["'self'"],
-    'connect-src': ["'self'"],
+    'connect-src': ["'self'", ...(storageOrigin ? [storageOrigin] : [])],
     'media-src': ["'self'"],
     'object-src': ["'none'"],
     'base-uri': ["'none'"],
