@@ -43,7 +43,7 @@ export function createSmsProcessor(provider: SmsProvider, billing?: SmsBilling):
       });
     } catch (error) {
       const rejected = error instanceof SmsRejectedError;
-      if (payload.billed && billing && (rejected || (ctx?.attempt ?? 1) >= DEFAULT_JOB_OPTIONS.attempts)) {
+      if (payload.billed && billing && (rejected || ctx.attempt >= DEFAULT_JOB_OPTIONS.attempts)) {
         try {
           await billing.onPermanentFailure(payload.tenantId, payload.messageId);
         } catch {

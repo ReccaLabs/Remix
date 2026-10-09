@@ -9,10 +9,12 @@ const T = '0190aaaa-0000-7000-8000-000000000001';
 const payload = (over: Record<string, unknown> = {}) =>
   smsPayload.parse({ tenantId: T, messageId: 'm1', gateway: 'remix-wallet', senderId: 'ReMix', to: '+94771234567', text: 'hi', ...over });
 const ctx = (attempt: number) => ({ queue: 'sms' as const, jobId: 'j', attempt });
-const billing = (): SmsBilling & { onSent: ReturnType<typeof vi.fn>; onPermanentFailure: ReturnType<typeof vi.fn> } => ({
-  onSent: vi.fn(() => Promise.resolve()),
-  onPermanentFailure: vi.fn(() => Promise.resolve()),
-});
+function billing() {
+  const onSent = vi.fn<SmsBilling['onSent']>(() => Promise.resolve());
+  const onPermanentFailure = vi.fn<SmsBilling['onPermanentFailure']>(() => Promise.resolve());
+  const api: SmsBilling = { onSent, onPermanentFailure };
+  return { api, onSent, onPermanentFailure };
+}
 const failing = (error: Error): SmsProvider => ({ send: () => Promise.reject(error) });
 const ok: SmsProvider = { send: () => Promise.resolve({ providerMessageId: 'x', segments: 1 }) };
 
@@ -25,23 +27,23 @@ describe('sms processor with wallet billing (MSG-02)', () => {
 
   it('marks a billed message sent, and ignores billing for OTP messages', async () => {
     const b = billing();
-    await createSmsProcessor(ok, b)(payload({ billed: true }), ctx(1));
+    await createSmsProcessor(ok, b.api)(payload({ billed: true }), ctx(1));
     expect(b.onSent).toHaveBeenCalledWith(T, 'm1');
     const otp = billing();
-    await createSmsProcessor(ok, otp)(payload(), ctx(1));
+    await createSmsProcessor(ok, otp.api)(payload(), ctx(1));
     expect(otp.onSent).not.toHaveBeenCalled();
   });
 
   it('refunds at once on a rejected number and stops retrying', async () => {
     const b = billing();
-    const run = createSmsProcessor(failing(new SmsRejectedError('notify.lk', 'invalid number')), b);
+    const run = createSmsProcessor(failing(new SmsRejectedError('notify.lk', 'invalid number')), b.api);
     await expect(run(payload({ billed: true }), ctx(1))).rejects.toBeInstanceOf(UnrecoverableError);
     expect(b.onPermanentFailure).toHaveBeenCalledWith(T, 'm1');
   });
 
   it('refunds a transient failure only on the last attempt', async () => {
     const b = billing();
-    const run = createSmsProcessor(failing(new SmsTransportError('notify.lk', 'HTTP 503')), b);
+    const run = createSmsProcessor(failing(new SmsTransportError('notify.lk', 'HTTP 503')), b.api);
     for (const attempt of [1, 2, 3, 4]) await expect(run(payload({ billed: true }), ctx(attempt))).rejects.toBeInstanceOf(SmsTransportError);
     expect(b.onPermanentFailure).not.toHaveBeenCalled();
     await expect(run(payload({ billed: true }), ctx(5))).rejects.toBeInstanceOf(SmsTransportError);
@@ -50,13 +52,13 @@ describe('sms processor with wallet billing (MSG-02)', () => {
 
   it('never refunds an unbilled (OTP) message', async () => {
     const b = billing();
-    await expect(createSmsProcessor(failing(new SmsRejectedError('x', 'bad')), b)(payload(), ctx(1))).rejects.toBeInstanceOf(UnrecoverableError);
+    await expect(createSmsProcessor(failing(new SmsRejectedError('x', 'bad')), b.api)(payload(), ctx(1))).rejects.toBeInstanceOf(UnrecoverableError);
     expect(b.onPermanentFailure).not.toHaveBeenCalled();
   });
 
   it('a bookkeeping failure after a successful send does not fail (and re-send) the job', async () => {
     const b = billing();
     b.onSent.mockRejectedValue(new Error('db down'));
-    await expect(createSmsProcessor(ok, b)(payload({ billed: true }), ctx(1))).resolves.toBeUndefined();
+    await expect(createSmsProcessor(ok, b.api)(payload({ billed: true }), ctx(1))).resolves.toBeUndefined();
   });
 });

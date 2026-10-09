@@ -22,8 +22,9 @@ const input = (over: Partial<SendSmsInput> = {}): SendSmsInput => ({
 function reply(status: number, body: unknown): typeof fetch {
   return vi.fn(() =>
     Promise.resolve(new Response(typeof body === 'string' ? body : JSON.stringify(body), { status })),
-  ) as unknown as typeof fetch;
+  );
 }
+const bodyOf = (call: unknown): string => (call as [string, RequestInit])[1].body as string;
 
 describe('NotifyLkSmsProvider', () => {
   const make = (f: typeof fetch) =>
@@ -37,7 +38,7 @@ describe('NotifyLkSmsProvider', () => {
     const [url, init] = vi.mocked(f).mock.calls[0] as [string, RequestInit];
     expect(url).toBe('https://app.notify.lk/api/v1/send');
     expect(url).not.toContain('k-secret');
-    const form = new URLSearchParams(String(init.body));
+    const form = new URLSearchParams(init.body as string);
     expect(form.get('to')).toBe('94771234567');
     expect(form.get('sender_id')).toBe('ReMixLK');
     expect(form.get('type')).toBeNull();
@@ -46,7 +47,7 @@ describe('NotifyLkSmsProvider', () => {
   it('uses a tenant sender id and unicode type for Sinhala text', async () => {
     const f = reply(200, { status: 'success', data: 'Sent' });
     const result = await make(f).send(input({ sender: { gateway: 'remix-wallet', senderId: 'KamalPhys' }, text: 'ගාස්තුව' }));
-    const form = new URLSearchParams(String((vi.mocked(f).mock.calls[0] as [string, RequestInit])[1].body));
+    const form = new URLSearchParams(bodyOf(vi.mocked(f).mock.calls[0]));
     expect(form.get('sender_id')).toBe('KamalPhys');
     expect(form.get('type')).toBe('unicode');
     expect(result.segments).toBe(1);
@@ -85,7 +86,7 @@ describe('TextLkSmsProvider', () => {
     const [url, init] = vi.mocked(f).mock.calls[0] as [string, RequestInit];
     expect(url).toBe('https://app.text.lk/api/v3/sms/send');
     expect((init.headers as Record<string, string>).authorization).toBe('Bearer tok-secret');
-    expect(JSON.parse(String(init.body))).toMatchObject({ recipient: '94771234567', sender_id: 'ReMixLK', type: 'plain' });
+    expect(JSON.parse(init.body as string)).toMatchObject({ recipient: '94771234567', sender_id: 'ReMixLK', type: 'plain' });
   });
 
   it('classifies errors', async () => {
@@ -105,10 +106,11 @@ describe('FailoverSmsProvider', () => {
   });
 
   it('never falls back on a rejected number', async () => {
-    const fallback: SmsProvider = { send: vi.fn() };
+    const fallbackSend = vi.fn();
+    const fallback: SmsProvider = { send: fallbackSend };
     const primary = failing(new SmsRejectedError('notify.lk', 'invalid number'));
     await expect(new FailoverSmsProvider(primary, fallback).send(input())).rejects.toBeInstanceOf(SmsRejectedError);
-    expect(fallback.send).not.toHaveBeenCalled();
+    expect(fallbackSend).not.toHaveBeenCalled();
   });
 
   it('surfaces the fallback error when both fail', async () => {
