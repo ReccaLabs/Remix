@@ -39,7 +39,11 @@ beforeAll(async () => {
 
 describe.each(TABLE_NAMES)('%s', (name) => {
   const t = spec(name);
-  const writable = t.access === 'full' || t.access === 'append' || t.access === 'projection';
+  const writable =
+    t.access === 'full' ||
+    t.access === 'append' ||
+    t.access === 'projection' ||
+    t.access === 'lifecycle';
   const table = sql.identifier(name);
 
   it("in tenant A's context, every visible row belongs to A", async () => {
@@ -119,6 +123,29 @@ describe.each(TABLE_NAMES)('%s', (name) => {
         tx.execute(deleteRow(name, t.key(B))),
       );
       expect(result.rowCount).toBe(0);
+    });
+  } else if (t.access === 'lifecycle') {
+    it("deleting B's row from A affects 0 rows (control: A's row deletes)", async () => {
+      const other = await withTenant(db.app, A.tenantId, (tx) =>
+        tx.execute(deleteRow(name, t.key(B))),
+      );
+      expect(other.rowCount).toBe(0);
+      await rolledBack(
+        withTenant(db.app, A.tenantId, async (tx) => {
+          expect((await tx.execute(deleteRow(name, t.key(A)))).rowCount).toBe(1);
+          throw new Rollback();
+        }),
+      );
+    });
+
+    it('the tenant column is not updatable (UPDATE covers lifecycle columns only)', async () => {
+      await expectPgError(
+        withTenant(db.app, A.tenantId, (tx) =>
+          tx.execute(moveRow(name, t.tenantColumn, t.key(A), B.tenantId)),
+        ),
+        '42501',
+        PERMISSION_DENIED,
+      );
     });
   } else {
     it('UPDATE and DELETE are not granted at all', async () => {

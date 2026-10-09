@@ -19,3 +19,4 @@ export {
   paymentMethod,
 } from './fees';
 export { tenantIntegrations, integrationKind } from './integrations';
+export { uploads, bankSlips, bankSlipLines, uploadStatus, uploadKind, slipStatus } from './slips';
