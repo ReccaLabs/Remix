@@ -4,8 +4,9 @@ import { Landmark } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { OpenMonths } from './open-months';
 import { PaymentHistory } from './payment-history';
+import { SlipUpload } from './slip-upload';
 
-/** Read-only until 3-E implements checkout; the history is already usable for every method. */
+/** Card checkout arrives with 3-E; bank slips (FEE-05) are sent here when bank details exist. */
 export function PayOverview({ fees }: { fees: MyFeesResponse }) {
   const t = useTranslations('fees'); const total = fees.openLines.reduce((sum, l) => sum + l.openCents, 0);
   return <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -16,6 +17,7 @@ export function PayOverview({ fees }: { fees: MyFeesResponse }) {
         <h2 id="bank-details-title" className="m-0 flex items-center gap-2 text-base font-semibold"><Landmark aria-hidden size={18} />{t('bankDetails')}</h2>
         <dl className="m-0 flex flex-col gap-3 text-sm">{(['bankName', 'branch', 'accountName', 'accountNumber'] as const).map(key => <div key={key}><dt className="text-muted">{t(key)}</dt><dd className="m-0 break-words font-medium">{fees.bankDetails?.[key]}</dd></div>)}</dl>
       </section> : null}
+      {fees.bankDetails ? <SlipUpload lines={fees.openLines} slips={fees.slips} /> : null}
     </aside>
     <div className="min-w-0 lg:col-span-2"><PaymentHistory payments={fees.payments} /></div>
   </div>;
