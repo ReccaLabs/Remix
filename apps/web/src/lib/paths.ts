@@ -39,6 +39,7 @@ export const ADMIN_PATHS = {
   theme: '/admin/settings/theme',
   paymentsSettings: '/admin/settings/payments',
   feeSettings: '/admin/settings/fees',
+  smsSettings: '/admin/settings/sms',
   halls: '/admin/settings/halls',
   staff: '/admin/settings/staff',
 } as const;

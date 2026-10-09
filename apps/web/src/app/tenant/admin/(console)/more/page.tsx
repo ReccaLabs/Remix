@@ -5,6 +5,7 @@ import {
   CreditCard,
   DoorOpen,
   Menu,
+  MessageSquareText,
   Palette,
   ReceiptText,
   Settings,
@@ -51,6 +52,12 @@ export default async function MorePage() {
       title: money('nav.fees'),
       hint: money('fees.subtitle'),
       icon: <ReceiptText aria-hidden size={20} className="flex-none text-muted" />,
+    },
+    sms: {
+      href: ADMIN_PATHS.smsSettings,
+      title: money('nav.sms'),
+      hint: money('sms.subtitle'),
+      icon: <MessageSquareText aria-hidden size={20} className="flex-none text-muted" />,
     },
     general: {
       href: ADMIN_PATHS.settings,

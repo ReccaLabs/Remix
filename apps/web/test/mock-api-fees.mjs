@@ -18,11 +18,13 @@ function storeFor(tenant) {
       fees: {
         dueDay: 5,
         remindersEnabled: false,
+        receiptSmsEnabled: false,
         remindBeforeDays: 0,
         remindAfterDays: 1,
         bankDetails: null,
         receipt: { address: null, phone: null, footer: null },
       },
+      wallet: { balanceCents: 50000, requests: 0 },
       payments: [],
       lines: new Map(),
       retries: new Map(),
@@ -64,7 +66,12 @@ export async function handleFees(env) {
   const cash = pathname === '/api/v1/admin/payments/cash';
   const manual = pathname === '/api/v1/admin/payments/manual';
   const mine = pathname === '/api/v1/me/fees';
-  if (!payhere && !test && !fees && !receipt && !pdf && !paymentList && !paymentDetail && !reverse && !studentFees && !cash && !manual && !mine) return false;
+  const invoices = pathname === '/api/v1/admin/invoices';
+  const remPreview = pathname === '/api/v1/admin/invoices/reminders/preview';
+  const remSend = pathname === '/api/v1/admin/invoices/reminders/send';
+  const wallet = pathname === '/api/v1/admin/sms/wallet';
+  const topUp = pathname === '/api/v1/admin/sms/wallet/top-up';
+  if (!payhere && !test && !fees && !receipt && !pdf && !paymentList && !paymentDetail && !reverse && !studentFees && !cash && !manual && !mine && !invoices && !remPreview && !remSend && !wallet && !topUp) return false;
   const tenant = tenantOf(req);
   if (!tenant) return (problem(res, 404, 'TENANT_NOT_FOUND'), true);
   const current = currentSession(req, tenant);
@@ -90,6 +97,39 @@ export async function handleFees(env) {
       return { ...l, paidCents, openCents: l.amountCents - paidCents, paid: paidCents >= l.amountCents };
     }).filter(l => !l.paid);
   };
+  if (wallet || topUp || remPreview || remSend || invoices) {
+    const sender = user?.kind === 'staff' && user.roles.some((r) => ['owner', 'admin'].includes(r));
+    if (!(invoices ? reader : wallet || topUp ? owner : sender)) return (problem(res, 403, 'FORBIDDEN'), true);
+    if (invoices || wallet) {
+      if (req.method !== 'GET') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
+      if (wallet) {
+        json(res, 200, { balanceCents: store.wallet.balanceCents, senderId: null, lowBalanceThresholdCents: 20000, lowBalance: store.wallet.balanceCents < 20000,
+          openTopUpRequests: store.wallet.requests, segmentPriceCents: 95, recent: [{ id: randomUUID(), kind: 'top_up', amountCents: 50000, balanceAfterCents: 50000, note: 'Sample credit', at: new Date().toISOString() }] });
+        return true;
+      }
+      const sample = (n, status, paidCents) => ({ id: randomUUID(), number: `SAMPLE-I-26-10-${n}`, studentId: randomUUID(), studentNo: `SAMPLE-0000${n}`, studentName: `Sample Student ${n}`,
+        month: '2026-10-01', dueOn: '2026-10-05', totalCents: 250000, paidCents, status, slipWaiting: false });
+      const items = [sample(1, 'overdue', 0), sample(2, 'paid', 250000), sample(3, 'unpaid', 0)];
+      json(res, 200, { page: 1, pageSize: 25, total: items.length, items, totals: { totalCents: 750000, paidCents: 250000 } });
+      return true;
+    }
+    if (req.method !== 'POST') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
+    if (csrfRejected(req, res)) return true;
+    const body = await readJson(req);
+    if (topUp) {
+      if (!only(body, ['amountCents']) || !Number.isInteger(body.amountCents) || body.amountCents < 100000) return (problem(res, 400, 'VALIDATION_FAILED'), true);
+      if (store.wallet.requests >= 3) return (problem(res, 409, 'CONFLICT'), true);
+      store.wallet.requests += 1;
+      res.statusCode = 204; res.end(); return true;
+    }
+    if (!only(body, remSend ? ['month', 'filter', 'classId', 'idempotencyKey'] : ['month', 'filter', 'classId']) || !/^\d{4}-\d{2}-01$/.test(body.month) || !['unpaid', 'overdue'].includes(body.filter) ||
+      (remSend && !/^[A-Za-z0-9_-]{16,64}$/.test(body.idempotencyKey))) return (problem(res, 400, 'VALIDATION_FAILED'), true);
+    const cost = 2 * 95;
+    if (remPreview) { json(res, 200, { recipients: 2, segments: 2, costCents: cost, balanceCents: store.wallet.balanceCents, sampleText: `Sample Institute: Sample Student's Oct 2026 fee of LKR 2,500 was due on 5 Oct and is unpaid. Please pay soon.` }); return true; }
+    if (store.wallet.balanceCents < cost) return (problem(res, 409, 'INSUFFICIENT_BALANCE'), true);
+    store.wallet.balanceCents -= cost;
+    json(res, 200, { queued: 2, costCents: cost }); return true;
+  }
   if (mine) {
     if (user.kind !== 'student') return (problem(res, 403, 'FORBIDDEN'), true);
     if (req.method !== 'GET') return (problem(res, 405, 'METHOD_NOT_ALLOWED'), true);
@@ -284,6 +324,7 @@ export async function handleFees(env) {
     !only(body, [
       'dueDay',
       'remindersEnabled',
+      'receiptSmsEnabled',
       'remindBeforeDays',
       'remindAfterDays',
       'bankDetails',
@@ -299,6 +340,8 @@ export async function handleFees(env) {
   ])
     if (body[key] !== undefined && !bounded(body[key], min, max)) return invalid();
   if (body.remindersEnabled !== undefined && typeof body.remindersEnabled !== 'boolean')
+    return invalid();
+  if (body.receiptSmsEnabled !== undefined && typeof body.receiptSmsEnabled !== 'boolean')
     return invalid();
   if (
     body.receipt !== undefined &&

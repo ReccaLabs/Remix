@@ -50,10 +50,18 @@ export async function loadFees() {
   }
 }
 
+export async function loadSmsWallet() {
+  try {
+    return { ok: true, data: await (await getApi()).call('smsWallet') } as const;
+  } catch (err) {
+    return failed('GET /admin/sms/wallet', err);
+  }
+}
+
 const NO_INDEX = { robots: { index: false, follow: false } } as const;
 
 export async function settingsMetadata(
-  page: 'general' | 'theme' | 'halls' | 'payments' | 'fees',
+  page: 'general' | 'theme' | 'halls' | 'payments' | 'fees' | 'sms',
 ): Promise<Metadata> {
   const tenant = await getTenant();
   if (tenantAccess(tenant.status).staff !== 'full') return unavailableMetadata();

@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { ADMIN_PATHS } from '@/lib/paths';
 
-export type SettingsSection = 'general' | 'theme' | 'halls' | 'staff' | 'payments' | 'fees';
+export type SettingsSection = 'general' | 'theme' | 'halls' | 'staff' | 'payments' | 'fees' | 'sms';
 
 const HREF: Record<SettingsSection, string> = {
   general: ADMIN_PATHS.settings,
   theme: ADMIN_PATHS.theme,
   payments: ADMIN_PATHS.paymentsSettings,
   fees: ADMIN_PATHS.feeSettings,
+  sms: ADMIN_PATHS.smsSettings,
   halls: ADMIN_PATHS.halls,
   staff: ADMIN_PATHS.staff,
 };
@@ -20,6 +21,7 @@ export function settingsSections(roles: readonly StaffRole[]): SettingsSection[]
   return [
     ...(can(roles, 'settings.manage') ? (['general', 'theme'] as const) : []),
     ...(can(roles, 'fees.settings') ? (['payments', 'fees'] as const) : []),
+    ...(can(roles, 'sms.wallet') ? (['sms'] as const) : []),
     ...(can(roles, 'classes.write') ? (['halls'] as const) : []),
     ...(can(roles, 'staff.manage') ? (['staff'] as const) : []),
   ];
