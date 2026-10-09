@@ -6,7 +6,7 @@
 // Ctrl+C stops the servers; the stack keeps running (`pnpm dev:stack down` to stop it).
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { compose, devDatabaseUrls, must, root, run } from './lib.mjs';
+import { compose, composePort, devDatabaseUrls, must, root, run } from './lib.mjs';
 
 const reseed = process.argv.includes('--reseed');
 
@@ -43,6 +43,18 @@ if (!['apps/web/.env.local', 'apps/web/.env'].some((f) => existsSync(resolve(roo
   env.TENANT_BASE_DOMAINS = process.env.TENANT_BASE_DOMAINS || 'localhost';
   env.PLATFORM_HOSTS = process.env.PLATFORM_HOSTS || 'admin.localhost';
 }
+// ADR 0009: the dev stack's SeaweedFS for slips and receipts (dev-only keys from
+// infra/docker/seaweedfs/s3.json), unless apps/api/.env configures storage itself. The web proxy
+// reads STORAGE_ORIGIN to allow the browser to upload to and load images from it (CSP).
+if (!existsSync(resolve(root, 'apps/api/.env'))) {
+  const s3 = `http://127.0.0.1:${composePort('S3_PORT', '8333')}`;
+  env.STORAGE_S3_ENDPOINT = process.env.STORAGE_S3_ENDPOINT || s3;
+  env.STORAGE_S3_REGION = process.env.STORAGE_S3_REGION || 'us-east-1';
+  env.STORAGE_S3_BUCKET = process.env.STORAGE_S3_BUCKET || 'remix-dev';
+  env.STORAGE_S3_ACCESS_KEY_ID = process.env.STORAGE_S3_ACCESS_KEY_ID || 'remix_s3_dev';
+  env.STORAGE_S3_SECRET_ACCESS_KEY = process.env.STORAGE_S3_SECRET_ACCESS_KEY || 'remix_s3_dev_password';
+}
+env.STORAGE_ORIGIN = process.env.STORAGE_ORIGIN || `http://127.0.0.1:${composePort('S3_PORT', '8333')}`;
 
 console.log(
   '\nDev servers: site http://localhost:3000/en/ | web http://kamalphysics.localhost:3001 | api http://localhost:4000\n',

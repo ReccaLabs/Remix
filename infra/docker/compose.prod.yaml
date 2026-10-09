@@ -26,6 +26,14 @@ services:
       # The web container reaches the API over the compose network (RFC 1918 ranges).
       TRUST_PROXY: uniquelocal
       COOKIE_SECURE: 'false'
+      # ADR 0009 storage: the API reaches SeaweedFS over the compose network; browsers get URLs
+      # signed for the published port. Dev-only keys (infra/docker/seaweedfs/s3.json).
+      STORAGE_S3_ENDPOINT: http://s3:8333
+      STORAGE_S3_PUBLIC_ENDPOINT: http://127.0.0.1:${S3_PORT:-8333}
+      STORAGE_S3_REGION: us-east-1
+      STORAGE_S3_BUCKET: remix-dev
+      STORAGE_S3_ACCESS_KEY_ID: remix_s3_dev
+      STORAGE_S3_SECRET_ACCESS_KEY: remix_s3_dev_password
     ports:
       - '127.0.0.1:${API_PORT:-4000}:4000'
     restart: unless-stopped
