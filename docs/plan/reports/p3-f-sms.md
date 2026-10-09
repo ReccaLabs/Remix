@@ -1,10 +1,10 @@
 # p3-f-sms report
 
 - Status: done
-- Branch / PR: `feat/p3-f-sms` / PR_URL_PLACEHOLDER
+- Branch / PR: `feat/p3-f-sms` / https://github.com/ReccaLabs/Remix/pull/58
 - Feature IDs: done: MSG-01, MSG-02, MSG-04, FEE-02, FEE-12 | not done: none (delivery reports, institute-own gateway, slip SMS callers are out of scope)
 - Gates: lint · typecheck · build passed. Tests: db 448 (isolation + wallet suite), types 146, ui 58, site 77, web 407, API unit + integration all green (new `sms-wallet.int.test.ts` 36 tests). One load-sensitive 500-student import timing test failed once under a loaded machine and passes alone.
-- CI: CI_PLACEHOLDER
+- CI: 5 of 6 pass (API image, E2E, gitleaks, Semgrep, tenant isolation). "Lint · typecheck · test · build" fails ONLY at the "Audit dependencies (high+)" step: new advisories since 5 Oct (source-map-js via vitest/postcss, patched >=1.2.2; sharp <0.35.5 via next, GHSA-wq5f-xc86-pv6w). Lint, typecheck, test and build steps in that job pass. This PR adds no dependency; fixing needs a lockfile/override bump decided by the lead (main would fail the same way today).
 - Migrations added: `0019_sms_wallet.sql` (tables, `receipt_sms_enabled` column), `0020_sms_wallet_rls.sql` (RLS, grants, ledger/guard triggers). Journal idx 19 and 20 skip 17/18 (reserved for 3-D); expect a trivial `_journal.json` merge.
 - Contract changes (packages/types), all additive: `feeSettingsSchema.receiptSmsEnabled` (+ optional in `updateFeeSettingsSchema`); `smsWalletSchema.lowBalance` and `openTopUpRequests`; types `SendRemindersRequest`, `SendRemindersResponse`. `smsPayload` (apps/api queues, not a shared contract) gains optional `billed: true`; `fees` job kinds gain `reminders_tick` and `reminders`. No existing field changed or removed.
 - New dependencies: none
