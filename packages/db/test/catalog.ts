@@ -58,6 +58,7 @@ export const LEDGER_UPDATE_COLUMNS: Readonly<Record<string, readonly string[]>> 
     'receipt_address',
     'receipt_phone',
     'receipt_footer',
+    'receipt_sms_enabled',
   ],
   tenant_integrations: ['config', 'secret_ciphertext', 'secret_nonce', 'key_id'],
   invoices: ['paid_cents', 'status'],
@@ -65,6 +66,10 @@ export const LEDGER_UPDATE_COLUMNS: Readonly<Record<string, readonly string[]>> 
   payments: [],
   payment_allocations: [],
   receipts: ['pdf_key', 'reversed_at'],
+  sms_wallets: ['balance_cents', 'low_balance_alerted_at'],
+  sms_messages: ['status'],
+  sms_wallet_ledger: [],
+  sms_top_up_requests: [],
 };
 
 /** RLS on, ≥1 policy, tenant_id, tenant-scoped key, owner, updated_at trigger, factory entry. */

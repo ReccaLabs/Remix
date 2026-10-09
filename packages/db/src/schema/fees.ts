@@ -15,6 +15,7 @@ export const tenantSettings = pgTable('tenant_settings', {
   dueDay: smallint('due_day').notNull().default(5),
   unlockBeforeDue: boolean('unlock_before_due').notNull().default(false),
   remindersEnabled: boolean('reminders_enabled').notNull().default(false),
+  receiptSmsEnabled: boolean('receipt_sms_enabled').notNull().default(false),
   remindBeforeDays: smallint('remind_before_days').notNull().default(0),
   remindAfterDays: smallint('remind_after_days').notNull().default(1),
   bankDetails: jsonb('bank_details').$type<FeeSettings['bankDetails']>(),

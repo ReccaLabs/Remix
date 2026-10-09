@@ -120,6 +120,20 @@
       "when": 1791207795578,
       "tag": "0016_student_cards_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791533668682,
+      "tag": "0019_sms_wallet",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791533728682,
+      "tag": "0020_sms_wallet_rls",
+      "breakpoints": true
     }
   ]
 }
