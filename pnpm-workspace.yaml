@@ -37,6 +37,10 @@ overrides:
   'glob@>=10.2.0 <10.5.0': ^10.5.0
   # GHSA-67mh-4wv8-2f99: esbuild dev-server request leak, fixed in 0.25.0. Via drizzle-kit → @esbuild-kit.
   'esbuild@<0.25.0': ^0.25.0
+  # GHSA-68fv-2mgg-jv7q: source-map-js event-loop DoS, fixed in 1.2.2. Via vite/postcss (dev only).
+  'source-map-js@<1.2.2': ^1.2.2
+  # GHSA-wq5f-xc86-pv6w: sharp's bundled librsvg, fixed in 0.35.5. Via next (site/web) and the API.
+  'sharp@<0.35.5': ^0.35.5
 
 auditConfig:
   ignoreGhsas:
