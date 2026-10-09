@@ -8,7 +8,7 @@ FEE-01…12 · SET-02/03 · MSG-01/02/04 · student Pay screens · admin Fees ta
 
 ## How this phase is built
 
-Codex (`gpt-6.1-sol`) writes each track in its own worktree; Claude (lead) writes the contracts and ADRs, reviews every PR, and reviews money/security code line by line before merge. One track runs at a time. Each track ends with a report in `docs/plan/reports/p3-<track>.md` (fixed format) and a PR with all 6 CI checks green.
+Codex (`gpt-6.1-sol`) wrote tracks 3-A…3-C2. From 3-D on (9 Oct 2026) Claude agents write each track in their own worktree (Opus for money/security paths, Sonnet for features); Claude (lead) writes the contracts and ADRs, reviews every PR, and reviews money/security code line by line before merge. 3-D and 3-F run in parallel (different areas; migrations 0017–0018 and 0019–0020); the rest run one at a time. Each track ends with a report in `docs/plan/reports/p3-<track>.md` (fixed format) and a PR with all 6 CI checks green.
 
 | # | Track | Writer · effort | Review | Delivers |
 | --- | --- | --- | --- | --- |
@@ -17,10 +17,10 @@ Codex (`gpt-6.1-sol`) writes each track in its own worktree; Claude (lead) write
 | 3-B | Settings + receipts | Codex · high | Opus (secrets) | SET-02 encrypted merchant secret, SET-03 bank details, fee settings, receipt data + PDF + 80 mm layout (FEE-09) |
 | 3-C | Cash + manual | Codex · medium | Opus (money paths) | FEE-07 cash counter, FEE-08 manual payment, student fees view, FEE-10 history |
 | 3-C2 | Student numbers + cards | Codex · high | Opus (lookup + codes) | STU-07 `NIL-26-0042` numbers; STU-06 permanent (ReMix-printed, barcode + optional QR/NFC) and temporary (institute-printed barcode) cards, order/activate/revoke, print, scan at the cash counter |
-| 3-D | Slips | Codex · high | Opus (uploads) | storage provider (ADR 0009), media worker, FEE-05 upload, FEE-06 queue with A/R/S |
-| 3-E | PayHere | Codex · high | Opus line by line | FEE-03 Pay screen, FEE-04 checkout + notify webhook, test payment |
-| 3-F | SMS | Codex · medium | report + CI | MSG-01 Notify.lk (primary, owner has an approved sender ID) + Text.lk (optional fallback) adapters, MSG-02 wallet, MSG-04 templates, FEE-12 reminders, FEE-02 invoices tab + reminder send |
-| 3-G | Fees UI + journeys | Codex · medium (Astra trial) | report + CI | admin Fees tabs polish, J-02, J-03, J-04, J-05, J-09 on local staging |
+| 3-D | Slips | Claude Opus | lead (uploads) | storage provider (ADR 0009), media worker, FEE-05 upload, FEE-06 queue with A/R/S |
+| 3-E | PayHere | Claude Opus | lead line by line | FEE-03 Pay screen, FEE-04 checkout + notify webhook, test payment |
+| 3-F | SMS | Claude Sonnet | lead (wallet debit) | MSG-01 Notify.lk (primary, owner has an approved sender ID) + Text.lk (optional fallback) adapters, MSG-02 wallet, MSG-04 templates, FEE-12 reminders, FEE-02 invoices tab + reminder send |
+| 3-G | Fees UI + journeys | Claude Sonnet | report + CI | admin Fees tabs polish, J-02, J-03, J-04, J-05, J-09 on local staging |
 | 3-S | Security review | Claude Opus | — | PayHere notify, slips, ledger, secrets (two-reviewer rule) |
 
 ## Exit criteria (from the roadmap)
@@ -33,7 +33,7 @@ Codex (`gpt-6.1-sol`) writes each track in its own worktree; Claude (lead) write
 
 ## Status
 
-Paused 5 Oct 2026 (Claude/Codex weekly limits). Full picture and how to resume: [status-2026-10-05.md](status-2026-10-05.md).
+Paused 5 Oct 2026 (Claude/Codex weekly limits), resumed 9 Oct with Claude agents. Picture at the pause: [status-2026-10-05.md](status-2026-10-05.md).
 
 | Track | Status |
 | --- | --- |
@@ -42,6 +42,7 @@ Paused 5 Oct 2026 (Claude/Codex weekly limits). Full picture and how to resume: 
 | 3-B Settings + receipts | merged #52 |
 | 3-C Cash + manual | merged #53 |
 | 3-C2 Student numbers + cards | merged #54 |
-| 3-D Slips | next |
-| 3-E PayHere · 3-F SMS · 3-G Fees UI + journeys | waiting |
+| 3-D Slips | in progress |
+| 3-F SMS | in progress |
+| 3-E PayHere · 3-G Fees UI + journeys | waiting |
 | 3-S Security review | waiting |

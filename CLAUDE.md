@@ -3,7 +3,7 @@
 **Project:** ReMix by Recca Labs — multi-tenant LMS SaaS for Sri Lankan tuition teachers and institutes.
 **Now building:** the LMS platform (`apps/web` + `apps/api` + `packages/db`) phase by phase — Phases 1–2 are done; Phase 3 (money) is in progress, see [`docs/plan/phase-3.md`](docs/plan/phase-3.md). `remix.lk` (`apps/site`) is built.
 
-**How features are built:** Codex writes each track as a subagent and Claude leads (plans, writes contracts/ADRs and prompts, reviews, merges). Before planning or running any feature track, read [`docs/agents/codex-subagent.md`](docs/agents/codex-subagent.md) and follow it.
+**How features are built:** since 9 Oct 2026 Claude agents write each track (Agent tool, one isolated worktree per track) and Claude leads (plans, writes contracts/ADRs and prompts, reviews, merges). Codex is not used for now. The prompt template, report format, rules and review checklist in [`docs/agents/codex-subagent.md`](docs/agents/codex-subagent.md) §6–7 still apply; read them before planning or running any feature track.
 
 Read before non-trivial work:
 - [`docs/plan/`](docs/plan/README.md) — **the development plan**: needs, feature IDs (`FEE-06`…), architecture, Definition of Done, phases. Every task maps to a feature ID; follow its acceptance criteria and the DoD in `docs/plan/04-quality.md`.
@@ -84,9 +84,9 @@ Before finishing any task: `pnpm lint && pnpm typecheck && pnpm test` must pass,
 - Unit tests (Vitest) with every piece of logic (`*.test.ts` next to the file). Pricing/money changes must update `pricing.test.ts`.
 - Phase 1+: tenant-isolation tests for every new table and endpoint.
 
-### Agents (Codex + Claude)
-- Feature tracks are written by Codex (`gpt-6.1-sol`) via `scripts/codex-track.sh`, one track per worktree; Claude Sonnet is the fallback when Codex is out of quota. Full procedure, pitfalls, prompt and report templates: [`docs/agents/codex-subagent.md`](docs/agents/codex-subagent.md); in Claude Code use the `/codex-subagent` skill (`.claude/skills/codex-subagent/`).
-- If auto mode blocks the Codex launch, never work around it: tell the owner the three options in the guide (§4 "Permission for the launch").
+### Agents (Claude; Codex paused)
+- Feature tracks are written by Claude agents (Agent tool, `isolation: "worktree"`, background): Sonnet for specified feature/UI work, Opus for money, auth, RLS, secrets and webhooks. Up to two tracks run in parallel when they touch different areas; each track is given its migration numbers up front. Prompt and report templates, rules and review checklist: [`docs/agents/codex-subagent.md`](docs/agents/codex-subagent.md) §6–7.
+- Codex (`scripts/codex-track.sh`, `/codex-subagent`) is paused; use it again only when the owner says so.
 - The lead reviews every PR before merging; money/auth/RLS/secrets code is reviewed line by line.
 
 ### Knowledge graph
