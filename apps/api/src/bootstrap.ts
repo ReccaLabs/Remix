@@ -1,6 +1,6 @@
 import { RequestMethod } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { json } from 'express';
+import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { bodyParserErrorHandler } from './common/errors/problem.filter';
@@ -15,6 +15,8 @@ import type { AppConfig } from './config/config';
 export const BODY_LIMIT = '100kb';
 /** 5,000 rows of up to 12 cells; the browser enforces a 5 MB file, JSON adds quoting overhead. */
 export const IMPORT_BODY_LIMIT = '10mb';
+/** PayHere `notify_url` (form-encoded, server to server; ADR 0008 §6). */
+export const PAYHERE_NOTIFY_PATH = '/api/v1/webhooks/payhere';
 /** The import POSTs (`/api/v1/admin/imports/students/preview|commit`). */
 export const IMPORT_BODY_PATH = '/api/v1/admin/imports/students';
 
@@ -54,7 +56,19 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): vo
     IMPORT_BODY_PATH,
     json({ limit: IMPORT_BODY_LIMIT, type: 'application/json', strict: true }),
   );
-  // Only JSON is parsed. Other content types leave the body empty, and the CSRF guard rejects
+  // PayHere posts its notification as a form. Only that path parses form bodies (small, flat);
+  // the CSRF guard still rejects forms everywhere else, and the route itself skips CSRF because
+  // its signature authenticates it.
+  app.use(
+    PAYHERE_NOTIFY_PATH,
+    urlencoded({
+      limit: '8kb',
+      type: 'application/x-www-form-urlencoded',
+      extended: false,
+      parameterLimit: 50,
+    }),
+  );
+  // Elsewhere only JSON is parsed. Other content types leave the body empty, and the CSRF guard rejects
   // them on state-changing methods.
   app.useBodyParser('json', { limit: BODY_LIMIT, type: 'application/json', strict: true });
   app.use(bodyParserErrorHandler);

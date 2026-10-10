@@ -18,6 +18,11 @@ export type AuditAction =
   | 'sms.reminders_send'
   | 'slip.approve'
   | 'slip.reject'
+  // FEE-04 PayHere: order created, verified notifications, rejected ones, chargebacks.
+  | 'checkout.create'
+  | 'payhere.notify'
+  | 'payhere.notify_rejected'
+  | 'payhere.chargeback'
   | 'auth.login.succeeded'
   | 'auth.login.failed'
   | 'auth.login.temporary_password'

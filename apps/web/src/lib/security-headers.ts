@@ -8,7 +8,10 @@ export interface CspOptions {
   nonce: string;
   /** `next dev` only: React needs `eval` for its dev tooling and dev CSS is injected inline. */
   isDev: boolean;
-  /** SET-02: only the Payments settings page may submit a checkout to these exact gateways. */
+  /**
+   * SET-02/FEE-04: only the Payments settings page (owner test) and the student Pay page may
+   * submit a checkout, and only to these exact gateway URLs.
+   */
   allowPayhereCheckout?: boolean;
   /**
    * ADR 0009: the storage origin for slip pages only (student Pay: presigned PUT; admin Fees:

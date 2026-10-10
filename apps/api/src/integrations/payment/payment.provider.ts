@@ -21,7 +21,17 @@ export interface CreateCheckoutInput {
   amountCents: Cents;
   currency: 'LKR';
   description: string;
-  customer: { firstName: string; lastName: string; phone: string; email?: string };
+  customer: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email?: string;
+    /** PayHere requires address and city; tuition has no delivery, so callers may pass a note. */
+    address?: string;
+    city?: string;
+  };
+  /** Echoed back unsigned in the notification (PayHere `custom_1`); never trusted. */
+  tag?: string;
   returnUrl: string;
   cancelUrl: string;
   /** Server-to-server callback: `/api/v1/webhooks/payhere` on the tenant host. */

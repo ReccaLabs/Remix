@@ -7,10 +7,12 @@ import {
 } from '../../common/auth/auth.decorators';
 import type { AuthSession } from '../../common/auth/session-authenticator';
 import { requireContext } from '../../common/context/request-context';
+import { RateLimit } from '../../common/rate-limit/rate-limit.guard';
 import type { ResolvedTenant } from '../../common/tenant/tenant-resolver';
 import { Endpoint, type EndpointBody } from '../../common/validation/endpoint';
 import { PayhereSettingsService } from './payhere-settings.service';
 import { FeeSettingsService } from './fee-settings.service';
+import { CheckoutsService } from './checkouts.service';
 
 @Controller()
 @RequirePermission('fees.settings')
@@ -18,6 +20,7 @@ export class MoneySettingsController {
   constructor(
     private readonly payhere: PayhereSettingsService,
     private readonly fees: FeeSettingsService,
+    private readonly checkouts: CheckoutsService,
   ) {}
   @Header('cache-control', 'no-store')
   @Endpoint(API.getFeeSettings)
@@ -47,11 +50,12 @@ export class MoneySettingsController {
   ) {
     return this.payhere.update(t.id, s, b);
   }
+  @RateLimit({ name: 'payhere-test', limit: 10, windowSec: 60 * 60, by: 'user' })
   @Header('cache-control', 'no-store')
   @Endpoint(API.testPayhere)
   testPayhere(@CurrentTenant() t: ResolvedTenant, @CurrentSession() s: AuthSession) {
     const origin = requireContext().origin;
     if (!origin) throw new Error('Missing validated request origin');
-    return this.payhere.test(t.id, s, origin);
+    return this.checkouts.createTest(t, s, origin);
   }
 }
