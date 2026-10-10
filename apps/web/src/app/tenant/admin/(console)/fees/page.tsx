@@ -1,12 +1,12 @@
 import { can } from '@remix/types';
 import { getTranslations } from 'next-intl/server';
 import type { ApiOutput } from '@remix/types/api';
-import { IntlIsland } from '@/components/intl-island';
 import { PaymentsPanel } from '@/components/fees/payments-panel';
 import { CashCounter } from '@/components/fees/cash-counter';
 import { FeesTabs, type FeesTab } from '@/components/fees/fees-tabs';
 import { InvoicesPanel } from '@/components/fees/invoices-panel';
 import { SlipQueue } from '@/components/fees/slip-queue';
+import { PeopleIsland } from '@/components/people/people-island';
 import { LoadError } from '@/components/portal/load-error';
 import { PageBody, PageTitle } from '@/components/shell/page-body';
 import { feeBusinessDate } from '@/lib/fees-money';
@@ -62,6 +62,6 @@ export default async function FeesPage({ searchParams }: { searchParams: Promise
   return <PageBody width="admin">
     <PageTitle title={t('title')} subtitle={t('subtitle')} />
     <FeesTabs label={t('tabs')} tabs={tabs} />
-    {body ? <IntlIsland namespaces={['fees']}>{body}</IntlIsland> : <LoadError retryHref={FEES_TAB_HREF[tab]} />}
+    {body ? <PeopleIsland namespaces={['fees']}>{body}</PeopleIsland> : <LoadError retryHref={FEES_TAB_HREF[tab]} />}
   </PageBody>;
 }

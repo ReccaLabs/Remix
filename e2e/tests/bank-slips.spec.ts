@@ -4,6 +4,7 @@ import { loginStaff, loginStudentOnAnyDevice } from '../support/auth';
 import { expectNoSeriousA11yViolations } from '../support/axe';
 import { tenantUrl } from '../support/env';
 import { colomboMonth, creditWallet, monthUnlocked, pageApi, prepareStudents, reversePaymentsFor, type JourneyStudent } from '../support/money';
+import { hydrated } from '../support/hydration';
 import { slipFile } from '../support/slip-image';
 
 const CASHIER_PHONE = '+94770001182';
@@ -15,10 +16,15 @@ interface QueueSlip { id: string; studentId: string; status: string }
 async function sendSlip(student: Page, reference: string): Promise<string> {
   await student.goto(tenantUrl('kamalphysics', '/app/pay'));
   await expect(student.getByRole('heading', { name: 'Institute bank details' })).toBeVisible();
+  await hydrated(student.getByRole('button', { name: 'Send slip' }));
   await student.getByLabel('Slip photo').setInputFiles(slipFile());
   await student.getByLabel('Reference number (on the slip)').fill(reference);
   const submitted = student.waitForResponse((r) => r.url().endsWith('/api/v1/me/slips') && r.request().method() === 'POST');
   await student.getByRole('button', { name: 'Send slip' }).click();
+  // Say why when the form refuses (validation, photo upload) instead of timing out on the request.
+  const refused = student.getByRole('alert').first().waitFor({ timeout: 15_000 }).then(async () => `The slip form showed: ${await student.getByRole('alert').first().innerText()}`).catch(() => new Promise<string>(() => undefined));
+  const outcome = await Promise.race([submitted.then(() => 'sent'), refused]);
+  if (outcome !== 'sent') throw new Error(outcome);
   const response = await submitted;
   expect([200, 201]).toContain(response.status());
   await expect(student.getByText('Slip sent', { exact: true })).toBeVisible();
@@ -38,6 +44,7 @@ async function waitForQueue(cashier: Page, slipId: string): Promise<void> {
 /** Keyboard S (skip) until the slip under review belongs to this student. */
 async function skipToStudent(cashier: Page, name: string): Promise<void> {
   const heading = cashier.locator('#slip-review-title');
+  await hydrated(cashier.getByRole('button', { name: /^Approve/ }));
   for (let i = 0; i < 40; i++) {
     await expect(heading).toBeVisible();
     if ((await heading.innerText()).includes(name)) return;

@@ -3,6 +3,7 @@ import { KAMAL, PASSWORD } from '../support/accounts';
 import { loginStaff } from '../support/auth';
 import { expectNoSeriousA11yViolations } from '../support/axe';
 import { tenantUrl } from '../support/env';
+import { hydrated } from '../support/hydration';
 import { countSms, deliveredSms, smsOffset } from '../support/mock-sms';
 import { colomboMonth, creditWallet, pageApi, prepareStudents, smsRecipient, walletBalance } from '../support/money';
 
@@ -55,6 +56,7 @@ test('J-09 FEE-02/FEE-12/MSG-02: overdue filter → reminder SMS with cost previ
     await expect(remind).toBeVisible();
     const buttonCount = Number(/to (\d+) unpaid/.exec((await remind.textContent()) ?? '')?.[1]);
     expect(buttonCount).toBeGreaterThanOrEqual(students.length);
+    await hydrated(remind);
     await remind.click();
     const dialog = page.getByRole('dialog', { name: 'Send reminder SMS' });
     await expect(dialog).toBeVisible();
