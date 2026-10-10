@@ -29,6 +29,12 @@ export const DATABASE_URL =
   process.env.DATABASE_URL ??
   `postgres://remix_app:remix_app_dev_password@127.0.0.1:${composePort('POSTGRES_PORT', '5432')}/remix`;
 
+/**
+ * Dev SeaweedFS (infra/docker/compose.yaml `s3`, dev-only keys from infra/docker/seaweedfs/s3.json):
+ * private storage for bank slips and receipt PDFs (ADR 0009). Browsers PUT slip photos to it.
+ */
+export const STORAGE_ORIGIN = `http://127.0.0.1:${composePort('S3_PORT', '8333')}`;
+
 export type TenantSlug = 'kamalphysics' | 'royalscience' | 'closedacademy';
 
 /** `http://<slug>.localhost:<port>`; Chromium resolves `*.localhost` to loopback by itself. */

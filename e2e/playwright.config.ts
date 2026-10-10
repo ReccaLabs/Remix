@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { API_PORT, DATABASE_URL, WEB_PORT, repoRoot } from './support/env';
+import { API_PORT, DATABASE_URL, STORAGE_ORIGIN, WEB_PORT, repoRoot } from './support/env';
 
 /**
  * Phase 1 and Phase 2 journeys against the real stack: browser -> built web app -> built API
@@ -70,6 +70,12 @@ export default defineConfig({
               PLATFORM_HOSTS: 'admin.localhost',
               COOKIE_SECURE: 'false',
               DATABASE_URL,
+              // Slip photos and receipt PDFs: the dev SeaweedFS from compose (dev-only keys).
+              STORAGE_S3_ENDPOINT: STORAGE_ORIGIN,
+              STORAGE_S3_REGION: 'us-east-1',
+              STORAGE_S3_BUCKET: 'remix-dev',
+              STORAGE_S3_ACCESS_KEY_ID: 'remix_s3_dev',
+              STORAGE_S3_SECRET_ACCESS_KEY: 'remix_s3_dev_password',
             },
           },
           {
@@ -88,6 +94,8 @@ export default defineConfig({
               API_INTERNAL_URL: apiUrl,
               TENANT_BASE_DOMAINS: 'localhost',
               PLATFORM_HOSTS: 'admin.localhost',
+              // The CSP lets /app/pay and /admin/fees PUT slip photos to and load them from here.
+              STORAGE_ORIGIN,
             },
           },
         ],

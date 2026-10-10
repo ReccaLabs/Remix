@@ -78,6 +78,31 @@ export async function loginStaff(
   await expect(page).toHaveURL(tenantUrl(slug, '/admin'));
 }
 
+/**
+ * A student login that also gets through the device-limit step (a seeded student may already be at
+ * the limit): the first device is signed out so the journey continues on /app.
+ */
+export async function loginStudentOnAnyDevice(
+  page: Page,
+  slug: string,
+  phone: string,
+  password: string,
+): Promise<void> {
+  await submitStudentLogin(page, slug, phone, password);
+  await expect
+    .poll(
+      async () =>
+        page.url() === tenantUrl(slug, '/app') ||
+        (await page.getByRole('group', { name: 'Your signed-in devices' }).isVisible()),
+    )
+    .toBe(true);
+  if (await page.getByRole('group', { name: 'Your signed-in devices' }).isVisible()) {
+    await page.getByRole('radio').first().check();
+    await page.getByRole('button', { name: 'Sign out this device and continue' }).click();
+  }
+  await expect(page).toHaveURL(tenantUrl(slug, '/app'));
+}
+
 /** The top bar's Log out (some pages, like Me, repeat it in the page body). */
 export async function logout(page: Page): Promise<void> {
   // A hard navigation can reach the expected URL before the client button is hydrated.

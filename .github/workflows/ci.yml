@@ -104,7 +104,8 @@ jobs:
   # with RLS and the dev seed. Postgres comes from infra/docker/compose.yaml rather than a
   # `services:` container: only compose mounts postgres/init (the four roles and the remix
   # database, which the migrations insist on), and that mount needs the checked-out repo. Only the
-  # postgres service is started (no Valkey, Mailpit or S3: nothing here uses them). The tests start
+  # postgres and s3 (SeaweedFS: bank-slip photos and receipt PDFs) services are started; Valkey
+  # is not (outside production the API runs its jobs inline and logs the mock SMS). The tests start
   # the built API and web app themselves (e2e/playwright.config.ts).
   e2e:
     name: E2E journeys (Playwright)
@@ -123,8 +124,8 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
-      - name: Start Postgres 18 (roles init script mounted)
-        run: docker compose -f infra/docker/compose.yaml up -d --wait --wait-timeout 120 postgres
+      - name: Start Postgres 18 (roles init script mounted) and S3 storage (SeaweedFS)
+        run: docker compose -f infra/docker/compose.yaml up -d --wait --wait-timeout 120 postgres s3
 
       - name: Migrate and seed
         run: |
