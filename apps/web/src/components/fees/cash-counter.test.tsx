@@ -71,6 +71,8 @@ describe('keyboard cash counter (FEE-07)', () => {
     expect(print.location.href).toBe(`/admin/receipts/${PAYMENT.receiptId}/print`);
     expect(screen.queryByLabelText('Cash received (LKR)')).toBeNull();
     expect(screen.getByLabelText('Search student')).toHaveValue('');
+    // The change to hand back stays on screen after the form resets.
+    expect(screen.getByRole('status')).toHaveTextContent('Give LKR 1,000.00 change');
   });
   it('insufficient cash sends no request; Esc clears selection and restores search focus', async () => {
     const { requests } = setup();

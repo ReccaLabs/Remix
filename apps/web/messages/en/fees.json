@@ -19,6 +19,7 @@
   "payments": "Payments",
   "cashCounter": "Cash counter",
   "tabs": "Fee views",
+  "loadingFees": "Loading fees",
   "date": "Date",
   "student": "Student",
   "for": "For",
@@ -97,6 +98,7 @@
   "reset": "Reset",
   "keyboard": "Tab to move · Enter to collect · Esc to reset",
   "success": "Payment recorded. Ready for the next student.",
+  "successChange": "Payment recorded. Give {change} change. Ready for the next student.",
   "printReceipt": "Open receipt print page",
   "record": "Record payment",
   "manualTitle": "Record manual payment",
@@ -223,6 +225,7 @@
       "network": "We could not send the slip. Try again."
     },
     "queueTab": "Bank slips",
+    "tabWaiting": "slips waiting",
     "queueCount": "Waiting · {count}",
     "oldestFirst": "Oldest first",
     "queueList": "Slips waiting for review",

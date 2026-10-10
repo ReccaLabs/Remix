@@ -4,11 +4,13 @@ import type { ApiOutput } from '@remix/types/api';
 import { IntlIsland } from '@/components/intl-island';
 import { PaymentsPanel } from '@/components/fees/payments-panel';
 import { CashCounter } from '@/components/fees/cash-counter';
+import { FeesTabs, type FeesTab } from '@/components/fees/fees-tabs';
 import { InvoicesPanel } from '@/components/fees/invoices-panel';
 import { SlipQueue } from '@/components/fees/slip-queue';
 import { LoadError } from '@/components/portal/load-error';
 import { PageBody, PageTitle } from '@/components/shell/page-body';
 import { feeBusinessDate } from '@/lib/fees-money';
+import { allowedFeesTabs, FEES_TAB_HREF, resolveFeesTab } from '@/lib/fees-tabs';
 import { invoicesQuery, recentMonths } from '@/lib/invoices-query';
 import { ADMIN_PATHS } from '@/lib/paths';
 import { paymentsQuery } from '@/lib/fees-query';
@@ -19,23 +21,20 @@ export const generateMetadata = () => adminMetadata('fees');
 
 export default async function FeesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const [session, params, t] = await Promise.all([requireStaff(['owner', 'admin', 'cashier']), searchParams, getTranslations('fees')]);
-  const tab = params.tab === 'cash' || params.tab === 'invoices' || params.tab === 'slips' ? params.tab : 'payments';
   const roles = session.user.roles;
-  const tabs = [
-    { href: '/admin/fees', label: t('payments'), active: tab === 'payments' },
-    { href: '/admin/fees?tab=invoices', label: t('invoicesTab'), active: tab === 'invoices' },
-    { href: '/admin/fees?tab=slips', label: t('slips.queueTab'), active: tab === 'slips' },
-    { href: '/admin/fees?tab=cash', label: t('cashCounter'), active: tab === 'cash' },
-  ];
+  const tab = resolveFeesTab(params.tab, roles);
+  const api = await getApi();
+
   let body;
+  let waiting: number | null = null;
   if (tab === 'cash') body = <CashCounter />;
   else if (tab === 'slips') {
     let queue: ApiOutput<'listSlips'> | null = null;
-    try { queue = await (await getApi()).call('listSlips', { query: { status: 'submitted', page: 1, pageSize: 100 } }); } catch { /* Retry link below. */ }
+    try { queue = await api.call('listSlips', { query: { status: 'submitted', page: 1, pageSize: 100 } }); } catch { /* Retry link below. */ }
+    waiting = queue?.total ?? null;
     body = queue ? <SlipQueue initial={queue.items} /> : null;
   } else if (tab === 'invoices') {
     const query = invoicesQuery(params);
-    const api = await getApi();
     let initial: ApiOutput<'listInvoices'> | null = null;
     let classes: { id: string; name: string }[] = [];
     try { initial = await api.call('listInvoices', { query }); } catch { /* Display a retry in the existing shell. */ }
@@ -45,12 +44,24 @@ export default async function FeesPage({ searchParams }: { searchParams: Promise
   } else {
     const query = paymentsQuery(params);
     let initial: ApiOutput<'listPayments'> | null = null;
-    try { initial = await (await getApi()).call('listPayments', { query }); } catch { /* Display a retry in the existing shell. */ }
+    try { initial = await api.call('listPayments', { query }); } catch { /* Display a retry in the existing shell. */ }
     body = <PaymentsPanel initial={initial} query={query} owner={roles.includes('owner')} />;
   }
+
+  // The count on the Bank slips tab is the number of slips waiting for review. The queue tab
+  // already holds it; the other tabs ask for one row. A failed count just hides the number.
+  if (waiting === null && tab !== 'slips') {
+    try { waiting = (await api.call('listSlips', { query: { status: 'submitted', page: 1, pageSize: 1 } })).total; } catch { /* No count. */ }
+  }
+
+  const labels: Record<FeesTab['id'], string> = { payments: t('payments'), invoices: t('invoicesTab'), slips: t('slips.queueTab'), cash: t('cashCounter') };
+  const tabs: FeesTab[] = allowedFeesTabs(roles).map(id => ({
+    id, href: FEES_TAB_HREF[id], label: labels[id], active: id === tab,
+    ...(id === 'slips' && waiting ? { count: waiting, countLabel: t('slips.tabWaiting') } : {}),
+  }));
   return <PageBody width="admin">
     <PageTitle title={t('title')} subtitle={t('subtitle')} />
-    <nav aria-label={t('tabs')} className="flex overflow-x-auto border-b border-line">{tabs.map(tab => <a key={tab.href} href={tab.href} aria-current={tab.active ? 'page' : undefined} className={`inline-flex min-h-11 shrink-0 items-center border-b-2 px-4 font-semibold ${tab.active ? 'border-brand text-brand' : 'border-transparent text-muted'}`}>{tab.label}</a>)}</nav>
-    {body ? <IntlIsland namespaces={['fees']}>{body}</IntlIsland> : <LoadError retryHref="/admin/fees?tab=slips" />}
+    <FeesTabs label={t('tabs')} tabs={tabs} />
+    {body ? <IntlIsland namespaces={['fees']}>{body}</IntlIsland> : <LoadError retryHref={FEES_TAB_HREF[tab]} />}
   </PageBody>;
 }

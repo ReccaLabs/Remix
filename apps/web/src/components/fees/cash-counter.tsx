@@ -29,6 +29,7 @@ export function CashCounter() {
   const [failure, setFailure] = useState<FeeFailure | null>(null);
   const [epoch, setEpoch] = useState(0);
   const [receipt, setReceipt] = useState<string | null>(null);
+  const [changeGiven, setChangeGiven] = useState<Cents>(0);
   const [scanNotice, setScanNotice] = useState<'ordered' | 'revoked' | 'archived' | null>(null);
   const [scanBadge, setScanBadge] = useState<'card' | 'temporary' | null>(null);
   const search = useRef<StudentSearchHandle>(null);
@@ -144,6 +145,7 @@ export function CashCounter() {
       if (payment.receiptId) {
         const href = `/admin/receipts/${payment.receiptId}/print`;
         setReceipt(href);
+        setChangeGiven(cash !== null && cash > total ? cash - total : 0);
         if (print) print.location.href = href;
       } else print?.close();
       inFlight.current = false;
@@ -171,7 +173,7 @@ export function CashCounter() {
           role="status"
           className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-success-soft px-4 py-3 text-success-ink"
         >
-          <span>{t('success')}</span>
+          <span>{changeGiven > 0 ? t('successChange', { change: formatLKR(changeGiven, { exact: true }) }) : t('success')}</span>
           <a
             href={receipt}
             target="_blank"
