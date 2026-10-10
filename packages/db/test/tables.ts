@@ -76,6 +76,12 @@ export interface World {
   receiptId: string;
   settingsId: string;
   cardId: string;
+  smsWalletId: string;
+  smsMessageId: string;
+  /** A message with no ledger entry yet: the `fresh` ledger row spends against it. */
+  smsSpareMessageId: string;
+  smsLedgerId: string;
+  smsTopUpRequestId: string;
   /** A pending, unreferenced upload (deletable by the 24 h clean-up). */
   uploadId: string;
   /** A submitted slip linked to `lineId`, and a second one without lines. */
@@ -261,7 +267,58 @@ const freshReceipt = (w: World): Row => ({
   number: 'IS-R-26-00002',
 });
 
+const freshSmsMessage = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  message_id: `fresh-${w.tag}`,
+  template: 'fee.reminder',
+  segments: 1,
+  cost_cents: 500,
+});
+const freshSmsLedger = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  kind: 'send',
+  amount_cents: -500,
+  message_id: w.smsSpareMessageId,
+});
+const freshSmsTopUpRequest = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  amount_cents: 100_000,
+  requested_by: w.staffUserId,
+});
+
 export const TABLES = {
+  sms_wallets: {
+    access: 'projection',
+    singleton: true,
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.smsWalletId }),
+    fresh: (w) => ({ tenant_id: w.tenantId }),
+  },
+  sms_messages: {
+    access: 'projection',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.smsMessageId }),
+    fresh: freshSmsMessage,
+  },
+  sms_wallet_ledger: {
+    access: 'append',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.smsLedgerId }),
+    fresh: freshSmsLedger,
+    crossTenantRefs: {
+      message: (a, b) => ({ ...freshSmsLedger(a), message_id: b.smsSpareMessageId }),
+      actor: (a, b) => ({ ...freshSmsLedger(a), actor_id: b.staffUserId }),
+    },
+  },
+  sms_top_up_requests: {
+    access: 'append',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.smsTopUpRequestId }),
+    fresh: freshSmsTopUpRequest,
+    crossTenantRefs: {
+      requestedBy: (a, b) => ({ ...freshSmsTopUpRequest(a), requested_by: b.staffUserId }),
+    },
+  },
   uploads: {
     access: 'lifecycle',
     tenantColumn: 'tenant_id',
@@ -884,6 +941,36 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
               .returning(),
             'receipt',
           );
+          // SMS wallet: credit as the owner (what staff tooling does), then spend one message.
+          const messages = await tx
+            .insert(schema.smsMessages)
+            .values([
+              { tenantId, messageId: `world-${tag}`, template: 'fee.reminder', segments: 1, costCents: 500, status: 'sent' },
+              { tenantId, messageId: `spare-${tag}`, template: 'fee.reminder', segments: 1, costCents: 500 },
+            ])
+            .returning();
+          const topUp = one(
+            await tx
+              .insert(schema.smsWalletLedger)
+              .values({ tenantId, kind: 'top_up', amountCents: 100_000, note: 'world' })
+              .returning(),
+            'sms top-up',
+          );
+          await tx.insert(schema.smsWalletLedger).values({
+            tenantId,
+            kind: 'send',
+            amountCents: -500,
+            messageId: `world-${tag}`,
+            segments: 1,
+          });
+          const wallet = one(await tx.select().from(schema.smsWallets), 'sms wallet');
+          const topUpRequest = one(
+            await tx
+              .insert(schema.smsTopUpRequests)
+              .values({ tenantId, amountCents: 100_000, requestedBy: staff.id })
+              .returning(),
+            'sms top-up request',
+          );
           const upload = (name: string, processed: boolean) =>
             tx
               .insert(schema.uploads)
@@ -932,6 +1019,11 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
             'slip line',
           );
           return {
+            smsWalletId: wallet.id,
+            smsMessageId: one(messages.filter((m) => m.messageId === `world-${tag}`), 'sms message').id,
+            smsSpareMessageId: `spare-${tag}`,
+            smsLedgerId: topUp.id,
+            smsTopUpRequestId: topUpRequest.id,
             uploadId: pendingUpload.id,
             slipId: worldSlip.id,
             spareSlipId: spareSlip.id,
@@ -946,6 +1038,11 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
           };
         })()
       : {
+          smsWalletId: '',
+          smsMessageId: '',
+          smsSpareMessageId: '',
+          smsLedgerId: '',
+          smsTopUpRequestId: '',
           invoiceId: '',
           lineId: '',
           paymentId: '',

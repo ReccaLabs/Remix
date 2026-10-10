@@ -1,4 +1,4 @@
-import { type DynamicModule, Global, Inject, Injectable, Module } from '@nestjs/common';
+import { type DynamicModule, Global, Inject, Injectable, Module, Optional } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 import { VALKEY } from '../common/valkey/valkey';
 import { SMS_PROVIDER, type SmsProvider } from '../integrations/sms/sms.provider';
@@ -10,7 +10,7 @@ import { ProcessorRegistry } from './processor-registry';
 import { ImportRunner } from '../modules/imports/import-runner';
 import { ReceiptJobRunner } from '../modules/fees/receipt-jobs';
 import { MediaJobRunner } from '../modules/slips/media-jobs';
-import { createSmsProcessor } from './sms/sms.processor';
+import { createSmsProcessor, SMS_BILLING, type SmsBilling } from './sms/sms.processor';
 import { InlineJobProducer } from './testing/inline-jobs';
 
 /**
@@ -37,10 +37,15 @@ export class JobsModule {
           : config.nodeEnv === 'development'
             ? {
                 provide: JOB_PRODUCER,
-                useFactory: (imports?: ImportRunner, receipts?: ReceiptJobRunner, media?: MediaJobRunner) =>
+                useFactory: (
+                  imports?: ImportRunner,
+                  receipts?: ReceiptJobRunner,
+                  billing?: SmsBilling,
+                  media?: MediaJobRunner,
+                ) =>
                   new InlineJobProducer(
                     {
-                      sms: createSmsProcessor(smsProviderBinding(config)),
+                      sms: createSmsProcessor(smsProviderBinding(config), billing),
                       ...(imports
                         ? {
                             imports: async (payload, ctx) => {
@@ -56,6 +61,7 @@ export class JobsModule {
                 inject: [
                   { token: ImportRunner, optional: true },
                   { token: ReceiptJobRunner, optional: true },
+                  { token: SMS_BILLING, optional: true },
                   { token: MediaJobRunner, optional: true },
                 ],
               }
@@ -69,8 +75,12 @@ export class JobsModule {
 /** Registers the `sms` processor in the registry. */
 @Injectable()
 class SmsJobRegistration {
-  constructor(registry: ProcessorRegistry, @Inject(SMS_PROVIDER) provider: SmsProvider) {
-    registry.register('sms', createSmsProcessor(provider));
+  constructor(
+    registry: ProcessorRegistry,
+    @Inject(SMS_PROVIDER) provider: SmsProvider,
+    @Optional() @Inject(SMS_BILLING) billing?: SmsBilling,
+  ) {
+    registry.register('sms', createSmsProcessor(provider, billing));
   }
 }
 

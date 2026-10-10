@@ -22,6 +22,7 @@ const BANK = {
 const DEFAULTS = {
   dueDay: 5,
   remindersEnabled: false,
+  receiptSmsEnabled: false,
   remindBeforeDays: 0,
   remindAfterDays: 1,
   bankDetails: null,
@@ -54,6 +55,7 @@ describe('SET-03 FEE-09 FEE-12 fee settings against Postgres', () => {
     const body = {
       dueDay: 28,
       remindersEnabled: true,
+      receiptSmsEnabled: true,
       remindBeforeDays: 10,
       remindAfterDays: 30,
       bankDetails: BANK,

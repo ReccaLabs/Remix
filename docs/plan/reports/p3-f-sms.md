@@ -1,0 +1,23 @@
+# p3-f-sms report
+
+- Status: done
+- Branch / PR: `feat/p3-f-sms` / https://github.com/ReccaLabs/Remix/pull/58
+- Feature IDs: done: MSG-01, MSG-02, MSG-04, FEE-02, FEE-12 | not done: none (delivery reports, institute-own gateway, slip SMS callers are out of scope)
+- Gates: lint · typecheck · build passed. Tests: db 448 (isolation + wallet suite), types 146, ui 58, site 77, web 407, API unit + integration all green (new `sms-wallet.int.test.ts` 36 tests). One load-sensitive 500-student import timing test failed once under a loaded machine and passes alone.
+- CI: 5 of 6 pass (API image, E2E, gitleaks, Semgrep, tenant isolation). "Lint · typecheck · test · build" fails ONLY at the "Audit dependencies (high+)" step: new advisories since 5 Oct (source-map-js via vitest/postcss, patched >=1.2.2; sharp <0.35.5 via next, GHSA-wq5f-xc86-pv6w). Lint, typecheck, test and build steps in that job pass. This PR adds no dependency; fixing needs a lockfile/override bump decided by the lead (main would fail the same way today).
+- Migrations added: `0019_sms_wallet.sql` (tables, `receipt_sms_enabled` column), `0020_sms_wallet_rls.sql` (RLS, grants, ledger/guard triggers). Journal idx 19 and 20 skip 17/18 (reserved for 3-D); expect a trivial `_journal.json` merge.
+- Contract changes (packages/types), all additive: `feeSettingsSchema.receiptSmsEnabled` (+ optional in `updateFeeSettingsSchema`); `smsWalletSchema.lowBalance` and `openTopUpRequests`; types `SendRemindersRequest`, `SendRemindersResponse`. `smsPayload` (apps/api queues, not a shared contract) gains optional `billed: true`; `fees` job kinds gain `reminders_tick` and `reminders`. No existing field changed or removed.
+- New dependencies: none
+- Security-relevant changes:
+  - Wallet ledger is append-only and the DB is the guardian: BEFORE INSERT trigger locks the wallet row, computes `balance_after`, rejects any entry that takes the balance below 0, requires a refund to equal its debit; guard trigger refuses direct `balance_cents` edits; app role can only insert `send`/`refund` rows (RLS `app_spend`), credits are owner-role only: `packages/db/migrations/0020_sms_wallet_rls.sql`.
+  - Idempotent debit-before-queue, atomic all-or-nothing batch check, refund paths: `apps/api/src/modules/sms/sms-wallet.service.ts`, `system-sms.service.ts`.
+  - Worker refunds on permanent failure (rejected number or last attempt) and never re-sends on a bookkeeping error: `apps/api/src/jobs/sms/sms.processor.ts`.
+  - Gateway credentials env-only, POST body not URL, timeouts, masked phones, no OTP/key logging, mock never in production: `apps/api/src/integrations/sms/*`, `apps/api/src/config/config.ts`.
+  - Staff CLI credit is audited and uses the owner role: `packages/db/src/sms-wallet.ts`.
+- Deviations from plan/ADRs: automatic reminders run from a new 09:00 Asia/Colombo tick (`reminders_tick`), not the 00:20 nightly tick, so parents are not texted at midnight; the nightly tick is unchanged. Debited-but-never-queued messages (process death) are refunded by a stale-pending sweep because no phone/text is stored. `sms_messages` table added beyond the brief (idempotency key + status, no phone/text). SMS recipient = first guardian with SMS opt-in, else the student's own mobile.
+- Known issues / TODO:
+  - Verified vs assumed: Notify.lk request/success format verified from developer.notify.lk/api-endpoints; its failure body, error codes and lack of message id/idempotency are assumed (classification: 4xx or "number" message = rejected, everything else retry/failover). Text.lk endpoint, Bearer auth, body and success fields verified from text.lk/docs/send-sms; HTTP status semantics assumed (422/other 4xx rejected; 401/403/429/5xx failover). Neither gateway offers idempotency, so exactly-once relies on the BullMQ job id.
+  - TODO: delivery-report webhooks if a gateway offers them; mock API (`apps/web/test/mock-api-fees.mjs`) has minimal SMS stubs only; slip approved/rejected callers belong to 3-D via `SystemSmsService.send`; sibling phone de-duplication; "Slip waiting" invoice filter still empty until 3-D.
+- Review these files first (max 10): `packages/db/migrations/0020_sms_wallet_rls.sql`, `apps/api/src/modules/sms/sms-wallet.service.ts`, `apps/api/src/modules/sms/system-sms.service.ts`, `apps/api/src/jobs/sms/sms.processor.ts`, `apps/api/src/modules/sms/fee-reminders.service.ts`, `apps/api/src/integrations/sms/notify-lk.provider.ts`, `apps/api/src/integrations/sms/text-lk.provider.ts`, `packages/db/src/sms-wallet.ts`, `apps/api/test/integration/sms-wallet.int.test.ts`, `packages/db/test/sms-wallet.test.ts`.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

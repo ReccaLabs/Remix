@@ -4,7 +4,8 @@
     "theme": "Theme",
     "halls": "Halls",
     "payments": "Payment settings",
-    "fees": "Fee settings"
+    "fees": "Fee settings",
+    "sms": "SMS wallet"
   },
   "nav": {
     "label": "Settings sections",
@@ -13,7 +14,8 @@
     "halls": "Halls",
     "staff": "Staff and roles",
     "payments": "Payments",
-    "fees": "Fees"
+    "fees": "Fees",
+    "sms": "SMS"
   },
   "title": "Settings",
   "errors": {
@@ -186,7 +188,9 @@
       "footer": "Receipt footer"
     },
     "save": "Save fee settings",
-    "saved": "Fee settings saved"
+    "saved": "Fee settings saved",
+    "receiptSms": "Text receipts to parents",
+    "receiptSmsHint": "Sends one SMS per payment to the guardian who opted in, or the student. Each message is charged to your SMS wallet; nothing is sent when the wallet is empty."
   },
   "receiptPrint": {
     "meta": "Print receipt",
@@ -216,5 +220,38 @@
     "retry": "Try again",
     "loading": "Loading receipt"
   },
-  "loading": "Loading settings"
+  "loading": "Loading settings",
+  "sms": {
+    "subtitle": "Prepaid credit for receipts, fee reminders and slip decisions. Sign-in codes are free.",
+    "balance": "Balance",
+    "lowBalance": "Low balance: top up soon so receipts and reminders keep going out.",
+    "healthy": "Balance is fine",
+    "sender": "Sender name",
+    "senderDefault": "ReMix (shared sender)",
+    "senderHint": "ReMix staff register your own sender name on request.",
+    "price": "Price per SMS segment",
+    "threshold": "Low-balance warning below",
+    "recent": "Recent activity",
+    "date": "Date",
+    "kind": "Type",
+    "amount": "Amount",
+    "balanceAfter": "Balance after",
+    "note": "Note",
+    "none": "No activity yet. Buy SMS to get started.",
+    "kinds": {
+      "top_up": "Top-up",
+      "send": "Message sent",
+      "refund": "Refund",
+      "adjustment": "Adjustment"
+    },
+    "buyTitle": "Buy SMS",
+    "buyHint": "Tell ReMix how much to add. We invoice your institute and credit the wallet once it is paid.",
+    "buyAmount": "Amount (LKR)",
+    "buyMin": "Minimum LKR 1,000.",
+    "buyButton": "Request top-up",
+    "bought": "Request sent. ReMix will invoice you and credit your wallet.",
+    "openRequests": "{count, plural, one {# request is waiting for ReMix} other {# requests are waiting for ReMix}}",
+    "tooMany": "You already have requests waiting for ReMix. Wait for them to be credited.",
+    "lowBalanceBadge": "Low balance"
+  }
 }

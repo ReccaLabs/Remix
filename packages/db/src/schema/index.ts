@@ -19,4 +19,5 @@ export {
   paymentMethod,
 } from './fees';
 export { tenantIntegrations, integrationKind } from './integrations';
+export { smsWallets, smsMessages, smsWalletLedger, smsTopUpRequests } from './sms';
 export { uploads, bankSlips, bankSlipLines, uploadStatus, uploadKind, slipStatus } from './slips';

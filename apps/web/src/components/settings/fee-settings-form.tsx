@@ -20,6 +20,7 @@ export function FeeSettingsForm({ initial }: { initial: FeeSettings }) {
   const [before, setBefore] = useState(String(initial.remindBeforeDays));
   const [after, setAfter] = useState(String(initial.remindAfterDays));
   const [reminders, setReminders] = useState(initial.remindersEnabled);
+  const [receiptSms, setReceiptSms] = useState(initial.receiptSmsEnabled);
   const [bankEnabled, setBankEnabled] = useState(initial.bankDetails !== null);
   const [bank, setBank] = useState(
     initial.bankDetails ?? { bankName: '', branch: '', accountNumber: '', accountName: '' },
@@ -37,6 +38,7 @@ export function FeeSettingsForm({ initial }: { initial: FeeSettings }) {
     const parsed = updateFeeSettingsSchema.safeParse({
       dueDay: Number(dueDay),
       remindersEnabled: reminders,
+      receiptSmsEnabled: receiptSms,
       remindBeforeDays: Number(before),
       remindAfterDays: Number(after),
       bankDetails: bankEnabled ? bank : null,
@@ -83,6 +85,12 @@ export function FeeSettingsForm({ initial }: { initial: FeeSettings }) {
           label={t('remindersEnabled')}
           checked={reminders}
           onChange={(event) => setReminders(event.target.checked)}
+        />
+        <Checkbox
+          label={t('receiptSms')}
+          hint={t('receiptSmsHint')}
+          checked={receiptSms}
+          onChange={(event) => setReceiptSms(event.target.checked)}
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('beforeDays')} hint={t('beforeHint')}>

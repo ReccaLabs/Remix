@@ -14,7 +14,7 @@ import { CLOCK, ManualClock } from '../../../src/common/time/clock';
 import { loadConfig } from '../../../src/config/config';
 import { MockSmsProvider } from '../../../src/integrations/sms/sms.mock';
 import { JOB_PRODUCER } from '../../../src/jobs/job-producer';
-import { createSmsProcessor } from '../../../src/jobs/sms/sms.processor';
+import { createSmsProcessor, SMS_BILLING } from '../../../src/jobs/sms/sms.processor';
 import { InlineJobProducer } from '../../../src/jobs/testing/inline-jobs';
 import { ImportRunner } from '../../../src/modules/imports/import-runner';
 import { ReceiptJobRunner } from '../../../src/modules/fees/receipt-jobs';
@@ -88,6 +88,8 @@ export async function createDbTestApp(env: Record<string, string> = {}): Promise
   configureApp(app, config);
   await app.init();
   const importRunner = app.get(ImportRunner);
+  // Wallet-billed SMS report back to the wallet exactly like the worker process does.
+  processors.sms = createSmsProcessor(sms, app.get(SMS_BILLING));
   processors.receipts = (payload) => app.get(ReceiptJobRunner).run(payload);
   processors.media = (payload) => app.get(MediaJobRunner).run(payload, jobs);
   processors.imports = async (payload, ctx) => {

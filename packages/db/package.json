@@ -17,6 +17,7 @@
     "seed": "tsx src/cli/seed.ts",
     "tenant:create": "tsx src/cli/tenant-create.ts",
     "tenant:reset-owner-password": "tsx src/cli/tenant-reset-owner-password.ts",
+    "tenant:sms-credit": "tsx src/cli/tenant-sms-credit.ts",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {

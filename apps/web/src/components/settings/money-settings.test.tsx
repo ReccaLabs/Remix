@@ -30,6 +30,7 @@ const PAYHERE: PayhereSettings = {
 const FEES: FeeSettings = {
   dueDay: 5,
   remindersEnabled: false,
+  receiptSmsEnabled: false,
   remindBeforeDays: 0,
   remindAfterDays: 1,
   bankDetails: null,
@@ -121,12 +122,14 @@ describe('SET-03 Fees settings', () => {
       await userEvent.type(screen.getByLabelText(label!), value!);
     await userEvent.type(screen.getByLabelText('Receipt footer'), 'Thank you');
     await userEvent.click(screen.getByLabelText('Enable fee reminders'));
+    await userEvent.click(screen.getByLabelText('Text receipts to parents'));
     await expectNoAxeViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Save fee settings' }));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     const request = fetch.mock.calls as unknown as [string, RequestInit][];
     expect(JSON.parse(String(request[0]![1].body))).toMatchObject({
       remindersEnabled: true,
+      receiptSmsEnabled: true,
       bankDetails: { accountNumber: '123456' },
       receipt: { footer: 'Thank you' },
     });

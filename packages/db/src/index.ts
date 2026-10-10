@@ -40,3 +40,10 @@ export {
   type AuthTicketKind,
   type UserStatus,
 } from './schema/enums';
+export {
+  creditSmsWallet,
+  creditSmsWalletInputSchema,
+  SmsWalletToolError,
+  type CreditSmsWalletInput,
+  type CreditSmsWalletResult,
+} from './sms-wallet';

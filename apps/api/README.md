@@ -37,6 +37,12 @@ Validated with Zod at boot ([`src/config/config.ts`](src/config/config.ts)). An 
 | `DATABASE_URL` | — | **required**: Postgres as `remix_app`. Boot fails if the role is superuser, `BYPASSRLS` or owns tables |
 | `VALKEY_URL` | — | **required in production**: rate limits (fail closed) and BullMQ queues (ADR 0012) |
 | `AUTH_CODE_SECRET` | public dev value | **required in production** (≥ 32 chars, its own secret): HMAC key for SMS one-time codes (ADR 0004 addendum). The public dev value is refused in production |
+| `NOTIFYLK_USER_ID`, `NOTIFYLK_API_KEY`, `NOTIFYLK_SENDER_ID` | — | MSG-01 Notify.lk (primary gateway). All three or the gateway is ignored. Secrets: host secret store only |
+| `TEXTLK_API_TOKEN`, `TEXTLK_SENDER_ID` | — | MSG-01 Text.lk (optional fallback gateway). Both or ignored |
+| `SMS_PRIMARY` / `SMS_FALLBACK` | `notifylk` / none | which configured gateway sends first / takes over on transport errors, 5xx or account problems (never on a rejected number). Must differ. With no gateway configured production fails SMS jobs visibly; other environments use the logging mock |
+| `SMS_HTTP_TIMEOUT_MS` | `8000` | per gateway call (1000–30000) |
+
+Crediting a tenant's SMS wallet until platform admin exists (Phase 7): `pnpm --filter @remix/db tenant:sms-credit -- --slug <slug> --amount-lkr 2000 --note "Invoice 123 paid" [--request <id>] [--sender-id <mask>] [--threshold-lkr 200]`. It is audited and uses the owner database role.
 
 ## Run against the dev stack
 
