@@ -8,6 +8,11 @@ export const QUEUES = ['sms', 'imports', 'fees', 'receipts', 'media'] as const;
 export type QueueName = (typeof QUEUES)[number];
 
 /** Valkey key prefix of every BullMQ key; keeps jobs apart from limiter/cache keys. */
+/** The `sms` job id, the business key of one message (also used to find a job that exists). */
+export function smsJobId(tenantId: string, messageId: string): string {
+  return `sms-${tenantId}-${messageId}`;
+}
+
 export const JOBS_PREFIX = 'remix:jobs';
 
 /** Ids that go into a job's business key: no `:` (BullMQ rejects it), no whitespace. */
@@ -128,7 +133,7 @@ export const JOBS = {
   }),
   sms: defineJob({
     schema: smsPayload,
-    jobId: (p) => `sms-${p.tenantId}-${p.messageId}`,
+    jobId: (p) => smsJobId(p.tenantId, p.messageId),
     concurrency: 10,
     // The text can hold an OTP code: keep it in Valkey no longer than needed.
     removeOnComplete: true,

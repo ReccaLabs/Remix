@@ -59,6 +59,10 @@ export class InlineJobProducer implements JobProducer {
     return { jobId: prepared.jobId };
   }
 
+  hasJob(queue: QueueName, jobId: string): Promise<boolean> {
+    return Promise.resolve(this.jobs.some((j) => j.queue === queue && j.jobId === jobId));
+  }
+
   /** Run every pending job to completion or final failure. Never throws: inspect `jobs`. */
   async drain(): Promise<void> {
     for (const job of this.jobs) {

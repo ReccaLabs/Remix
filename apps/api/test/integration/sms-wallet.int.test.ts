@@ -256,6 +256,22 @@ describe('MSG-01/02/04, FEE-02/12: SMS wallet, system SMS and reminders against 
       expect(await wallet.refundStalePending(tn.id)).toBe(0);
     });
 
+    it('the sweep marks a stale message queued, not refunded, when its job exists', async () => {
+      const wallet = t.app.get(SmsWalletService);
+      const before = await balance(tn);
+      const k = key('raced');
+      await withTenant(db, tn.id, async (tx) => {
+        await wallet.charge(tx, tn.id, { messageId: k, template: 'slip_approved', segments: 1 });
+      });
+      // The enqueue succeeded but markQueued never ran.
+      await t.jobs.add('sms', { tenantId: tn.id, messageId: k, gateway: 'remix-wallet', senderId: 'ReMix', to: students[0]!.phone, text: 'Test', billed: true });
+      t.clock.advance(31 * 60_000);
+      expect(await wallet.refundStalePending(tn.id)).toBe(0);
+      expect(await statusOf(tn, k)).toBe('queued');
+      expect(await balance(tn)).toBe(before - SMS_SEGMENT_PRICE_CENTS);
+      await settle();
+    });
+
     it('concurrent sends never overdraw the wallet, and the same key concurrently charges once', async () => {
       const t3 = await f.tenant('active');
       await credit(t3, SMS_SEGMENT_PRICE_CENTS * 4);
