@@ -16,6 +16,7 @@ import { WorkerJobsModule } from './jobs/jobs.module';
 import { ImportWorkerModule } from './modules/imports/import-worker.module';
 import { FeesWorkerModule } from './modules/fees/fees-worker.module';
 import { ReceiptsWorkerModule } from './modules/fees/receipts-worker.module';
+import { MediaWorkerModule } from './modules/slips/media-worker.module';
 import { SmsWorkerModule } from './modules/sms/sms.module';
 
 /**
@@ -56,7 +57,7 @@ export class WorkerModule {
         LoggerModule.forRoot(loggerParams(options.config, options.logDestination)),
         WorkerJobsModule.forRoot(options.config),
         // Processors that touch tenant data need the database (not configured in bare tests).
-        ...(options.config.databaseUrl ? [ImportWorkerModule.forRoot(options.config), FeesWorkerModule.forRoot(options.config), ReceiptsWorkerModule.forRoot(options.config), SmsWorkerModule.forRoot()] : []),
+        ...(options.config.databaseUrl ? [ImportWorkerModule.forRoot(options.config), FeesWorkerModule.forRoot(options.config), ReceiptsWorkerModule.forRoot(options.config), MediaWorkerModule.forRoot(options.config), SmsWorkerModule.forRoot()] : []),
       ],
       providers: [{ provide: APP_CONFIG, useValue: options.config }, WorkerLifecycle],
     };

@@ -28,8 +28,10 @@ export type TableName = {
  * - read: SELECT within the tenant only (rows managed by the owner/platform).
  * - append: SELECT + INSERT within the tenant (audit trail).
  * - full: SELECT, INSERT, UPDATE, DELETE within the tenant.
+ * - projection: SELECT, INSERT and UPDATE of named columns only (catalog LEDGER_UPDATE_COLUMNS).
+ * - lifecycle: like projection, plus DELETE (rows a clean-up job removes, e.g. stale uploads).
  */
-export type Access = 'root' | 'settings' | 'read' | 'append' | 'projection' | 'full';
+export type Access = 'root' | 'settings' | 'read' | 'append' | 'projection' | 'lifecycle' | 'full';
 
 export const APP_PRIVILEGES: Record<Access, readonly string[]> = {
   root: ['SELECT'],
@@ -37,6 +39,7 @@ export const APP_PRIVILEGES: Record<Access, readonly string[]> = {
   read: ['SELECT'],
   append: ['INSERT', 'SELECT'],
   projection: ['INSERT', 'SELECT', 'UPDATE'],
+  lifecycle: ['DELETE', 'INSERT', 'SELECT', 'UPDATE'],
   full: ['DELETE', 'INSERT', 'SELECT', 'UPDATE'],
 };
 
@@ -79,6 +82,12 @@ export interface World {
   smsSpareMessageId: string;
   smsLedgerId: string;
   smsTopUpRequestId: string;
+  /** A pending, unreferenced upload (deletable by the 24 h clean-up). */
+  uploadId: string;
+  /** A submitted slip linked to `lineId`, and a second one without lines. */
+  slipId: string;
+  spareSlipId: string;
+  slipLineId: string;
 }
 
 type Row = Record<string, unknown>;
@@ -230,6 +239,28 @@ const freshAllocation = (w: World): Row => ({
   invoice_line_id: w.lineId,
   amount_cents: 1,
 });
+const freshUpload = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  kind: 'slip',
+  created_by: w.studentUserId,
+  content_type: 'image/png',
+  size_bytes: 2048,
+  object_key: `${w.tenantId}/slips/2026/10/fresh.png`,
+});
+const freshSlip = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  student_id: w.studentUserId,
+  upload_id: w.uploadId,
+  amount_cents: 250000,
+  reference: 'ref 9876',
+  reference_norm: 'REF9876',
+  slip_date: '2026-10-02',
+});
+const freshSlipLine = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  slip_id: w.spareSlipId,
+  invoice_line_id: w.lineId,
+});
 const freshReceipt = (w: World): Row => ({
   tenant_id: w.tenantId,
   payment_id: w.sparePaymentId,
@@ -286,6 +317,33 @@ export const TABLES = {
     fresh: freshSmsTopUpRequest,
     crossTenantRefs: {
       requestedBy: (a, b) => ({ ...freshSmsTopUpRequest(a), requested_by: b.staffUserId }),
+    },
+  },
+  uploads: {
+    access: 'lifecycle',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.uploadId }),
+    fresh: freshUpload,
+    crossTenantRefs: { createdBy: (a, b) => ({ ...freshUpload(a), created_by: b.studentUserId }) },
+  },
+  bank_slips: {
+    access: 'projection',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.slipId }),
+    fresh: freshSlip,
+    crossTenantRefs: {
+      student: (a, b) => ({ ...freshSlip(a), student_id: b.studentUserId }),
+      upload: (a, b) => ({ ...freshSlip(a), upload_id: b.uploadId }),
+    },
+  },
+  bank_slip_lines: {
+    access: 'append',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.slipLineId }),
+    fresh: freshSlipLine,
+    crossTenantRefs: {
+      slip: (a, b) => ({ ...freshSlipLine(a), slip_id: b.spareSlipId }),
+      line: (a, b) => ({ ...freshSlipLine(a), invoice_line_id: b.lineId }),
     },
   },
   tenant_integrations: {
@@ -913,12 +971,63 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
               .returning(),
             'sms top-up request',
           );
+          const upload = (name: string, processed: boolean) =>
+            tx
+              .insert(schema.uploads)
+              .values({
+                tenantId,
+                kind: 'slip',
+                createdBy: student.id,
+                contentType: 'image/jpeg',
+                sizeBytes: 1000,
+                objectKey: `${tenantId}/slips/2026/10/${name}.heic`,
+                ...(processed
+                  ? {
+                      status: 'processed' as const,
+                      processedKey: `${tenantId}/slips/2026/10/${name}.jpg`,
+                      processedAt: new Date(),
+                    }
+                  : {}),
+              })
+              .returning()
+              .then((rows) => one(rows, `upload ${name}`));
+          const slipUpload = await upload('world', true);
+          const spareSlipUpload = await upload('spare', true);
+          const pendingUpload = await upload('pending', false);
+          const slip = (uploadId: string) =>
+            tx
+              .insert(schema.bankSlips)
+              .values({
+                tenantId,
+                studentId: student.id,
+                uploadId,
+                status: 'submitted',
+                amountCents: 250000,
+                reference: 'TX 0001',
+                referenceNorm: 'TX0001',
+                slipDate: '2026-09-03',
+              })
+              .returning()
+              .then((rows) => one(rows, 'slip'));
+          const worldSlip = await slip(slipUpload.id);
+          const spareSlip = await slip(spareSlipUpload.id);
+          const slipLine = one(
+            await tx
+              .insert(schema.bankSlipLines)
+              .values({ tenantId, slipId: worldSlip.id, invoiceLineId: line.id })
+              .returning(),
+            'slip line',
+          );
           return {
             smsWalletId: wallet.id,
             smsMessageId: one(messages.filter((m) => m.messageId === `world-${tag}`), 'sms message').id,
             smsSpareMessageId: `spare-${tag}`,
             smsLedgerId: topUp.id,
             smsTopUpRequestId: topUpRequest.id,
+            uploadId: pendingUpload.id,
+            slipId: worldSlip.id,
+            spareSlipId: spareSlip.id,
+            slipLineId: slipLine.id,
             invoiceId: invoice.id,
             lineId: line.id,
             paymentId: payment.id,
@@ -941,6 +1050,10 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
           spareEnrollmentId: '',
           receiptId: '',
           settingsId: '',
+          uploadId: '',
+          slipId: '',
+          spareSlipId: '',
+          slipLineId: '',
         };
 
     await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);

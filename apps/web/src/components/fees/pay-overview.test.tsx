@@ -16,7 +16,9 @@ describe('student Pay history 6f/6g (FEE-10)', () => {
     expect(within(screen.getByRole('region', { name: 'Total' })).getByText('LKR 5,000.00')).toBeInTheDocument();
     expect(screen.getAllByText('Reversed')).toHaveLength(2); expect(screen.getAllByText('Reversal entry')).toHaveLength(2);
     expect(screen.getByText('Sample Bank')).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox')).toBeNull(); expect(screen.queryByRole('button', { name: /Pay now|Checkout/ })).toBeNull();
+    // Open months are read-only; only the bank slip form selects months.
+    expect(within(screen.getByRole('region', { name: 'Open months' })).queryByRole('checkbox')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Send slip' })).toBeInTheDocument(); expect(screen.queryByRole('button', { name: /Pay now|Checkout/ })).toBeNull();
     expect(screen.queryByRole('link', { name: /Reprint/ })).toBeNull();
     await expectNoAxeViolations(container);
   });

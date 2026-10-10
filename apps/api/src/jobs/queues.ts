@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Queue names, a closed list (ADR 0012). One queue per kind of work so a slow import cannot
  * starve SMS. Add `invoices` / `reminders` here when those phases land.
  */
-export const QUEUES = ['sms', 'imports', 'fees', 'receipts'] as const;
+export const QUEUES = ['sms', 'imports', 'fees', 'receipts', 'media'] as const;
 export type QueueName = (typeof QUEUES)[number];
 
 /** Valkey key prefix of every BullMQ key; keeps jobs apart from limiter/cache keys. */
@@ -69,6 +69,26 @@ export function feesBusinessKey(p: z.output<typeof feesPayload>): string {
   return `fees:${p.kind}`;
 }
 
+/**
+ * ADR 0009 media worker: re-encode one uploaded slip image, and the hourly clean-up of uploads
+ * left unprocessed for 24 h (tick fans out one job per tenant, keyed by the Colombo hour).
+ */
+const mediaTenant = tenantId.refine((id) => id !== FEES_SYSTEM_TENANT);
+export const mediaPayload = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('slip'), tenantId: mediaTenant, uploadId: z.uuid() }),
+  z.strictObject({ kind: z.literal('cleanup_tick'), tenantId: z.literal(FEES_SYSTEM_TENANT) }),
+  z.strictObject({
+    kind: z.literal('cleanup'),
+    tenantId: mediaTenant,
+    hour: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}$/),
+  }),
+]);
+export function mediaBusinessKey(p: z.output<typeof mediaPayload>): string {
+  if (p.kind === 'slip') return `media:slip:${p.tenantId}:${p.uploadId}`;
+  if (p.kind === 'cleanup') return `media:cleanup:${p.tenantId}:${p.hour}`;
+  return 'media:cleanup_tick';
+}
+
 export interface JobDefinition<S extends z.ZodType> {
   schema: S;
   /** The business key: adding the same key twice is a no-op while the job exists. */
@@ -89,6 +109,14 @@ const DAY = 24 * HOUR;
 
 /** Every queue's contract. Keys must match {@link QUEUES} (checked by the type). */
 export const JOBS = {
+  media: defineJob({
+    schema: mediaPayload,
+    jobId: (p) => encodeURIComponent(mediaBusinessKey(p)),
+    // Image decoding is CPU-bound; keep it from starving the other queues.
+    concurrency: 2,
+    removeOnComplete: { age: DAY, count: 10000 },
+    removeOnFail: { age: 14 * DAY },
+  }),
   receipts: defineJob({ schema: receiptsPayload,
     jobId: p => encodeURIComponent(`receipt:${p.tenantId}:${p.paymentId}`), concurrency: 2,
     removeOnComplete: { age: DAY, count: 10000 }, removeOnFail: { age: 14 * DAY } }),

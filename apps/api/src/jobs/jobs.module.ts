@@ -9,6 +9,7 @@ import { JobWorkers } from './job-workers';
 import { ProcessorRegistry } from './processor-registry';
 import { ImportRunner } from '../modules/imports/import-runner';
 import { ReceiptJobRunner } from '../modules/fees/receipt-jobs';
+import { MediaJobRunner } from '../modules/slips/media-jobs';
 import { createSmsProcessor, SMS_BILLING, type SmsBilling } from './sms/sms.processor';
 import { InlineJobProducer } from './testing/inline-jobs';
 
@@ -36,7 +37,12 @@ export class JobsModule {
           : config.nodeEnv === 'development'
             ? {
                 provide: JOB_PRODUCER,
-                useFactory: (imports?: ImportRunner, receipts?: ReceiptJobRunner, billing?: SmsBilling) =>
+                useFactory: (
+                  imports?: ImportRunner,
+                  receipts?: ReceiptJobRunner,
+                  billing?: SmsBilling,
+                  media?: MediaJobRunner,
+                ) =>
                   new InlineJobProducer(
                     {
                       sms: createSmsProcessor(smsProviderBinding(config), billing),
@@ -48,6 +54,7 @@ export class JobsModule {
                           }
                         : {}),
                       ...(receipts ? { receipts: (payload) => receipts.run(payload) } : {}),
+                      ...(media ? { media: (payload) => media.run(payload) } : {}),
                     },
                     { autoRun: true },
                   ),
@@ -55,6 +62,7 @@ export class JobsModule {
                   { token: ImportRunner, optional: true },
                   { token: ReceiptJobRunner, optional: true },
                   { token: SMS_BILLING, optional: true },
+                  { token: MediaJobRunner, optional: true },
                 ],
               }
             : { provide: JOB_PRODUCER, useClass: UnavailableJobProducer },

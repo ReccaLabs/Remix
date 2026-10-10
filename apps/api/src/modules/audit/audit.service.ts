@@ -16,6 +16,8 @@ export type AuditAction =
   | 'sms.top_up_request'
   | 'sms.low_balance'
   | 'sms.reminders_send'
+  | 'slip.approve'
+  | 'slip.reject'
   | 'auth.login.succeeded'
   | 'auth.login.failed'
   | 'auth.login.temporary_password'

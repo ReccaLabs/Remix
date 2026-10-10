@@ -141,7 +141,7 @@ describe('storage', () => {
       tenantId: T1,
       key: 'slips/a.jpg',
       contentType: 'image/jpeg',
-      maxBytes: 5_000_000,
+      sizeBytes: 5_000_000,
       expiresInSec: 300,
     });
     expect(up.objectKey).toBe(`${T1}/slips/a.jpg`);

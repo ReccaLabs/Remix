@@ -1,6 +1,8 @@
 import { CallRecorder } from '../recorder';
 import {
   assertSignedUrlTtl,
+  ObjectTooLargeError,
+  type StoredObject,
   type SignedDownload,
   type SignedUpload,
   type StorageProvider,
@@ -12,7 +14,9 @@ import {
  * the real adapter, and tracks which objects "exist" (`put` simulates a finished upload).
  */
 export class MockStorageProvider
-  extends CallRecorder<'createUploadUrl' | 'createDownloadUrl' | 'deleteObject' | 'putObject'>
+  extends CallRecorder<
+    'createUploadUrl' | 'createDownloadUrl' | 'deleteObject' | 'putObject' | 'getObject'
+  >
   implements StorageProvider
 {
   readonly objects = new Set<string>();
@@ -34,13 +38,13 @@ export class MockStorageProvider
     tenantId: string;
     key: string;
     contentType: string;
-    maxBytes: number;
+    sizeBytes: number;
     expiresInSec: number;
   }): Promise<SignedUpload> {
     await this.record('createUploadUrl', input);
     assertSignedUrlTtl(input.expiresInSec);
-    if (!Number.isInteger(input.maxBytes) || input.maxBytes < 1) {
-      throw new RangeError('maxBytes must be a positive integer');
+    if (!Number.isInteger(input.sizeBytes) || input.sizeBytes < 1) {
+      throw new RangeError('sizeBytes must be a positive integer');
     }
     const objectKey = tenantObjectKey(input.tenantId, input.key);
     return {
@@ -57,6 +61,7 @@ export class MockStorageProvider
     key: string;
     expiresInSec: number;
     downloadName?: string;
+    disposition?: 'inline' | 'attachment';
   }): Promise<SignedDownload> {
     await this.record('createDownloadUrl', input);
     assertSignedUrlTtl(input.expiresInSec);
@@ -67,14 +72,24 @@ export class MockStorageProvider
     };
   }
 
+  async getObject(input: { tenantId: string; key: string; maxBytes: number }): Promise<StoredObject | null> {
+    await this.record('getObject', input);
+    const stored = this.contents.get(tenantObjectKey(input.tenantId, input.key));
+    if (!stored) return null;
+    if (stored.body.length > input.maxBytes) throw new ObjectTooLargeError();
+    return { body: Buffer.from(stored.body), contentType: stored.contentType };
+  }
+
   async deleteObject(input: { tenantId: string; key: string }): Promise<void> {
     await this.record('deleteObject', input);
     this.objects.delete(tenantObjectKey(input.tenantId, input.key));
     this.contents.delete(tenantObjectKey(input.tenantId, input.key));
   }
 
-  /** Simulate a completed upload. */
-  put(tenantId: string, key: string): void {
-    this.objects.add(tenantObjectKey(tenantId, key));
+  /** Simulate a completed upload (optionally with content, for the media worker). */
+  put(tenantId: string, key: string, body?: Buffer, contentType = 'application/octet-stream'): void {
+    const objectKey = tenantObjectKey(tenantId, key);
+    this.objects.add(objectKey);
+    if (body) this.contents.set(objectKey, { body: Buffer.from(body), contentType });
   }
 }
