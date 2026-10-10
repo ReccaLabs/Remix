@@ -16,28 +16,52 @@ export interface SignedDownload {
   expiresAt: Date;
 }
 
+/** A server-side read: the whole object, bounded by `maxBytes`. */
+export interface StoredObject {
+  body: Buffer;
+  /** The type the uploader declared. Informational only: never trust it (sniff the bytes). */
+  contentType: string | undefined;
+}
+
+/** Thrown by {@link StorageProvider.getObject} when the object is larger than allowed. */
+export class ObjectTooLargeError extends Error {
+  constructor() {
+    super('Stored object exceeds the allowed size');
+    this.name = 'ObjectTooLargeError';
+  }
+}
+
 /**
- * Private object storage (Cloudflare R2 in prod, MinIO in dev). Callers pass the tenant and a
+ * Private object storage (Cloudflare R2 in prod, SeaweedFS in dev, ADR 0009). Callers pass the tenant and a
  * key relative to it; the provider prefixes `<tenantId>/` itself, so one tenant can never sign
  * a URL for another tenant's object.
  */
 export interface StorageProvider {
   /** Server-side write. `key` is relative to the tenant, just like the signed URL methods. */
   putObject(input: { tenantId: string; key: string; body: Buffer; contentType: string }): Promise<void>;
+  /**
+   * Presigned PUT. The signature binds `content-type` and the exact `content-length`
+   * (`sizeBytes`), so the client cannot upload another type or size with it.
+   */
   createUploadUrl(input: {
     tenantId: string;
     key: string;
     contentType: string;
-    maxBytes: number;
+    sizeBytes: number;
     expiresInSec: number;
   }): Promise<SignedUpload>;
+  /** Presigned GET; `Content-Disposition` is always set by the server, never by the caller's client. */
   createDownloadUrl(input: {
     tenantId: string;
     key: string;
     expiresInSec: number;
-    /** `Content-Disposition` filename for downloads. */
+    /** `Content-Disposition` filename (sanitised to `[A-Za-z0-9._-]`). */
     downloadName?: string;
+    /** `inline` for images shown in the app; `attachment` (default) for downloads. */
+    disposition?: 'inline' | 'attachment';
   }): Promise<SignedDownload>;
+  /** Server-side read; `null` when the object does not exist. Throws {@link ObjectTooLargeError}. */
+  getObject(input: { tenantId: string; key: string; maxBytes: number }): Promise<StoredObject | null>;
   deleteObject(input: { tenantId: string; key: string }): Promise<void>;
 }
 
@@ -65,4 +89,10 @@ export function assertSignedUrlTtl(seconds: number, max = MAX_SIGNED_URL_TTL_SEC
   if (!Number.isInteger(seconds) || seconds < 1 || seconds > max) {
     throw new RangeError(`Signed URL lifetime must be 1–${max} seconds`);
   }
+}
+
+/** `Content-Disposition` value with a filename reduced to safe ASCII (no quotes, no header injection). */
+export function contentDisposition(disposition: 'inline' | 'attachment', name: string | undefined): string {
+  const safe = (name ?? '').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^[._]+/, '').slice(0, 100);
+  return safe ? `${disposition}; filename="${safe}"` : disposition;
 }

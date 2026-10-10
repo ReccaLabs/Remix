@@ -37,6 +37,8 @@ export interface RecordPaymentInput {
   /** Collection retry identity, stored atomically in the append-only audit. */
   requestFingerprint?: string;
   manualKind?: string;
+  /** The bank slip being approved (method `slip`): it is not superseded by its own payment. */
+  slipId?: string;
 }
 export interface RecordedPayment {
   payment: typeof payments.$inferSelect;
@@ -87,6 +89,7 @@ export async function recordPayment(tx: Tx, input: RecordPaymentInput, now: Date
     providerRef: input.providerRef ?? null, note: input.note ?? null, idempotencyKey: input.idempotencyKey }).returning();
   if (!payment) throw new Error('Payment not inserted');
   if (allocations.length) await tx.insert(paymentAllocations).values(allocations.map(a => ({ ...a, paymentId: payment.id })));
+  await supersedeWaitingSlips(tx, allocations.map(a => a.invoiceLineId), input.slipId ?? null, now);
   await recomputeProjections(tx, now, [...new Set(selected.map(r => r.line.invoiceId))]);
   await audit.record(tx, tenantId, { action: 'payment.record', actorId: input.receivedBy, actorKind: input.receivedBy ? 'staff' : 'system', at: now,
     entity: 'payment', entityId: payment.id, after: { method: input.method, amountCents: input.amountCents, unallocatedCents: remaining, lines: allocations.length,
@@ -100,6 +103,20 @@ export async function recordPayment(tx: Tx, input: RecordPaymentInput, now: Date
   const [receipt] = await tx.insert(receipts).values({ tenantId, paymentId: payment.id, number, issuedAt: now, cashReceivedCents: input.cashReceivedCents ?? null }).returning();
   if (!receipt) throw new Error('Receipt not inserted');
   return { payment, receiptId: receipt.id, receiptNumber: receipt.number, replayed: false };
+}
+
+/**
+ * ADR 0008 §5: a slip still waiting for review (`processing`/`submitted`) is superseded once any
+ * of its months is paid another way, so the cashier never approves money for a paid month.
+ */
+export async function supersedeWaitingSlips(tx: Tx, lineIds: readonly string[], exceptSlipId: string | null, now: Date): Promise<string[]> {
+  if (!lineIds.length) return [];
+  const result = await tx.execute<{ id: string }>(sql`update public.bank_slips s set status = 'superseded', reviewed_at = ${now}
+    where s.status in ('processing', 'submitted') and s.id is distinct from ${exceptSlipId}::uuid
+      and exists (select 1 from public.bank_slip_lines l where l.tenant_id = s.tenant_id and l.slip_id = s.id
+        and l.invoice_line_id in (${sql.join(lineIds.map(id => sql`${id}::uuid`), sql`, `)}))
+    returning s.id`);
+  return result.rows.map(r => r.id);
 }
 
 /** Owner authorization is required by the HTTP guard and checked again by FeesService. */

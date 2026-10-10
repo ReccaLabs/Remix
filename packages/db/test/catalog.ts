@@ -65,6 +65,16 @@ export const LEDGER_UPDATE_COLUMNS: Readonly<Record<string, readonly string[]>> 
   payments: [],
   payment_allocations: [],
   receipts: ['pdf_key', 'reversed_at'],
+  uploads: ['processed_at', 'processed_key', 'status'],
+  bank_slips: [
+    'duplicate_confirmed',
+    'payment_id',
+    'reject_reason',
+    'reviewed_at',
+    'reviewed_by',
+    'status',
+  ],
+  bank_slip_lines: [],
 };
 
 /** RLS on, ≥1 policy, tenant_id, tenant-scoped key, owner, updated_at trigger, factory entry. */

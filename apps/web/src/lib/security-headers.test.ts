@@ -63,6 +63,17 @@ describe('buildCsp (production)', () => {
   });
 });
 
+describe('buildCsp storage origin (ADR 0009)', () => {
+  it('adds exactly the configured storage origin to connect-src and img-src, nothing else', () => {
+    const d = directives(buildCsp({ nonce: 'n', isDev: false, storageOrigin: 'https://acct.r2.cloudflarestorage.com' }));
+    expect(d.get('connect-src')).toEqual(["'self'", 'https://acct.r2.cloudflarestorage.com']);
+    expect(d.get('img-src')).toContain('https://acct.r2.cloudflarestorage.com');
+    expect(d.get('form-action')).toEqual(["'self'"]);
+    expect(d.get('default-src')).toEqual(["'self'"]);
+    expect(directives(buildCsp({ nonce: 'n', isDev: false })).get('connect-src')).toEqual(["'self'"]);
+  });
+});
+
 describe('buildCsp (development)', () => {
   it('permits only the exact PayHere actions when the Payments page opts in', () => {
     const policy = buildCsp({ nonce: 'sample', isDev: false, allowPayhereCheckout: true });

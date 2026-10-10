@@ -40,6 +40,18 @@ export default defineConfig({
           hookTimeout: 30_000,
         },
       },
+      {
+        // `s3`: the S3 storage adapter against real S3-compatible storage (the dev stack's
+        // SeaweedFS, or `TEST_S3_ENDPOINT`). Skipped with a warning when it is not reachable,
+        // except in CI where that is a failure (test/s3/support.ts).
+        extends: true,
+        test: {
+          name: 's3',
+          include: ['test/s3/**/*.s3.test.ts'],
+          testTimeout: 30_000,
+          hookTimeout: 30_000,
+        },
+      },
     ],
   },
 });

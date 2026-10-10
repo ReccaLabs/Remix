@@ -120,6 +120,20 @@
       "when": 1791207795578,
       "tag": "0016_student_cards_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791534718286,
+      "tag": "0017_bank_slips",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791534739726,
+      "tag": "0018_bank_slips_rls",
+      "breakpoints": true
     }
   ]
 }

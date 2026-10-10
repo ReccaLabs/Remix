@@ -42,6 +42,12 @@ export async function proxy(request: NextRequest) {
       decision.action === 'rewrite' &&
       decision.area === 'tenant' &&
       request.nextUrl.pathname === '/admin/settings/payments',
+    storageOrigin:
+      decision.action === 'rewrite' &&
+      decision.area === 'tenant' &&
+      (request.nextUrl.pathname === '/app/pay' || request.nextUrl.pathname === '/admin/fees')
+        ? getEnv().STORAGE_ORIGIN
+        : undefined,
     isDev: process.env.NODE_ENV === 'development',
     hsts: process.env.NODE_ENV === 'production',
   });

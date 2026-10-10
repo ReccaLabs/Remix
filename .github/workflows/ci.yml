@@ -44,6 +44,12 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
+      # The API's `s3` test project (storage adapter: signed PUT size/type binding, tenant keys)
+      # needs S3-compatible storage; it fails the run when none answers on 127.0.0.1:8333. Compose
+      # mounts the dev-only SeaweedFS identities (infra/docker/seaweedfs/s3.json).
+      - name: Start S3 storage (SeaweedFS)
+        run: docker compose -f infra/docker/compose.yaml up -d --wait --wait-timeout 120 s3
+
       - name: Lint
         run: pnpm lint
 

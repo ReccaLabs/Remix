@@ -13,6 +13,8 @@ export type AuditAction =
   | 'settings.fees_update'
   | 'payment.record'
   | 'payment.reverse'
+  | 'slip.approve'
+  | 'slip.reject'
   | 'auth.login.succeeded'
   | 'auth.login.failed'
   | 'auth.login.temporary_password'

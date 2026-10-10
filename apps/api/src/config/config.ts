@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { parseTrustedProxies, type TrustedProxies } from '../common/http/trusted-proxy';
 import { normaliseHost } from '../common/http/forwarded';
+import type { S3StorageConfig } from '../integrations/storage/storage.s3';
 
 const LOG_LEVELS = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'] as const;
 
@@ -37,6 +38,18 @@ const hostList = list
 export const DEV_AUTH_CODE_SECRET = 'remix-dev-only-auth-code-secret-never-in-production';
 
 const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
+
+/** Optional string env value: empty means unset. */
+const optional = <T extends z.ZodType>(schema: T) =>
+  schema.optional().or(z.literal('').transform(() => undefined));
+
+/** The S3 settings that must be given together (ADR 0009 storage). */
+const STORAGE_REQUIRED = [
+  'STORAGE_S3_ENDPOINT',
+  'STORAGE_S3_BUCKET',
+  'STORAGE_S3_ACCESS_KEY_ID',
+  'STORAGE_S3_SECRET_ACCESS_KEY',
+] as const;
 
 /**
  * True when no real proxy is trusted: empty, `none`, or only loopback. In production the API sits
@@ -103,13 +116,38 @@ const envSchema = z
       .max(512)
       .optional()
       .or(z.literal('').transform(() => undefined)),
+    /**
+     * Private S3-compatible bucket (ADR 0009): Cloudflare R2 in production, the SeaweedFS of
+     * infra/docker in development. All four of endpoint, bucket and keys, or none (then the
+     * in-memory mock outside production, and a provider that fails every call in production).
+     */
+    STORAGE_S3_ENDPOINT: optional(z.url({ protocol: /^https?$/ })),
+    /** Origin in presigned URLs when browsers reach the bucket elsewhere than the API does. */
+    STORAGE_S3_PUBLIC_ENDPOINT: optional(z.url({ protocol: /^https?$/ })),
+    STORAGE_S3_REGION: z.string().regex(/^[a-z0-9-]{1,32}$/).default('auto'),
+    STORAGE_S3_BUCKET: optional(z.string().regex(/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/, 'is not a valid bucket name')),
+    STORAGE_S3_ACCESS_KEY_ID: optional(z.string().min(1).max(256)),
+    STORAGE_S3_SECRET_ACCESS_KEY: optional(z.string().min(1).max(512)),
+    STORAGE_S3_FORCE_PATH_STYLE: bool.default(true),
   })
   .transform((env) => ({
     ...env,
     COOKIE_SECURE: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
   }))
   .superRefine((env, ctx) => {
+    const storageSet = STORAGE_REQUIRED.filter((name) => env[name] !== undefined);
+    if (storageSet.length > 0 && storageSet.length < STORAGE_REQUIRED.length) {
+      for (const name of STORAGE_REQUIRED.filter((n) => env[n] === undefined)) {
+        ctx.addIssue({ code: 'custom', path: [name], message: 'required when any STORAGE_S3_* is set' });
+      }
+    }
     if (env.NODE_ENV !== 'production') return;
+    for (const name of ['STORAGE_S3_ENDPOINT', 'STORAGE_S3_PUBLIC_ENDPOINT'] as const) {
+      const value = env[name];
+      if (value && !value.startsWith('https://')) {
+        ctx.addIssue({ code: 'custom', path: [name], message: 'must use https in production' });
+      }
+    }
     if (!env.INTEGRATIONS_KEY) {
       ctx.addIssue({ code: 'custom', path: ['INTEGRATIONS_KEY'], message: 'required in production (AES-256-GCM)' });
     }
@@ -165,6 +203,8 @@ export interface AppConfig {
   authCodeSecret: string;
   integrationsKey: string | undefined;
   integrationsKeyId: string;
+  /** S3-compatible storage; undefined when not configured (mock outside production). */
+  storage: S3StorageConfig | undefined;
 }
 
 /** Thrown when the environment is invalid. Lists variable names and reasons, never values. */
@@ -215,6 +255,18 @@ export function loadConfig(
     authCodeSecret: e.AUTH_CODE_SECRET ?? DEV_AUTH_CODE_SECRET,
     integrationsKey: e.INTEGRATIONS_KEY,
     integrationsKeyId: e.INTEGRATIONS_KEY_ID,
+    storage:
+      e.STORAGE_S3_ENDPOINT && e.STORAGE_S3_BUCKET && e.STORAGE_S3_ACCESS_KEY_ID && e.STORAGE_S3_SECRET_ACCESS_KEY
+        ? {
+            endpoint: e.STORAGE_S3_ENDPOINT,
+            ...(e.STORAGE_S3_PUBLIC_ENDPOINT ? { publicEndpoint: e.STORAGE_S3_PUBLIC_ENDPOINT } : {}),
+            region: e.STORAGE_S3_REGION,
+            bucket: e.STORAGE_S3_BUCKET,
+            accessKeyId: e.STORAGE_S3_ACCESS_KEY_ID,
+            secretAccessKey: e.STORAGE_S3_SECRET_ACCESS_KEY,
+            forcePathStyle: e.STORAGE_S3_FORCE_PATH_STYLE,
+          }
+        : undefined,
   };
 }
 

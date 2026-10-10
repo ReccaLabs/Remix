@@ -39,6 +39,23 @@ describe('queue definitions', () => {
     expect(() => prepareJob('sms', payload)).toThrow();
   });
 
+  it('keys media jobs by upload and clean-up hour, ids only', () => {
+    const upload = '0199a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a60';
+    expect(decodeURIComponent(prepareJob('media', { kind: 'slip', tenantId: TENANT, uploadId: upload }).jobId)).toBe(
+      `media:slip:${TENANT}:${upload}`,
+    );
+    expect(prepareJob('media', { kind: 'cleanup', tenantId: TENANT, hour: '2026-10-09T14' }).jobId).not.toContain(':');
+    for (const bad of [
+      { kind: 'slip', tenantId: TENANT, uploadId: upload, key: 'tenant/slips/a.jpg' },
+      { kind: 'slip', tenantId: TENANT },
+      { kind: 'slip', tenantId: '00000000-0000-0000-0000-000000000000', uploadId: upload },
+      { kind: 'cleanup', tenantId: TENANT, hour: 'yesterday' },
+      { kind: 'cleanup_tick', tenantId: TENANT },
+    ]) {
+      expect(() => prepareJob('media', bad)).toThrow();
+    }
+  });
+
   it('keeps sms text out of Valkey as soon as the job completes', () => {
     expect(JOBS.sms.removeOnComplete).toBe(true);
     expect(JOBS.sms.removeOnFail.age).toBeLessThanOrEqual(3600);
