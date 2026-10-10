@@ -337,8 +337,10 @@ export class SlipsService {
         entityId: id,
         after: { reason },
       });
+      return true;
     });
-    // TODO(3-F): SMS the student the rejection reason (ADR 0008 §5, MSG-04 template), after commit.
+    // MSG-04: the rejection reason goes to the student; a repeated click sends nothing.
+    if (decided) await this.smsNotifier.rejected(tenantId, id, reason);
     return this.get(tenantId, id);
   }
 

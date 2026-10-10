@@ -30,6 +30,7 @@ describe('SmsWalletService.refundStalePending (enqueue-before-markQueued race)',
       Promise.resolve(jobId === smsJobId(TENANT, 'queued-ok')),
     );
     await expect(wallet.refundStalePending(TENANT)).resolves.toBe(1);
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- a vi.fn mock, no `this`
     expect(jobs.hasJob).toHaveBeenCalledWith('sms', `sms-${TENANT}-queued-ok`);
     expect(markQueued).toHaveBeenCalledWith(TENANT, ['queued-ok']);
     expect(refund).toHaveBeenCalledTimes(1);
