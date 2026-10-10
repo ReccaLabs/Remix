@@ -22,7 +22,8 @@ async function sendSlip(student: Page, reference: string): Promise<string> {
   const submitted = student.waitForResponse((r) => r.url().endsWith('/api/v1/me/slips') && r.request().method() === 'POST');
   await student.getByRole('button', { name: 'Send slip' }).click();
   // Say why when the form refuses (validation, photo upload) instead of timing out on the request.
-  const refused = student.getByRole('alert').first().waitFor({ timeout: 15_000 }).then(async () => `The slip form showed: ${await student.getByRole('alert').first().innerText()}`).catch(() => new Promise<string>(() => undefined));
+  const formAlert = student.getByRole('alert').filter({ hasText: /\S/ }).first();
+  const refused = formAlert.waitFor({ timeout: 15_000 }).then(async () => `The slip form showed: ${await formAlert.innerText()}`).catch(() => new Promise<string>(() => undefined));
   const outcome = await Promise.race([submitted.then(() => 'sent'), refused]);
   if (outcome !== 'sent') throw new Error(outcome);
   const response = await submitted;
