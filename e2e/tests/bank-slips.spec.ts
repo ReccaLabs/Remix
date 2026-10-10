@@ -26,6 +26,10 @@ async function sendSlip(student: Page, reference: string): Promise<string> {
   const onFailed = (r: Request) => { failedUrl = r.url(); notes.push(`request failed: ${r.method()} ${new URL(r.url()).origin} ${r.failure()?.errorText ?? ''}`); };
   const onResponse = (r: Response) => { if (r.request().method() === 'PUT') notes.push(`PUT ${new URL(r.url()).origin} -> ${r.status()}`); };
   const onConsole = (m: ConsoleMessage) => { if (m.type() === 'error') notes.push(`console: ${m.text().replace(/\?[^ ']*/, '?…').slice(0, 700)}`); };
+  const cdp = await student.context().newCDPSession(student);
+  await cdp.send('Network.enable');
+  cdp.on('Network.requestWillBeSentExtraInfo', (e) => { if (e.headers[':method'] === 'OPTIONS' || e.headers['access-control-request-method']) notes.push(`browser preflight request: ${JSON.stringify(e.headers)}`); });
+  cdp.on('Network.responseReceivedExtraInfo', (e) => { if (e.headers['access-control-allow-methods'] !== undefined || e.statusCode === 403 || e.statusCode === 204) notes.push(`browser preflight response ${e.statusCode}: ${JSON.stringify(e.headers)}`); });
   student.on('requestfailed', onFailed); student.on('response', onResponse); student.on('console', onConsole);
   await student.getByRole('button', { name: 'Send slip' }).click();
   // Say why when the form refuses (validation, photo upload) instead of timing out on the request.
