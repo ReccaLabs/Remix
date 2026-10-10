@@ -109,6 +109,22 @@ describe('proxy', () => {
     ])
       expect((await run(url)).headers.get('permissions-policy')).toContain('camera=()');
   });
+  it('lets only the owner test and the student Pay page post forms to PayHere (SET-02, FEE-04)', async () => {
+    const formAction = async (url: string) =>
+      /form-action [^;]*/.exec((await run(url)).headers.get('content-security-policy') ?? '')?.[0];
+    const payhere =
+      "form-action 'self' https://sandbox.payhere.lk/pay/checkout https://www.payhere.lk/pay/checkout";
+    for (const path of ['/app/pay', '/admin/settings/payments'])
+      expect(await formAction(`http://kamalphysics.localhost:3001${path}`)).toBe(payhere);
+    for (const url of [
+      'http://kamalphysics.localhost:3001/app',
+      'http://kamalphysics.localhost:3001/app/pay/return',
+      'http://kamalphysics.localhost:3001/app/payx',
+      'http://kamalphysics.localhost:3001/admin/fees',
+      'http://admin.localhost:3001/app/pay',
+    ])
+      expect(await formAction(url)).toBe("form-action 'self'");
+  });
   it('lets only the slip pages reach the storage origin (ADR 0009)', async () => {
     const csp = async (url: string) => (await run(url)).headers.get('content-security-policy') ?? '';
     for (const path of ['/app/pay', '/admin/fees']) {

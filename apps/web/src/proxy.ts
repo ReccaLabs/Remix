@@ -41,7 +41,10 @@ export async function proxy(request: NextRequest) {
     allowPayhereCheckout:
       decision.action === 'rewrite' &&
       decision.area === 'tenant' &&
-      request.nextUrl.pathname === '/admin/settings/payments',
+      // SET-02 owner test payment and the FEE-04 student card checkout: the only two pages that
+      // may post a signed form to PayHere.
+      (request.nextUrl.pathname === '/admin/settings/payments' ||
+        request.nextUrl.pathname === '/app/pay'),
     storageOrigin:
       decision.action === 'rewrite' &&
       decision.area === 'tenant' &&

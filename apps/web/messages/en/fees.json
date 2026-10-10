@@ -37,7 +37,11 @@
     "slip": "Bank slip",
     "reversal": "Reversal"
   },
-  "kinds": { "bank_transfer": "Bank transfer", "cheque": "Cheque", "other": "Other" },
+  "kinds": {
+    "bank_transfer": "Bank transfer",
+    "cheque": "Cheque",
+    "other": "Other"
+  },
   "filters": "Filter payments",
   "from": "From date",
   "to": "To date",
@@ -267,6 +271,40 @@
       "duplicate": "Reference used before. Tick the confirmation to approve anyway.",
       "paid": "A month of this slip is already paid. Reject the slip.",
       "network": "We could not save this review. Try again."
+    }
+  },
+  "card": {
+    "title": "Pay by card",
+    "hint": "Pay with a Visa, Mastercard or other card on PayHere. Months unlock as soon as PayHere confirms the payment.",
+    "months": "Months to pay",
+    "pay": "Pay {amount} by card",
+    "redirecting": "Taking you to PayHere…",
+    "errors": {
+      "validation": "Choose at least one month to pay.",
+      "paid": "A selected month is already paid. Reload the page.",
+      "unavailable": "Card payments are not available right now. Pay by bank slip or at the institute.",
+      "rateLimited": "Too many attempts. Wait a while and try again.",
+      "network": "We could not start the payment. Check your connection and try again."
+    }
+  },
+  "checkout": {
+    "title": "Card payment",
+    "checking": "Checking your payment with PayHere…",
+    "checkingHint": "This usually takes a few seconds. You can leave this page; your months unlock once the payment is confirmed.",
+    "stillChecking": "PayHere has not confirmed this payment yet. If money was taken, your months unlock when it is confirmed. Check again in a few minutes.",
+    "paidHint": "Thank you. Your months are unlocked.",
+    "failedHint": "PayHere could not take the payment. Try again or use another card.",
+    "cancelledHint": "The payment was cancelled on PayHere. No payment was recorded.",
+    "expiredHint": "This payment was not completed in time. If money was taken, your months unlock when PayHere confirms it.",
+    "notFound": "We could not find this payment.",
+    "checkAgain": "Check again",
+    "backToPay": "Back to Pay",
+    "status": {
+      "pending": "Waiting for PayHere",
+      "paid": "Payment received",
+      "failed": "Payment failed",
+      "cancelled": "Payment cancelled",
+      "expired": "Payment not completed"
     }
   }
 }
