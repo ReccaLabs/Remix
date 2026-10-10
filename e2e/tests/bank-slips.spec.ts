@@ -1,6 +1,6 @@
 import { expect, test, type ConsoleMessage, type Page, type Request, type Response } from '@playwright/test';
 import { KAMAL, PASSWORD } from '../support/accounts';
-import { loginStaff, loginStudentOnAnyDevice } from '../support/auth';
+import { loginStaff, loginStudentOnAnyDevice, scopeClientIp } from '../support/auth';
 import { expectNoSeriousA11yViolations } from '../support/axe';
 import { tenantUrl } from '../support/env';
 import { colomboMonth, creditWallet, monthUnlocked, pageApi, prepareStudents, reversePaymentsFor, type JourneyStudent } from '../support/money';
@@ -22,15 +22,9 @@ async function sendSlip(student: Page, reference: string): Promise<string> {
   const submitted = student.waitForResponse((r) => r.url().endsWith('/api/v1/me/slips') && r.request().method() === 'POST');
   // What the browser saw, for the failure message: the storage PUT, blocked requests, console errors.
   const notes: string[] = [];
-  let failedUrl = '';
-  const onFailed = (r: Request) => { failedUrl = r.url(); notes.push(`request failed: ${r.method()} ${new URL(r.url()).origin} ${r.failure()?.errorText ?? ''}`); };
+  const onFailed = (r: Request) => notes.push(`request failed: ${r.method()} ${new URL(r.url()).origin} ${r.failure()?.errorText ?? ''}`);
   const onResponse = (r: Response) => { if (r.request().method() === 'PUT') notes.push(`PUT ${new URL(r.url()).origin} -> ${r.status()}`); };
-  const onConsole = (m: ConsoleMessage) => { if (m.type() === 'error') notes.push(`console: ${m.text().replace(/\?[^ ']*/, '?…').slice(0, 700)}`); };
-  const cdp = await student.context().newCDPSession(student);
-  await cdp.send('Network.enable');
-  const lower = (h: Record<string, string>) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
-  cdp.on('Network.requestWillBeSentExtraInfo', (e) => { const h = lower(e.headers); if (h['access-control-request-method']) notes.push(`browser preflight request: ${JSON.stringify(h)}`); });
-  cdp.on('Network.responseReceivedExtraInfo', (e) => { const h = lower(e.headers); if (h['access-control-allow-methods'] !== undefined || h['access-control-allow-origin'] !== undefined) notes.push(`browser response ${e.statusCode}: ${JSON.stringify(h)}`); });
+  const onConsole = (m: ConsoleMessage) => { if (m.type() === 'error') notes.push(`console: ${m.text().replace(/\?[^ ']*/, '?…').slice(0, 400)}`); };
   student.on('requestfailed', onFailed); student.on('response', onResponse); student.on('console', onConsole);
   await student.getByRole('button', { name: 'Send slip' }).click();
   // Say why when the form refuses (validation, photo upload) instead of timing out on the request.
@@ -38,13 +32,7 @@ async function sendSlip(student: Page, reference: string): Promise<string> {
   const refused = formAlert.waitFor({ timeout: 15_000 }).then(async () => `The slip form showed: ${await formAlert.innerText()}`).catch(() => new Promise<string>(() => undefined));
   const outcome = await Promise.race([submitted.then(() => 'sent'), refused]);
   student.off('requestfailed', onFailed); student.off('response', onResponse); student.off('console', onConsole);
-  if (outcome !== 'sent') {
-    if (failedUrl) {
-      const pre = await student.context().request.fetch(failedUrl, { method: 'OPTIONS', headers: { origin: new URL(student.url()).origin, 'access-control-request-method': 'PUT', 'access-control-request-headers': 'content-type' }, failOnStatusCode: false }).catch((e: unknown) => String(e));
-      notes.push(typeof pre === 'string' ? `preflight: ${pre}` : `preflight -> ${pre.status()} ${JSON.stringify(pre.headers())}`);
-    }
-    throw new Error(`${outcome} | ${notes.join(' | ')}`);
-  }
+  if (outcome !== 'sent') throw new Error(`${outcome} | ${notes.join(' | ')}`);
   const response = await submitted;
   expect([200, 201]).toContain(response.status());
   await expect(student.getByText('Slip sent', { exact: true })).toBeVisible();
@@ -104,7 +92,9 @@ test('J-03 FEE-05/FEE-06: slip upload → queue → reject with reason → resub
   if (!student) throw new Error('No journey student');
   const [month0, month1] = months as [string, string];
   const ip = (n: number) => ({ 'x-forwarded-for': `10.3${n}.0.${mobile ? 2 : 1}` });
-  const studentContext = await browser.newContext({ ...info.project.use, extraHTTPHeaders: ip(1) });
+  // Not `extraHTTPHeaders`: a header on the cross-origin storage PUT would add it to the CORS preflight.
+  const studentContext = await browser.newContext({ ...info.project.use, extraHTTPHeaders: {} });
+  await scopeClientIp(studentContext, tenantUrl('kamalphysics', '/'), ip(1)['x-forwarded-for']);
   const cashierContext = await browser.newContext({ ...info.project.use, extraHTTPHeaders: ip(2) });
   const studentPage = await studentContext.newPage();
   const cashier = await cashierContext.newPage();
