@@ -95,13 +95,18 @@ describe('PayherePaymentProvider', () => {
       hash: checkoutHash('1211149', ORDER, '2500.00', 'LKR', SECRET),
     });
     expect(JSON.stringify(sandbox)).not.toContain(SECRET);
-    const live = await provider.createCheckout({ ...checkout, merchant: { ...merchant, sandbox: false } });
+    const live = await provider.createCheckout({
+      ...checkout,
+      merchant: { ...merchant, sandbox: false },
+    });
     expect(live.actionUrl).toBe('https://www.payhere.lk/pay/checkout');
   });
 
   it('refuses zero, negative and fractional amounts', async () => {
     for (const amountCents of [0, -100, 10.5])
-      await expect(provider.createCheckout({ ...checkout, amountCents })).rejects.toThrow(RangeError);
+      await expect(provider.createCheckout({ ...checkout, amountCents })).rejects.toThrow(
+        RangeError,
+      );
   });
 
   it('verifies a correctly signed notification', async () => {

@@ -34,7 +34,8 @@ const md5Upper = (text: string) =>
 
 /** Integer cents → PayHere amount: two decimals, no separators (`123456` → `1234.56`). */
 export function payhereAmount(cents: number): string {
-  if (!Number.isSafeInteger(cents) || cents < 0) throw new RangeError('Use non-negative integer cents');
+  if (!Number.isSafeInteger(cents) || cents < 0)
+    throw new RangeError('Use non-negative integer cents');
   return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`;
 }
 
