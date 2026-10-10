@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { schema, withTenant, type Db, type Tx } from '@remix/db';
 import { SMS_SEGMENT_PRICE_CENTS, type SmsWallet } from '@remix/types/api';
@@ -58,9 +59,15 @@ export class SmsWalletService {
   constructor(
     @Inject(DB) private readonly db: Db,
     @Inject(CLOCK) private readonly clock: Clock,
-    @Inject(JOB_PRODUCER) private readonly jobs: JobProducer,
+    // Resolved lazily: in development the inline producer is built from SmsBilling, which needs this
+    // service, so injecting JOB_PRODUCER here would be a dependency cycle.
+    private readonly moduleRef: ModuleRef,
     private readonly audit: AuditService,
   ) {}
+
+  private jobs(): JobProducer {
+    return this.moduleRef.get<JobProducer>(JOB_PRODUCER, { strict: false });
+  }
 
   async wallet(tenantId: string): Promise<SmsWallet> {
     return withTenant(this.db, tenantId, async (tx) => {
@@ -282,7 +289,7 @@ export class SmsWalletService {
     const enqueued: string[] = [];
     for (const { messageId } of stale) {
       try {
-        if (await this.jobs.hasJob('sms', smsJobId(tenantId, messageId))) {
+        if (await this.jobs().hasJob('sms', smsJobId(tenantId, messageId))) {
           enqueued.push(messageId);
           continue;
         }

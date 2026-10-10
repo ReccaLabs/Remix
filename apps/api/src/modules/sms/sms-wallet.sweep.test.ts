@@ -6,9 +6,10 @@ vi.mock('@remix/db', async (importOriginal) => {
   return { ...original, withTenant: vi.fn(() => Promise.resolve([{ messageId: 'queued-ok' }, { messageId: 'lost' }])) };
 });
 
+import type { ModuleRef } from '@nestjs/core';
 import type { Db } from '@remix/db';
 import type { Clock } from '../../common/time/clock';
-import type { JobProducer } from '../../jobs/job-producer';
+import { JOB_PRODUCER, type JobProducer } from '../../jobs/job-producer';
 import { smsJobId } from '../../jobs/queues';
 import type { AuditService } from '../audit/audit.service';
 import { SmsWalletService } from './sms-wallet.service';
@@ -17,8 +18,9 @@ const TENANT = '00000000-0000-4000-8000-000000000001';
 
 function setup(hasJob: (queue: string, jobId: string) => Promise<boolean>) {
   const jobs = { add: vi.fn(), hasJob: vi.fn(hasJob) } as unknown as JobProducer;
+  const moduleRef = { get: (token: unknown) => (token === JOB_PRODUCER ? jobs : undefined) } as unknown as ModuleRef;
   const clock: Clock = { now: () => new Date('2026-10-10T10:00:00Z') };
-  const wallet = new SmsWalletService({} as Db, clock, jobs, {} as AuditService);
+  const wallet = new SmsWalletService({} as Db, clock, moduleRef, {} as AuditService);
   const refund = vi.spyOn(wallet, 'refund').mockResolvedValue(true);
   const markQueued = vi.spyOn(wallet, 'markQueued').mockResolvedValue(undefined);
   return { wallet, jobs, refund, markQueued };
