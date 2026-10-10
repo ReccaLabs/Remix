@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { KAMAL, PASSWORD } from '../support/accounts';
-import { loginStaff, logout, submitStudentLogin } from '../support/auth';
+import { loginStaffCached, logout, submitStudentLogin } from '../support/auth';
 import { prepareCashFixture } from '../support/cash-fixture';
 import { expectNoSeriousA11yViolations } from '../support/axe';
 import { tenantUrl } from '../support/env';
@@ -27,7 +27,7 @@ test('J-04 FEE-07/FEE-10/MSG-04: cashier collects two months → change → rece
   let studentPage: Page | undefined;
   let receiptSmsSwitchedOn = false;
   try {
-    await loginStaff(ownerPage, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
+    await loginStaffCached(ownerPage, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
     // Receipt SMS is wallet-billed and off by default: fund the test wallet and switch it on (the owner's settings API).
     await creditWallet(200_000);
     const smsSetting = await pageApi(ownerPage, 'PATCH', '/api/v1/admin/settings/fees', { receiptSmsEnabled: true });
@@ -47,7 +47,7 @@ test('J-04 FEE-07/FEE-10/MSG-04: cashier collects two months → change → rece
       return 200;
     }, fixture);
     expect(restored).toBe(200);
-    await loginStaff(page, 'kamalphysics', '+94770001182', PASSWORD, '+94770001182');
+    await loginStaffCached(page, 'kamalphysics', '+94770001182', PASSWORD, '+94770001182');
     await page.goto(tenantUrl('kamalphysics', '/admin/fees?tab=cash'));
     const search = page.getByLabel('Search student');
     await expect(search).toBeFocused();

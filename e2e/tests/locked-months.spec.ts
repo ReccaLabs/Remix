@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 import { KAMAL, PASSWORD } from '../support/accounts';
-import { loginStaff, loginStudentOnAnyDevice } from '../support/auth';
+import { loginStaffCached, loginStudentOnAnyDevice } from '../support/auth';
 import { expectNoSeriousA11yViolations } from '../support/axe';
 import { tenantUrl } from '../support/env';
 import { colomboMonth, monthUnlocked, pageApi, prepareStudents, reversePaymentsFor } from '../support/money';
@@ -22,7 +22,7 @@ test('J-05 FEE rule 2: unpaid months are locked, paying one unlocks only that mo
   const studentContext = await browser.newContext({ ...info.project.use, extraHTTPHeaders: { 'x-forwarded-for': `10.30.0.${mobile ? 2 : 1}` } });
   const studentPage = await studentContext.newPage();
   try {
-    await loginStaff(page, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
+    await loginStaffCached(page, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
     // A failed earlier attempt may have left a payment on these months: undo it through the public API.
     await reversePaymentsFor(page, student.studentId, student.lineIds, 'J-05 journey reset');
     expect(await monthUnlocked(student.studentId, student.classId, month0)).toBe(false);

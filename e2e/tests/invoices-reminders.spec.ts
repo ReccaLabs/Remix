@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { KAMAL, PASSWORD } from '../support/accounts';
-import { loginStaff } from '../support/auth';
+import { loginStaffCached } from '../support/auth';
 import { expectNoSeriousA11yViolations } from '../support/axe';
 import { tenantUrl } from '../support/env';
 import { hydrated } from '../support/hydration';
@@ -34,7 +34,7 @@ test('J-09 FEE-02/FEE-12/MSG-02: overdue filter → reminder SMS with cost previ
   const cashierPage = await cashierContext.newPage();
   try {
     await creditWallet(200_000);
-    await loginStaff(page, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
+    await loginStaffCached(page, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
 
     // Overdue filter: the journey's students are listed with the word "Overdue".
     await page.goto(tenantUrl('kamalphysics', `/admin/fees?tab=invoices&month=${month}&filter=overdue`));
@@ -98,7 +98,7 @@ test('J-09 FEE-02/FEE-12/MSG-02: overdue filter → reminder SMS with cost previ
     expect(countSms(smsAfterFirst)).toBe(0);
 
     // A cashier sees the invoices but has no SMS controls (permissions.ts: sms.send is owner/admin only).
-    await loginStaff(cashierPage, 'kamalphysics', CASHIER_PHONE, PASSWORD, CASHIER_PHONE);
+    await loginStaffCached(cashierPage, 'kamalphysics', CASHIER_PHONE, PASSWORD, CASHIER_PHONE);
     await cashierPage.goto(tenantUrl('kamalphysics', `/admin/fees?tab=invoices&month=${month}&filter=overdue`));
     await expect(cashierPage.locator('tr').filter({ hasText: students[0]!.name })).toBeVisible();
     await expect(cashierPage.getByRole('button', { name: /Send reminder SMS/ })).toHaveCount(0);

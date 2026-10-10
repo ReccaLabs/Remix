@@ -1,6 +1,6 @@
 import { expect, test, type ConsoleMessage, type Page, type Request, type Response } from '@playwright/test';
 import { KAMAL, PASSWORD } from '../support/accounts';
-import { loginStaff, loginStudentOnAnyDevice, scopeClientIp } from '../support/auth';
+import { loginStaffCached, loginStudentOnAnyDevice, scopeClientIp } from '../support/auth';
 import { expectNoSeriousA11yViolations } from '../support/axe';
 import { tenantUrl } from '../support/env';
 import { colomboMonth, creditWallet, monthUnlocked, pageApi, prepareStudents, reversePaymentsFor, type JourneyStudent } from '../support/money';
@@ -100,7 +100,7 @@ test('J-03 FEE-05/FEE-06: slip upload → queue → reject with reason → resub
   const cashier = await cashierContext.newPage();
   const stamp = Date.now();
   try {
-    await loginStaff(page, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
+    await loginStaffCached(page, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
     await creditWallet(200_000);
     expect((await pageApi(page, 'PATCH', '/api/v1/admin/settings/fees', { bankDetails: BANK })).status).toBe(200);
     await reversePaymentsFor(page, student.studentId, student.lineIds, 'J-03 journey reset');
@@ -108,7 +108,7 @@ test('J-03 FEE-05/FEE-06: slip upload → queue → reject with reason → resub
     expect(await monthUnlocked(student.studentId, student.classId, month0)).toBe(false);
 
     await loginStudentOnAnyDevice(studentPage, 'kamalphysics', student.phone.replace('+94', '0'), PASSWORD);
-    await loginStaff(cashier, 'kamalphysics', CASHIER_PHONE, PASSWORD, CASHIER_PHONE);
+    await loginStaffCached(cashier, 'kamalphysics', CASHIER_PHONE, PASSWORD, CASHIER_PHONE);
 
     // 1. Student uploads a slip for both months.
     const first = await sendSlip(studentPage, `J03-A-${stamp}`);
@@ -137,8 +137,9 @@ test('J-03 FEE-05/FEE-06: slip upload → queue → reject with reason → resub
     // 3. The student sees the reason, and the months are still locked.
     await studentPage.reload();
     const mine = studentPage.getByRole('region', { name: 'Your slips' });
-    await expect(mine.getByText('Rejected', { exact: true })).toBeVisible();
-    await expect(mine.getByText('Reason: Amount does not match: Please check the total')).toBeVisible();
+    const rejectedSlip = mine.getByRole('listitem').filter({ hasText: `J03-A-${stamp}` });
+    await expect(rejectedSlip.getByText('Rejected', { exact: true })).toBeVisible();
+    await expect(rejectedSlip.getByText('Reason: Amount does not match: Please check the total')).toBeVisible();
     await expect(studentPage.getByRole('region', { name: 'Open months' }).getByRole('listitem')).toHaveCount(2);
     expect(await monthUnlocked(student.studentId, student.classId, month0)).toBe(false);
 
@@ -156,10 +157,11 @@ test('J-03 FEE-05/FEE-06: slip upload → queue → reject with reason → resub
     expect(await monthUnlocked(student.studentId, student.classId, month1)).toBe(true);
     await studentPage.reload();
     await expect(studentPage.getByText('All months are paid')).toBeVisible();
-    await expect(mine.getByText('Approved', { exact: true })).toBeVisible();
+    await expect(mine.getByRole('listitem').filter({ hasText: `J03-B-${stamp}` }).getByText('Approved', { exact: true })).toBeVisible();
     const history = studentPage.getByRole('heading', { name: 'Payment history' }).locator('..');
-    await expect(history.getByText('Bank slip').first()).toBeVisible();
-    await expect(history.getByRole('button', { name: 'Download receipt' }).first()).toBeVisible();
+    // The history has a phone list and a desktop table in the page; one of them is hidden.
+    await expect(history.getByText('Bank slip').filter({ visible: true }).first()).toBeVisible();
+    await expect(history.getByRole('button', { name: 'Download receipt' }).filter({ visible: true }).first()).toBeVisible();
     await responsive(studentPage, (n) => info.outputPath(n), 'student-paid');
 
     // TODO(3-G, after PR #61 "slip SMS" is on main): assert the slip-rejected and slip-approved SMS
