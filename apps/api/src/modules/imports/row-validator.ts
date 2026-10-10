@@ -64,6 +64,16 @@ export interface ValidationOutcome {
 
 const CONTROL = /\p{Cc}/u;
 const STUDENT_NO = /^[A-Za-z0-9][A-Za-z0-9-]{0,31}$/;
+/** A ReMix student number: institute code, year, running number (`NIL-26-0042`). */
+const REMIX_STUDENT_NO = /^[A-Za-z]{2,}-\d{2}-\d{3,}$/;
+/** `<student number>-<digits>` is how a card code looks (`NIL-26-0042-1`, STU-06). */
+const CARD_CODE_SUFFIX = /^(.+)-\d+$/;
+
+/** The student number a card-code-shaped value would belong to, or null. */
+export function cardCodeBase(numberKey: string): string | null {
+  return CARD_CODE_SUFFIX.exec(numberKey)?.[1] ?? null;
+}
+
 const TRUE_WORDS = new Set(['true', 'yes', 'y', '1']);
 const FALSE_WORDS = new Set(['false', 'no', 'n', '0']);
 const MAX_CLASSES = 20;
@@ -94,7 +104,11 @@ export function studentNosOf(rows: readonly ImportRow[]): string[] {
   const numbers = new Set<string>();
   for (const row of rows) {
     const value = normalizeStudentNo(row.studentNo ?? '');
-    if (STUDENT_NO.test(value)) numbers.add(value);
+    if (!STUDENT_NO.test(value)) continue;
+    numbers.add(value);
+    // Also look up the card-code base, so a number like `X-1` is caught when `X` exists.
+    const base = cardCodeBase(value);
+    if (base && STUDENT_NO.test(base)) numbers.add(base);
   }
   return [...numbers];
 }
@@ -116,6 +130,21 @@ class RowErrors {
   add(field: ImportField, message: string): void {
     this.list.push({ field, message });
   }
+}
+
+/**
+ * Old numbers such as `OLD-77` are fine; `<number>-<digits>` is rejected only when the part
+ * before the last dash is itself a student number (a ReMix-format one, one already in this
+ * institute, or an earlier row of this file), i.e. it is really that student's card code.
+ */
+function looksLikeCardCode(
+  numberKey: string,
+  existing: ReadonlySet<string>,
+  inFile: ReadonlyMap<string, number>,
+): boolean {
+  const base = cardCodeBase(numberKey);
+  if (!base) return false;
+  return REMIX_STUDENT_NO.test(base) || existing.has(base) || inFile.has(base);
 }
 
 /** Validate every row. Pure: no I/O, the context carries what the database knows. */
@@ -184,6 +213,11 @@ export function validateStudentRows(
         errors.add(
           'studentNo',
           'Use letters, digits, spaces and dashes only (up to 32 characters)',
+        );
+      } else if (looksLikeCardCode(numberKey, existingNumbers, numberRows)) {
+        errors.add(
+          'studentNo',
+          'This looks like a student card code (a student number followed by -1, -2, ...). Use the old number printed on the student record, not the card code',
         );
       } else if (existingNumbers.has(numberKey)) {
         errors.add(

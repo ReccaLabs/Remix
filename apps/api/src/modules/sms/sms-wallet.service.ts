@@ -1,10 +1,13 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { schema, withTenant, type Db, type Tx } from '@remix/db';
 import { SMS_SEGMENT_PRICE_CENTS, type SmsWallet } from '@remix/types/api';
 import type { AuthSession } from '../../common/auth/session-authenticator';
 import { AppException } from '../../common/errors/app-exception';
 import { CLOCK, type Clock } from '../../common/time/clock';
+import { JOB_PRODUCER, type JobProducer } from '../../jobs/job-producer';
+import { smsJobId } from '../../jobs/queues';
 import { AuditService } from '../audit/audit.service';
 import { DB } from '../db/db.module';
 
@@ -56,8 +59,15 @@ export class SmsWalletService {
   constructor(
     @Inject(DB) private readonly db: Db,
     @Inject(CLOCK) private readonly clock: Clock,
+    // Resolved lazily: in development the inline producer is built from SmsBilling, which needs this
+    // service, so injecting JOB_PRODUCER here would be a dependency cycle.
+    private readonly moduleRef: ModuleRef,
     private readonly audit: AuditService,
   ) {}
+
+  private jobs(): JobProducer {
+    return this.moduleRef.get<JobProducer>(JOB_PRODUCER, { strict: false });
+  }
 
   async wallet(tenantId: string): Promise<SmsWallet> {
     return withTenant(this.db, tenantId, async (tx) => {
@@ -258,8 +268,13 @@ export class SmsWalletService {
   }
 
   /**
-   * Messages debited but never queued (the API process died between commit and enqueue) cannot
-   * be re-sent because no phone number or text is stored, so they are refunded.
+   * Messages still `pending` after `olderThanMs` were debited but `markQueued` did not run. Two
+   * causes: the API died before enqueueing (nothing in the queue, and no phone number or text is
+   * stored to re-send, so the money goes back), or it enqueued and died before `markQueued`
+   * (the job exists and will be delivered, so the message is moved to `queued` and NOT refunded:
+   * refunding would give the institute a free message). The job id is the business key
+   * `sms-<tenantId>-<messageId>`. If the queue cannot be asked, the message is left alone for
+   * the next sweep.
    */
   async refundStalePending(tenantId: string, olderThanMs = 30 * 60_000): Promise<number> {
     const cutoff = new Date(this.clock.now().getTime() - olderThanMs);
@@ -271,7 +286,24 @@ export class SmsWalletService {
         .limit(500),
     );
     let refunded = 0;
-    for (const { messageId } of stale) if (await this.refund(tenantId, messageId)) refunded += 1;
+    const enqueued: string[] = [];
+    for (const { messageId } of stale) {
+      try {
+        if (await this.jobs().hasJob('sms', smsJobId(tenantId, messageId))) {
+          enqueued.push(messageId);
+          continue;
+        }
+      } catch (error) {
+        this.logger.warn(
+          { tenantId, messageId, error: error instanceof Error ? error.message : String(error) },
+          'Cannot check the SMS queue; stale message left for the next sweep',
+        );
+        continue;
+      }
+      if (await this.refund(tenantId, messageId)) refunded += 1;
+    }
+    await this.markQueued(tenantId, enqueued);
+    if (enqueued.length > 0) this.logger.warn({ tenantId, recovered: enqueued.length }, 'SMS was queued but not marked; marked queued');
     if (refunded > 0) this.logger.warn({ tenantId, refunded }, 'Refunded SMS that were debited but never queued');
     return refunded;
   }

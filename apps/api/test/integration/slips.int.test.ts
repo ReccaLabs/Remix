@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { sql } from 'drizzle-orm';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { withTenant, type Db } from '@remix/db';
+import { creditSmsWallet, withTenant, type Db } from '@remix/db';
 import {
   listSlipsResponseSchema,
   myFeesResponseSchema,
@@ -406,6 +406,48 @@ describe('bank slips FEE-05/06, real Postgres RLS', () => {
       const fees = myFeesResponseSchema.parse((await me.api.get('/api/v1/me/fees')).body);
       expect(fees.slips[0]).toMatchObject({ status: 'rejected', rejectReason: 'Unreadable file' });
       expect(await runner.cleanup(other.id)).toMatchObject({ deleted: 0, rejected: 0 });
+    });
+  });
+
+  describe('slip decision SMS (MSG-04)', () => {
+    const slipSms = (tn: TenantFixture) =>
+      scalar<number>(db, tn.id, sql`select count(*)::int as v from sms_messages where template in ('slip_approved', 'slip_rejected')`);
+
+    async function funded(credit: boolean) {
+      const tn = await f.tenant();
+      const st = await staffByRole(t, f, tn, ['owner', 'cashier']);
+      expect((await st.owner.api.patch('/api/v1/admin/settings/fees', { bankDetails: BANK })).status).toBe(200);
+      if (credit) await creditSmsWallet(db, { slug: tn.slug, amountCents: 50_000, note: 'slip sms test' });
+      return { tn, cashier: st.cashier.api, me: await learner(tn, 'Sms class') };
+    }
+
+    it('queues exactly one approval SMS, and a repeated approve sends no second one', async () => {
+      const { tn, cashier, me } = await funded(true);
+      const id = await queued(me);
+      expect((await cashier.post(`/api/v1/admin/slips/${id}/approve`, {})).status).toBe(200);
+      expect((await cashier.post(`/api/v1/admin/slips/${id}/approve`, {})).status).toBe(200);
+      expect(await slipSms(tn)).toBe(1);
+      expect(await scalar<string>(db, tn.id, sql`select template as v from sms_messages where message_id = ${`slip-approved-${id}`}`)).toBe('slip_approved');
+      expect(t.jobs.of('sms').filter((j) => j.payload.messageId === `slip-approved-${id}`)).toHaveLength(1);
+    });
+
+    it('queues exactly one rejection SMS, and a repeated reject sends no second one', async () => {
+      const { tn, cashier, me } = await funded(true);
+      const id = await queued(me);
+      expect((await cashier.post(`/api/v1/admin/slips/${id}/reject`, { reason: 'Amount does not match' })).status).toBe(200);
+      expect((await cashier.post(`/api/v1/admin/slips/${id}/reject`, { reason: 'Amount does not match' })).status).toBe(200);
+      expect(await slipSms(tn)).toBe(1);
+      expect(t.jobs.of('sms').filter((j) => j.payload.messageId === `slip-rejected-${id}`)).toHaveLength(1);
+    });
+
+    it('still approves and rejects when the SMS wallet is empty (nothing is charged or queued)', async () => {
+      const { tn, cashier, me } = await funded(false);
+      const first = await queued(me);
+      expect((await cashier.post(`/api/v1/admin/slips/${first}/approve`, {})).status).toBe(200);
+      const second = await learner(tn, 'Sms class two');
+      const other = await queued(second);
+      expect((await cashier.post(`/api/v1/admin/slips/${other}/reject`, { reason: 'Wrong account' })).status).toBe(200);
+      expect(await slipSms(tn)).toBe(0);
     });
   });
 });

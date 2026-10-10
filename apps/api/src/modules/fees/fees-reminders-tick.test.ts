@@ -10,7 +10,7 @@ const fakeDb = { execute: () => Promise.resolve({ rows: [{ id: TENANT }] }) } as
 
 function setup(now: string) {
   const added: unknown[] = [];
-  const jobs: JobProducer = { add: (queue, payload) => { added.push([queue, payload]); return Promise.resolve({ jobId: 'j' }); } };
+  const jobs: JobProducer = { add: (queue, payload) => { added.push([queue, payload]); return Promise.resolve({ jobId: 'j' }); }, hasJob: () => Promise.resolve(false) };
   const reminders = { runAutomatic: vi.fn(() => Promise.resolve()) };
   const run = createFeesProcessor(fakeDb, jobs, new ManualClock(new Date(now)), () => undefined, reminders);
   return { added, reminders, run };

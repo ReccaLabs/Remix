@@ -26,6 +26,7 @@ import { FeesHooks } from '../fees/fees-hooks';
 import { lockLedger, recordPayment } from '../fees/ledger';
 import { safeCents } from '../fees/projections';
 import { relativeKey, SLIP_EXTENSIONS, slipKeyPrefix } from './slip-keys';
+import { SlipSmsNotifier } from './slip-sms.notifier';
 
 const { bankSlips, bankSlipLines, uploads, invoiceLines, invoices, classes, students, tenantUsers, tenantSettings } = schema;
 const reviewer = alias(tenantUsers, 'reviewer');
@@ -73,6 +74,7 @@ export class SlipsService {
     @Inject(JOB_PRODUCER) private readonly jobs: JobProducer,
     private readonly audit: AuditService,
     private readonly hooks: FeesHooks,
+    private readonly smsNotifier: SlipSmsNotifier,
   ) {}
 
   // ----- Student (FEE-05) ---------------------------------------------------------------------
@@ -307,19 +309,20 @@ export class SlipsService {
         jobKey: `receipt:${tenantId}:${recorded.payment.id}`,
       });
     }
-    // TODO(3-F): SMS the student that the slip was approved (MSG-04 template), after commit.
+    // MSG-04: only the call that made the decision texts; a repeated approve (recorded === null) sends nothing.
+    if (recorded) await this.smsNotifier.approved(tenantId, id);
     return this.get(tenantId, id);
   }
 
   async reject(tenantId: string, session: AuthSession, id: string, reason: string): Promise<Slip> {
     const actorId = staffOf(session, tenantId, 'fees.collect');
     const now = this.clock.now();
-    await withTenant(this.db, tenantId, async (tx) => {
+    const decided = await withTenant(this.db, tenantId, async (tx) => {
       await lockLedger(tx);
       const [slip] = await tx.select().from(bankSlips).where(eq(bankSlips.id, id)).for('update');
       if (!slip) throw slipNotFound();
       // A repeated click with the same reason is a no-op; anything else is a conflict.
-      if (slip.status === 'rejected' && slip.rejectReason === reason && slip.reviewedBy === actorId) return;
+      if (slip.status === 'rejected' && slip.rejectReason === reason && slip.reviewedBy === actorId) return false;
       if (slip.status !== 'submitted') throw conflict('This slip is no longer waiting for review');
       await tx
         .update(bankSlips)
@@ -334,8 +337,10 @@ export class SlipsService {
         entityId: id,
         after: { reason },
       });
+      return true;
     });
-    // TODO(3-F): SMS the student the rejection reason (ADR 0008 §5, MSG-04 template), after commit.
+    // MSG-04: the rejection reason goes to the student; a repeated click sends nothing.
+    if (decided) await this.smsNotifier.rejected(tenantId, id, reason);
     return this.get(tenantId, id);
   }
 

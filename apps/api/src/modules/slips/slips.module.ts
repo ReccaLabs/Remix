@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service';
 import { MediaJobRunner } from './media-jobs';
+import { SlipSmsNotifier } from './slip-sms.notifier';
 import { SlipsController } from './slips.controller';
 import { SlipsService } from './slips.service';
 
@@ -13,7 +14,7 @@ import { SlipsService } from './slips.service';
 @Global()
 @Module({
   controllers: [SlipsController],
-  providers: [SlipsService, AuditService, MediaJobRunner],
+  providers: [SlipsService, SlipSmsNotifier, AuditService, MediaJobRunner],
   exports: [SlipsService, MediaJobRunner],
 })
 export class SlipsModule {}

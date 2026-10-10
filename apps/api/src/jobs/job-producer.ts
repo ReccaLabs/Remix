@@ -41,6 +41,8 @@ export interface AddedJob {
  */
 export interface JobProducer {
   add<Q extends QueueName>(queue: Q, payload: JobPayload<Q>): Promise<AddedJob>;
+  /** Whether a job with this id is (still) in the queue: waiting, delayed, active, or kept after finishing. */
+  hasJob(queue: QueueName, jobId: string): Promise<boolean>;
 }
 
 /** BullMQ producer over the shared fail-fast Valkey client. */
@@ -69,6 +71,14 @@ export class BullJobProducer implements JobProducer, OnApplicationShutdown {
     return { jobId: prepared.jobId };
   }
 
+  async hasJob(queue: QueueName, jobId: string): Promise<boolean> {
+    try {
+      return (await this.queueFor(queue).getJob(jobId)) !== undefined;
+    } catch (error) {
+      throw new JobQueueUnavailableError(error);
+    }
+  }
+
   private queueFor(name: QueueName): Queue {
     let queue = this.queues.get(name);
     if (!queue) {
@@ -88,6 +98,10 @@ export class BullJobProducer implements JobProducer, OnApplicationShutdown {
 /** Bound when no `VALKEY_URL` is configured (development/tests): every add fails loudly. */
 export class UnavailableJobProducer implements JobProducer {
   add(): Promise<AddedJob> {
+    return Promise.reject(new JobQueueUnavailableError(new Error('VALKEY_URL is not configured')));
+  }
+
+  hasJob(): Promise<boolean> {
     return Promise.reject(new JobQueueUnavailableError(new Error('VALKEY_URL is not configured')));
   }
 }

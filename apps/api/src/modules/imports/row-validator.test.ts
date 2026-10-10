@@ -5,6 +5,7 @@ import {
   classNamesOf,
   normalisePhone,
   phonesOf,
+  studentNosOf,
   validateStudentRows,
   type ValidationContext,
 } from './row-validator';
@@ -134,6 +135,29 @@ describe('validateStudentRows — errors', () => {
     expect(out.results.map((r) => r.status)).toEqual(['ok', 'error', 'error']);
     expect(out.results[1]?.errors[0]?.message).toContain('row 1');
     expect(out.results[2]?.errors[0]?.message).toContain('ignoring case and whitespace');
+  });
+  it('rejects an old number that looks like a card code (STU-04 guard)', () => {
+    for (const studentNo of ['NIL-26-0042-1', ' nil - 26 - 0042 - 12', 'TT-0001-2']) {
+      const { result } = one({ studentNo });
+      expect(result.status).toBe('error');
+      expect(result.errors).toEqual([
+        { field: 'studentNo', message: expect.stringContaining('student card code') as string },
+      ]);
+    }
+    // a number earlier in the same file counts as a student number too
+    const out = validateStudentRows(
+      [row({ studentNo: 'ABC' }), row({ phone: '0773456789', studentNo: 'ABC-3' })],
+      ctx(),
+    );
+    expect(out.results[1]?.errors[0]?.message).toContain('student card code');
+  });
+  it('still accepts ordinary legacy numbers that end in digits', () => {
+    for (const studentNo of ['OLD-77', 'A-1', '2019-044', 'B12-3']) {
+      expect(one({ studentNo }).result.status).not.toBe('error');
+    }
+  });
+  it('looks up the card-code base so existing students are found', () => {
+    expect(studentNosOf([row({ studentNo: 'TT-0001-1' })])).toEqual(['TT-0001-1', 'TT-0001']);
   });
   it('rejects nonportable whitespace and non-English letters rather than assigning a different identity', () => {
     for (const studentNo of [
