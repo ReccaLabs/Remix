@@ -28,8 +28,9 @@ async function sendSlip(student: Page, reference: string): Promise<string> {
   const onConsole = (m: ConsoleMessage) => { if (m.type() === 'error') notes.push(`console: ${m.text().replace(/\?[^ ']*/, '?…').slice(0, 700)}`); };
   const cdp = await student.context().newCDPSession(student);
   await cdp.send('Network.enable');
-  cdp.on('Network.requestWillBeSentExtraInfo', (e) => { if (e.headers[':method'] === 'OPTIONS' || e.headers['access-control-request-method']) notes.push(`browser preflight request: ${JSON.stringify(e.headers)}`); });
-  cdp.on('Network.responseReceivedExtraInfo', (e) => { if (e.headers['access-control-allow-methods'] !== undefined || e.statusCode === 403 || e.statusCode === 204) notes.push(`browser preflight response ${e.statusCode}: ${JSON.stringify(e.headers)}`); });
+  const lower = (h: Record<string, string>) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
+  cdp.on('Network.requestWillBeSentExtraInfo', (e) => { const h = lower(e.headers); if (h['access-control-request-method']) notes.push(`browser preflight request: ${JSON.stringify(h)}`); });
+  cdp.on('Network.responseReceivedExtraInfo', (e) => { const h = lower(e.headers); if (h['access-control-allow-methods'] !== undefined || h['access-control-allow-origin'] !== undefined) notes.push(`browser response ${e.statusCode}: ${JSON.stringify(h)}`); });
   student.on('requestfailed', onFailed); student.on('response', onResponse); student.on('console', onConsole);
   await student.getByRole('button', { name: 'Send slip' }).click();
   // Say why when the form refuses (validation, photo upload) instead of timing out on the request.
