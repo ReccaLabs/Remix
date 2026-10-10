@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type ConsoleMessage, type Page, type Request, type Response } from '@playwright/test';
 import { KAMAL, PASSWORD } from '../support/accounts';
 import { loginStaff, loginStudentOnAnyDevice } from '../support/auth';
 import { expectNoSeriousA11yViolations } from '../support/axe';
@@ -20,12 +20,19 @@ async function sendSlip(student: Page, reference: string): Promise<string> {
   await student.getByLabel('Slip photo').setInputFiles(slipFile());
   await student.getByLabel('Reference number (on the slip)').fill(reference);
   const submitted = student.waitForResponse((r) => r.url().endsWith('/api/v1/me/slips') && r.request().method() === 'POST');
+  // What the browser saw, for the failure message: the storage PUT, blocked requests, console errors.
+  const notes: string[] = [];
+  const onFailed = (r: Request) => notes.push(`request failed: ${r.method()} ${new URL(r.url()).origin} ${r.failure()?.errorText ?? ''}`);
+  const onResponse = (r: Response) => { if (r.request().method() === 'PUT') notes.push(`PUT ${new URL(r.url()).origin} -> ${r.status()}`); };
+  const onConsole = (m: ConsoleMessage) => { if (m.type() === 'error') notes.push(`console: ${m.text().slice(0, 240)}`); };
+  student.on('requestfailed', onFailed); student.on('response', onResponse); student.on('console', onConsole);
   await student.getByRole('button', { name: 'Send slip' }).click();
   // Say why when the form refuses (validation, photo upload) instead of timing out on the request.
   const formAlert = student.getByRole('alert').filter({ hasText: /\S/ }).first();
   const refused = formAlert.waitFor({ timeout: 15_000 }).then(async () => `The slip form showed: ${await formAlert.innerText()}`).catch(() => new Promise<string>(() => undefined));
   const outcome = await Promise.race([submitted.then(() => 'sent'), refused]);
-  if (outcome !== 'sent') throw new Error(outcome);
+  student.off('requestfailed', onFailed); student.off('response', onResponse); student.off('console', onConsole);
+  if (outcome !== 'sent') throw new Error(`${outcome} | ${notes.join(' | ')}`);
   const response = await submitted;
   expect([200, 201]).toContain(response.status());
   await expect(student.getByText('Slip sent', { exact: true })).toBeVisible();
