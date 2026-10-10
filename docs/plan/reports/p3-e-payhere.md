@@ -4,7 +4,7 @@
 - Branch / PR: `feat/p3-e-payhere` / https://github.com/ReccaLabs/Remix/pull/62
 - Feature IDs: done: FEE-04 (checkout for whole open months, signed PayHere form, verified notify → one `card` payment, status poll, chargeback flag), FEE-03 (card option on Pay, return/cancel pages), SET-02 test payment (owner LKR 10 order; verified notify sets `lastTest`) | not done: refunds, recurring, PayHere retrieval/OAuth APIs, OCR, journeys (3-G) — all out of scope
 - Local checks run (light, per the owner's machine limits): repo-wide `pnpm typecheck` and `pnpm lint` green; only the files touched: API `payhere.provider.test.ts` (9), `payhere-checkout.int.test.ts` (13) + `payhere-settings.int.test.ts` (7) against the dev-stack Postgres; db `checkouts.test.ts` (5) + `catalog.test.ts` + `isolation.test.ts` (364 total); web `card-pay.test.tsx`, `checkout-result.test.tsx`, `pay-overview.test.tsx` (11), `proxy.test.ts` + `security-headers.test.ts` (26). Full suites, build and E2E left to CI.
-- CI: see the PR checks (lint/typecheck/test/build, tenant isolation, E2E journeys, API image/smoke/Trivy, gitleaks, Semgrep)
+- CI: all 6 pass on the first run — lint/typecheck/test/build; tenant isolation (Postgres 18); E2E journeys (Playwright); API image/smoke/Trivy; gitleaks; Semgrep
 - Migrations added: `packages/db/migrations/0021_payhere_checkouts.sql` (tables `payhere_checkouts`, `payhere_checkout_lines`, enums `checkout_status` = `CHECKOUT_STATUSES`, `checkout_kind` = fees|test), `0022_payhere_checkouts_rls.sql` (forced RLS + owner policy, column grants, lifecycle + line-owner triggers). Journal `when` > 0020's.
 - Contract changes (packages/types): none
 - New dependencies: none (`urlencoded` is Express's built-in body parser)
