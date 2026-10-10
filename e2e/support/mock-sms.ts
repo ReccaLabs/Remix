@@ -9,6 +9,14 @@ export function smsOffset(): number {
   return existsSync(file) ? readFileSync(file).length : 0;
 }
 
+/** How many mock SMS were delivered after the offset (the log also holds one line per API request). */
+export function countSms(after: number): number {
+  const file = resolve(repoRoot, 'e2e/mock-sms.log');
+  if (!existsSync(file)) return 0;
+  const text = readFileSync(file).subarray(after).toString('utf8');
+  return text.split(/\r?\n/).filter((line) => line.includes('[mock sms]')).length;
+}
+
 export async function deliveredSms(phone: string, after: number, pattern: RegExp): Promise<string> {
   let found: string | undefined;
   await expect

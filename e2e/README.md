@@ -61,6 +61,24 @@ Every journey runs in two projects: desktop Chrome and a 390 px wide Pixel-class
 | `security-headers` | CSP with a fresh nonce on HTML responses and on the 404 page |
 | `accessibility` | axe (WCAG 2.x A/AA): no serious or critical violations on login, classes, home and admin home, colour contrast included |
 
+## Phase 3 money journeys
+
+| Spec | Journey |
+| --- | --- |
+| `cash-manual` (J-04) | cashier takes cash for two months, sees the change, opens the receipt print view, the receipt PDF link serves a PDF, the receipt SMS reaches the guardian through the mock gateway and the wallet is debited once; the student sees the payment |
+| `bank-slips` (J-03) | student uploads a slip photo straight to SeaweedFS; the cashier works the queue with the keyboard (S skip, R reject with a reason, A approve); the student sees the reason, resends, and the approved months unlock |
+| `invoices-reminders` (J-09) | overdue filter on the Invoices tab, "Send reminder SMS to N unpaid", cost preview, queued count, wallet debited exactly the previewed cost, an identical replay charges nothing; a cashier has no SMS controls |
+| `locked-months` (J-05, Phase 3 part) | unpaid months are listed unpaid and locked by the unlock rule, a student is refused every staff money action, paying one month unlocks only that month, a reversal locks it again. The playback-token and Zoom-join half is a `test.fixme` until Phases 4-5 |
+
+These need SeaweedFS (`pnpm dev:stack` starts it; CI starts the `s3` compose service). The API and web
+servers are started with its dev-only keys (`STORAGE_S3_*`, `STORAGE_ORIGIN`, see `playwright.config.ts`).
+Fixtures in `support/money.ts` append invoice months for seeded students (each journey has its own
+student window), credit the test tenant's SMS wallet as the owner role, and undo payments through the
+owner's reversal API, so history stays append-only and a retried run starts clean. `loginStaffCached`
+reuses one real sign-in per staff account, because the login limiter allows five a minute.
+Do not put `extraHTTPHeaders` on a context that uploads to the bucket: the header would join the
+CORS preflight (use `scopeClientIp`).
+
 ## Rules for new journeys
 
 - Real API and seeded DB only. Independent of each other and of run order.

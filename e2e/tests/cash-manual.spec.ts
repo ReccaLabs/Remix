@@ -1,9 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { KAMAL, PASSWORD } from '../support/accounts';
-import { loginStaff, logout, submitStudentLogin } from '../support/auth';
+import { loginStaffCached, logout, submitStudentLogin } from '../support/auth';
 import { prepareCashFixture } from '../support/cash-fixture';
 import { expectNoSeriousA11yViolations } from '../support/axe';
 import { tenantUrl } from '../support/env';
+import { creditWallet, pageApi, smsMessage, smsRecipient, walletBalance } from '../support/money';
+import { deliveredSms, smsOffset } from '../support/mock-sms';
 
 async function viewportChecks(page: Page, screenshot: (name: string) => string) {
   for (const width of [390, 768, 1024, 1440]) {
@@ -14,7 +16,8 @@ async function viewportChecks(page: Page, screenshot: (name: string) => string) 
   await expectNoSeriousA11yViolations(page);
 }
 
-test('FEE-07/FEE-10: cashier collects two months → prints receipt → student sees payment', async ({ page, browser }, info) => {
+/** J-04 (docs/plan/04-quality.md): cash counter → change → receipt (print view + PDF) → receipt SMS queued. */
+test('J-04 FEE-07/FEE-10/MSG-04: cashier collects two months → change → receipt → receipt SMS → student sees payment', async ({ page, browser }, info) => {
   const fixture = await prepareCashFixture(info.project.name);
   const studentContext = await browser.newContext({ ...info.project.use, extraHTTPHeaders: { 'x-forwarded-for': `10.27.0.${info.project.name === 'chromium' ? 1 : 2}` } });
   const ownerContext = await browser.newContext({ ...info.project.use, extraHTTPHeaders: { 'x-forwarded-for': `10.28.0.${info.project.name === 'chromium' ? 1 : 2}` } });
@@ -22,8 +25,14 @@ test('FEE-07/FEE-10: cashier collects two months → prints receipt → student 
   let paymentId: string | undefined;
   let receiptPage: Page | undefined;
   let studentPage: Page | undefined;
+  let receiptSmsSwitchedOn = false;
   try {
-    await loginStaff(ownerPage, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
+    await loginStaffCached(ownerPage, 'kamalphysics', KAMAL.email, PASSWORD, KAMAL.seedPhone);
+    // Receipt SMS is wallet-billed and off by default: fund the test wallet and switch it on (the owner's settings API).
+    await creditWallet(200_000);
+    const smsSetting = await pageApi(ownerPage, 'PATCH', '/api/v1/admin/settings/fees', { receiptSmsEnabled: true });
+    expect(smsSetting.status).toBe(200);
+    receiptSmsSwitchedOn = true;
     // A failed earlier run may have collected these fixture months. Restore only those
     // allocations through the public reversal API, retaining all audit history.
     const restored = await ownerPage.evaluate(async ({ studentId, lineIds }) => {
@@ -38,7 +47,7 @@ test('FEE-07/FEE-10: cashier collects two months → prints receipt → student 
       return 200;
     }, fixture);
     expect(restored).toBe(200);
-    await loginStaff(page, 'kamalphysics', '+94770001182', PASSWORD, '+94770001182');
+    await loginStaffCached(page, 'kamalphysics', '+94770001182', PASSWORD, '+94770001182');
     await page.goto(tenantUrl('kamalphysics', '/admin/fees?tab=cash'));
     const search = page.getByLabel('Search student');
     await expect(search).toBeFocused();
@@ -50,7 +59,12 @@ test('FEE-07/FEE-10: cashier collects two months → prints receipt → student 
     await page.keyboard.press('Space'); await page.keyboard.press('Tab'); await page.keyboard.press('Space'); await page.keyboard.press('Tab');
     const received = page.getByLabel('Cash received (LKR)'); await expect(received).toBeFocused();
     await received.pressSequentially(((fixture.totalCents + 10000) / 100).toFixed(2));
+    // The change to hand back is shown before the cashier confirms: LKR 100.00 more than the total.
+    await expect(page.locator('output').filter({ hasText: 'LKR 100.00' }).last()).toBeVisible();
     await viewportChecks(page, name => info.outputPath(`cash-${name}`));
+    const recipient = await smsRecipient(fixture.studentId);
+    const smsFrom = smsOffset();
+    const walletBefore = await walletBalance();
     const popup = page.waitForEvent('popup');
     const response = page.waitForResponse(res => res.url().endsWith('/api/v1/admin/payments/cash') && res.request().method() === 'POST');
     await received.press('Enter');
@@ -65,6 +79,20 @@ test('FEE-07/FEE-10: cashier collects two months → prints receipt → student 
     await expect(receiptPage.locator('dd').filter({ hasText: fixture.name })).toBeVisible();
     await expect(receiptPage.getByText('LKR 100.00', { exact: true })).toBeVisible();
     await expect(search).toHaveValue(''); await expect(search).toBeFocused();
+    await expect(page.getByRole('status').filter({ hasText: 'Give LKR 100.00 change' })).toBeVisible();
+    // Receipt PDF: the signed link serves a real PDF (the job renders it after the payment commits).
+    await expect.poll(async () => (await pageApi(page, 'GET', `/api/v1/receipts/${payment.receiptId}/pdf`)).status, { timeout: 20_000 }).toBe(200);
+    const signed = (await pageApi<{ url: string }>(page, 'GET', `/api/v1/receipts/${payment.receiptId}/pdf`)).body;
+    const pdf = await page.request.get(signed.url);
+    expect(pdf.ok()).toBe(true);
+    expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-');
+    // Receipt SMS: delivered to the guardian (or the student) through the mock provider, billed to the wallet once.
+    await deliveredSms(recipient, smsFrom, new RegExp(`(Receipt ${payment.receiptNumber})`));
+    await expect.poll(async () => (await smsMessage(`receipt-${payment.id}`))?.status).toMatch(/^(queued|sent)$/);
+    const sms = await smsMessage(`receipt-${payment.id}`);
+    expect(sms?.template).toBe('receipt_issued');
+    expect(sms?.costCents).toBeGreaterThan(0);
+    expect(walletBefore - (await walletBalance())).toBe(sms?.costCents);
     studentPage = await studentContext.newPage();
     await submitStudentLogin(studentPage, 'kamalphysics', fixture.phone, PASSWORD);
     await expect.poll(async () => studentPage!.url() === tenantUrl('kamalphysics', '/app') || await studentPage!.getByRole('group', { name: 'Your signed-in devices' }).isVisible()).toBe(true);
@@ -96,6 +124,7 @@ test('FEE-07/FEE-10: cashier collects two months → prints receipt → student 
       }, paymentId);
       expect(result).toBe(200);
     }
+    if (receiptSmsSwitchedOn) await pageApi(ownerPage, 'PATCH', '/api/v1/admin/settings/fees', { receiptSmsEnabled: false });
     await ownerContext.close();
   }
 });
