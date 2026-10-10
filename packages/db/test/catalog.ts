@@ -80,6 +80,15 @@ export const LEDGER_UPDATE_COLUMNS: Readonly<Record<string, readonly string[]>> 
     'status',
   ],
   bank_slip_lines: [],
+  payhere_checkouts: [
+    'chargeback_at',
+    'notified_at',
+    'payment_id',
+    'provider_payment_id',
+    'status',
+    'status_code',
+  ],
+  payhere_checkout_lines: [],
 };
 
 /** RLS on, ≥1 policy, tenant_id, tenant-scoped key, owner, updated_at trigger, factory entry. */

@@ -148,6 +148,20 @@
       "when": 1791534859726,
       "tag": "0020_sms_wallet_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791615768759,
+      "tag": "0021_payhere_checkouts",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791615787412,
+      "tag": "0022_payhere_checkouts_rls",
+      "breakpoints": true
     }
   ]
 }

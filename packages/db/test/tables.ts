@@ -88,6 +88,10 @@ export interface World {
   slipId: string;
   spareSlipId: string;
   slipLineId: string;
+  /** A pending fees checkout linked to `lineId`, and a second one without lines. */
+  checkoutId: string;
+  spareCheckoutId: string;
+  checkoutLineId: string;
 }
 
 type Row = Record<string, unknown>;
@@ -261,6 +265,21 @@ const freshSlipLine = (w: World): Row => ({
   slip_id: w.spareSlipId,
   invoice_line_id: w.lineId,
 });
+const freshCheckout = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  kind: 'fees',
+  student_id: w.studentUserId,
+  created_by: w.studentUserId,
+  amount_cents: 250000,
+  merchant_id: '1211149',
+  mode: 'sandbox',
+  expires_at: inOneHour(),
+});
+const freshCheckoutLine = (w: World): Row => ({
+  tenant_id: w.tenantId,
+  checkout_id: w.spareCheckoutId,
+  invoice_line_id: w.lineId,
+});
 const freshReceipt = (w: World): Row => ({
   tenant_id: w.tenantId,
   payment_id: w.sparePaymentId,
@@ -344,6 +363,26 @@ export const TABLES = {
     crossTenantRefs: {
       slip: (a, b) => ({ ...freshSlipLine(a), slip_id: b.spareSlipId }),
       line: (a, b) => ({ ...freshSlipLine(a), invoice_line_id: b.lineId }),
+    },
+  },
+  payhere_checkouts: {
+    access: 'projection',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.checkoutId }),
+    fresh: freshCheckout,
+    crossTenantRefs: {
+      student: (a, b) => ({ ...freshCheckout(a), student_id: b.studentUserId, created_by: b.studentUserId }),
+      createdBy: (a, b) => ({ ...freshCheckout(a), kind: 'test', student_id: null, created_by: b.staffUserId }),
+    },
+  },
+  payhere_checkout_lines: {
+    access: 'append',
+    tenantColumn: 'tenant_id',
+    key: (w) => ({ id: w.checkoutLineId }),
+    fresh: freshCheckoutLine,
+    crossTenantRefs: {
+      checkout: (a, b) => ({ ...freshCheckoutLine(a), checkout_id: b.spareCheckoutId }),
+      line: (a, b) => ({ ...freshCheckoutLine(a), invoice_line_id: b.lineId }),
     },
   },
   tenant_integrations: {
@@ -1018,7 +1057,34 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
               .returning(),
             'slip line',
           );
+          const checkout = () =>
+            tx
+              .insert(schema.payhereCheckouts)
+              .values({
+                tenantId,
+                kind: 'fees',
+                studentId: student.id,
+                createdBy: student.id,
+                amountCents: 250000,
+                merchantId: '1211149',
+                mode: 'sandbox',
+                expiresAt: inOneHour(),
+              })
+              .returning()
+              .then((rows) => one(rows, 'checkout'));
+          const worldCheckout = await checkout();
+          const spareCheckout = await checkout();
+          const checkoutLine = one(
+            await tx
+              .insert(schema.payhereCheckoutLines)
+              .values({ tenantId, checkoutId: worldCheckout.id, invoiceLineId: line.id })
+              .returning(),
+            'checkout line',
+          );
           return {
+            checkoutId: worldCheckout.id,
+            spareCheckoutId: spareCheckout.id,
+            checkoutLineId: checkoutLine.id,
             smsWalletId: wallet.id,
             smsMessageId: one(messages.filter((m) => m.messageId === `world-${tag}`), 'sms message').id,
             smsSpareMessageId: `spare-${tag}`,
@@ -1038,6 +1104,9 @@ export async function createWorld(owner: Db, label: string, includeLedger = true
           };
         })()
       : {
+          checkoutId: '',
+          spareCheckoutId: '',
+          checkoutLineId: '',
           smsWalletId: '',
           smsMessageId: '',
           smsSpareMessageId: '',
