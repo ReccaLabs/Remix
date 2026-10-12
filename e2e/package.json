@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.0",
     "@remix/config": "workspace:*",
     "@types/node": "^24.19.1",
     "typescript": "~5.9.3"

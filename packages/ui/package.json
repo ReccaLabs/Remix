@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
-    "lucide-react": "^1.49.0",
+    "lucide-react": "^1.53.0",
     "tailwind-merge": "^3.4.0"
   },
   "peerDependencies": {
@@ -31,10 +31,10 @@
     "@testing-library/user-event": "^14.6.7",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "axe-core": "^4.13.0",
+    "axe-core": "^4.14.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.8",
-    "jsdom": "^30.1.1",
+    "jsdom": "^30.1.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "typescript": "~5.9.3",
